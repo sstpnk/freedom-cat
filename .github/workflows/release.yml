@@ -11,6 +11,8 @@ on:
       play:
         description: "Play: If want ignore"
         required: false
+  push:
+    branches: [main]
 jobs:
   libcore:
     name: Native Build (LibCore)
