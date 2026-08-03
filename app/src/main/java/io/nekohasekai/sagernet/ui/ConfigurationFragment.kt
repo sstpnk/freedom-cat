@@ -25,17 +25,12 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.net.toUri
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
-import androidx.core.view.size
-import androidx.fragment.app.Fragment
+import androidx.core.view.setPadding
 import androidx.preference.PreferenceDataStore
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.viewpager2.adapter.FragmentStateAdapter
-import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.tabs.TabLayout
-import com.google.android.material.tabs.TabLayoutMediator
 import io.nekohasekai.sagernet.GroupOrder
 import io.nekohasekai.sagernet.GroupType
 import io.nekohasekai.sagernet.Key
@@ -51,7 +46,7 @@ import io.nekohasekai.sagernet.database.ProxyEntity
 import io.nekohasekai.sagernet.database.ProxyGroup
 import io.nekohasekai.sagernet.database.SagerDatabase
 import io.nekohasekai.sagernet.database.preference.OnPreferenceDataStoreChangeListener
-import io.nekohasekai.sagernet.databinding.LayoutProfileListBinding
+import io.nekohasekai.sagernet.databinding.LayoutGroupItemBinding
 import io.nekohasekai.sagernet.databinding.LayoutProgressListBinding
 import io.nekohasekai.sagernet.fmt.AbstractBean
 import io.nekohasekai.sagernet.fmt.toUniversalLink
@@ -106,10 +101,13 @@ import moe.matsuri.nb4a.proxy.anytls.AnyTLSSettingsActivity
 import moe.matsuri.nb4a.proxy.config.ConfigSettingActivity
 import moe.matsuri.nb4a.proxy.shadowtls.ShadowTLSSettingsActivity
 import moe.matsuri.nb4a.ui.ConnectionTestNotification
+import moe.matsuri.nb4a.utils.Util
+import moe.matsuri.nb4a.utils.toBytesString
 import okhttp3.internal.closeQuietly
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.net.UnknownHostException
+import java.util.Date
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicInteger
@@ -127,33 +125,13 @@ class ConfigurationFragment @JvmOverloads constructor(
         fun returnProfile(profileId: Long)
     }
 
-    lateinit var adapter: GroupPagerAdapter
-    lateinit var tabLayout: TabLayout
-    lateinit var groupPager: ViewPager2
+    lateinit var adapter: GroupListAdapter
+    lateinit var configurationListView: RecyclerView
 
     val alwaysShowAddress by lazy { DataStore.alwaysShowAddress }
 
-    fun getCurrentGroupFragment(): GroupFragment? {
-        return try {
-            childFragmentManager.findFragmentByTag("f" + DataStore.selectedGroup) as GroupFragment?
-        } catch (e: Exception) {
-            Logs.e(e)
-            null
-        }
-    }
-
-    val updateSelectedCallback = object : ViewPager2.OnPageChangeCallback() {
-        override fun onPageScrolled(
-            position: Int, positionOffset: Float, positionOffsetPixels: Int
-        ) {
-            if (adapter.groupList.size > position) {
-                DataStore.selectedGroup = adapter.groupList[position].id
-            }
-        }
-    }
-
     override fun onQueryTextChange(query: String): Boolean {
-        getCurrentGroupFragment()?.adapter?.filter(query)
+        adapter.filter(query)
         return false
     }
 
@@ -198,49 +176,141 @@ class ConfigurationFragment @JvmOverloads constructor(
             }
         }
 
-        groupPager = view.findViewById(R.id.group_pager)
-        tabLayout = view.findViewById(R.id.group_tab)
-        adapter = GroupPagerAdapter()
+        configurationListView = view.findViewById(R.id.configuration_list)
+        configurationListView.layoutManager = FixedLinearLayoutManager(configurationListView)
+        adapter = GroupListAdapter()
         ProfileManager.addListener(adapter)
         GroupManager.addListener(adapter)
+        configurationListView.adapter = adapter
+        configurationListView.setItemViewCacheSize(20)
 
-        groupPager.adapter = adapter
-        groupPager.offscreenPageLimit = 2
+        if (!select) {
 
-        TabLayoutMediator(tabLayout, groupPager) { tab, position ->
-            if (adapter.groupList.size > position) {
-                tab.text = adapter.groupList[position].displayName()
-            }
-            tab.view.setOnLongClickListener { // clear toast
-                true
-            }
-        }.attach()
-
-        toolbar.setOnClickListener {
-            val fragment = getCurrentGroupFragment()
-
-            if (fragment != null) {
-                val selectedProxy = selectedItem?.id ?: DataStore.selectedProxy
-                val selectedProfileIndex =
-                    fragment.adapter!!.configurationIdList.indexOf(selectedProxy)
-                if (selectedProfileIndex != -1) {
-                    val layoutManager = fragment.layoutManager
-                    val first = layoutManager.findFirstVisibleItemPosition()
-                    val last = layoutManager.findLastVisibleItemPosition()
-
-                    if (selectedProfileIndex !in first..last) {
-                        fragment.configurationListView.scrollTo(selectedProfileIndex, true)
-                        return@setOnClickListener
+            ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
+                ItemTouchHelper.UP or ItemTouchHelper.DOWN, ItemTouchHelper.START
+            ) {
+                override fun getSwipeDirs(
+                    recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder
+                ): Int {
+                    val item = adapter.getItemAt(viewHolder.bindingAdapterPosition) ?: return 0
+                    if (item is Item.GroupItem) {
+                        if (item.group.ungrouped || item.group.id in GroupUpdater.updating) {
+                            return 0
+                        }
                     }
-
+                    return super.getSwipeDirs(recyclerView, viewHolder)
                 }
 
-                fragment.configurationListView.scrollTo(0)
-            }
+                override fun getDragDirs(
+                    recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder
+                ): Int {
+                    val item = adapter.getItemAt(viewHolder.bindingAdapterPosition) ?: return 0
+                    if (item !is Item.GroupItem) return 0
+                    if (item.group.ungrouped || item.group.id in GroupUpdater.updating) {
+                        return 0
+                    }
+                    return super.getDragDirs(recyclerView, viewHolder)
+                }
+
+                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                    val index = viewHolder.bindingAdapterPosition
+                    val item = adapter.getItemAt(index) ?: return
+                    when (item) {
+                        is Item.GroupItem -> {
+                            adapter.removeGroup(index)
+                            undoManager.remove(index to item.group)
+                        }
+
+                        is Item.ProfileItem -> {
+                            adapter.removeProfile(index)
+                            undoManager.remove(index to item.profile)
+                        }
+                    }
+                }
+
+                override fun onMove(
+                    recyclerView: RecyclerView,
+                    viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder,
+                ): Boolean {
+                    adapter.moveGroup(
+                        viewHolder.bindingAdapterPosition, target.bindingAdapterPosition
+                    )
+                    return true
+                }
+
+                override fun clearView(
+                    recyclerView: RecyclerView,
+                    viewHolder: RecyclerView.ViewHolder,
+                ) {
+                    super.clearView(recyclerView, viewHolder)
+                    adapter.commitMoveGroup()
+                }
+            }).attachToRecyclerView(configurationListView)
 
         }
 
+        toolbar.setOnClickListener {
+            adapter.scrollToSelected()
+
+            if (adapter.selectedProfileIndex() == -1) {
+                configurationListView.scrollTo(0)
+            }
+        }
+
         DataStore.profileCacheStore.registerChangeListener(this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!select) checkOrderMenu()
+    }
+
+    private fun checkOrderMenu() {
+        val group = DataStore.currentGroup()
+
+        val menu = toolbar.menu
+        val origin = menu.findItem(R.id.action_order_origin)
+        val byName = menu.findItem(R.id.action_order_by_name)
+        val byDelay = menu.findItem(R.id.action_order_by_delay)
+        if (origin == null || byName == null || byDelay == null) return
+
+        when (group.order) {
+            GroupOrder.ORIGIN -> {
+                origin.isChecked = true
+            }
+
+            GroupOrder.BY_NAME -> {
+                byName.isChecked = true
+            }
+
+            GroupOrder.BY_DELAY -> {
+                byDelay.isChecked = true
+            }
+        }
+
+        fun updateTo(order: Int) {
+            if (group.order == order) return
+            runOnDefaultDispatcher {
+                group.order = order
+                GroupManager.updateGroup(group)
+            }
+        }
+
+        origin.setOnMenuItemClickListener {
+            it.isChecked = true
+            updateTo(GroupOrder.ORIGIN)
+            true
+        }
+        byName.setOnMenuItemClickListener {
+            it.isChecked = true
+            updateTo(GroupOrder.BY_NAME)
+            true
+        }
+        byDelay.setOnMenuItemClickListener {
+            it.isChecked = true
+            updateTo(GroupOrder.BY_DELAY)
+            true
+        }
     }
 
     override fun onPreferenceDataStoreChanged(store: PreferenceDataStore, key: String) {
@@ -250,12 +320,7 @@ class ConfigurationFragment @JvmOverloads constructor(
                 val targetId = DataStore.editingGroup
                 if (targetId > 0 && targetId != DataStore.selectedGroup) {
                     DataStore.selectedGroup = targetId
-                    val targetIndex = adapter.groupList.indexOfFirst { it.id == targetId }
-                    if (targetIndex >= 0) {
-                        groupPager.setCurrentItem(targetIndex, false)
-                    } else {
-                        adapter.reload()
-                    }
+                    adapter.expand(targetId)
                 }
             }
         }
@@ -270,11 +335,12 @@ class ConfigurationFragment @JvmOverloads constructor(
         }
 
         super.onDestroy()
+
+        undoManager.flush()
     }
 
     override fun onKeyDown(ketCode: Int, event: KeyEvent): Boolean {
-        val fragment = getCurrentGroupFragment()
-        fragment?.configurationListView?.apply {
+        configurationListView.apply {
             if (!hasFocus()) requestFocus()
         }
         return super.onKeyDown(ketCode, event)
@@ -507,14 +573,7 @@ class ConfigurationFragment @JvmOverloads constructor(
                                 .setMessage(R.string.delete_confirm_prompt)
                                 .setPositiveButton(R.string.yes) { _, _ ->
                                     for (profile in toClear) {
-                                        adapter.groupFragments[DataStore.selectedGroup]?.adapter?.apply {
-                                            val index = configurationIdList.indexOf(profile.id)
-                                            if (index >= 0) {
-                                                configurationIdList.removeAt(index)
-                                                configurationList.remove(profile.id)
-                                                notifyItemRemoved(index)
-                                            }
-                                        }
+                                        adapter.removeProfileAt(profile.id)
                                     }
                                     runOnDefaultDispatcher {
                                         for (profile in toClear) {
@@ -559,14 +618,7 @@ class ConfigurationFragment @JvmOverloads constructor(
                                 )
                                 .setPositiveButton(R.string.yes) { _, _ ->
                                     for (profile in toClear) {
-                                        adapter.groupFragments[DataStore.selectedGroup]?.adapter?.apply {
-                                            val index = configurationIdList.indexOf(profile.id)
-                                            if (index >= 0) {
-                                                configurationIdList.removeAt(index)
-                                                configurationList.remove(profile.id)
-                                                notifyItemRemoved(index)
-                                            }
-                                        }
+                                        adapter.removeProfileAt(profile.id)
                                     }
                                     runOnDefaultDispatcher {
                                         for (profile in toClear) {
@@ -900,815 +952,857 @@ class ConfigurationFragment @JvmOverloads constructor(
         }
     }
 
-    inner class GroupPagerAdapter : FragmentStateAdapter(this),
-        ProfileManager.Listener,
-        GroupManager.Listener {
+    private val undoManager by lazy { UndoSnackbarManager<Any>(activity as MainActivity, adapter) }
 
-        var selectedGroupIndex = 0
-        var groupList: ArrayList<ProxyGroup> = ArrayList()
-        var groupFragments: HashMap<Long, GroupFragment> = HashMap()
-
-        fun reload(now: Boolean = false) {
-
-            if (!select) {
-                groupPager.unregisterOnPageChangeCallback(updateSelectedCallback)
+    private fun sortedProfiles(group: ProxyGroup): MutableList<ProxyEntity> {
+        var newProfiles = SagerDatabase.proxyDao.getByGroup(group.id).toMutableList()
+        when (group.order) {
+            GroupOrder.BY_NAME -> {
+                newProfiles = newProfiles.sortedBy { it.displayName() }.toMutableList()
             }
 
+            GroupOrder.BY_DELAY -> {
+                newProfiles = newProfiles.sortedBy {
+                    if (it.status == 1) it.ping else 114514
+                }.toMutableList()
+            }
+        }
+        return newProfiles
+    }
+
+    sealed class Item {
+        class GroupItem(val group: ProxyGroup) : Item()
+        class ProfileItem(val profile: ProxyEntity) : Item()
+
+        companion object {
+            const val TYPE_GROUP = 0
+            const val TYPE_PROFILE = 1
+        }
+    }
+
+    inner class GroupListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
+        ProfileManager.Listener,
+        GroupManager.Listener,
+        UndoSnackbarManager.Interface<Any> {
+
+        val groupList = ArrayList<ProxyGroup>()
+        val profilesMap = HashMap<Long, MutableList<ProxyEntity>>()
+        val expanded = LinkedHashSet<Long>()
+        val items = ArrayList<Item>()
+        var filterQuery = ""
+        var forceExpanded = false
+
+        init {
+            setHasStableIds(true)
             runOnDefaultDispatcher {
-                var newGroupList = ArrayList(SagerDatabase.groupDao.allGroups())
-                if (newGroupList.isEmpty()) {
-                    SagerDatabase.groupDao.createGroup(ProxyGroup(ungrouped = true))
-                    newGroupList = ArrayList(SagerDatabase.groupDao.allGroups())
-                }
-                newGroupList.find { it.ungrouped }?.let {
-                    if (SagerDatabase.proxyDao.countByGroup(it.id) == 0L) {
-                        newGroupList.remove(it)
-                    }
-                }
+                reload()
+            }
+        }
 
-                var selectedGroup = selectedItem?.groupId ?: DataStore.currentGroupId()
-                var set = false
-                if (selectedGroup > 0L) {
-                    selectedGroupIndex = newGroupList.indexOfFirst { it.id == selectedGroup }
-                    set = true
-                } else if (groupList.size == 1) {
-                    selectedGroup = groupList[0].id
-                    if (DataStore.selectedGroup != selectedGroup) {
-                        DataStore.selectedGroup = selectedGroup
-                    }
-                }
+        fun getItemAt(index: Int): Item? {
+            return if (index in 0 until items.size) items[index] else null
+        }
 
-                val runFunc = if (now) activity?.let { it::runOnUiThread } else groupPager::post
-                if (runFunc != null) {
-                    runFunc {
-                        groupList = newGroupList
-                        notifyDataSetChanged()
-                        if (set) groupPager.setCurrentItem(selectedGroupIndex, false)
-                        val hideTab = groupList.size < 2
-                        tabLayout.isGone = hideTab
-                        toolbar.elevation = if (hideTab) 0F else dp2px(4).toFloat()
-                        if (!select) {
-                            groupPager.registerOnPageChangeCallback(updateSelectedCallback)
+        override fun getItemId(position: Int): Long {
+            return when (val item = items[position]) {
+                is Item.GroupItem -> item.group.id
+                is Item.ProfileItem -> item.profile.id
+            }
+        }
+
+        override fun getItemViewType(position: Int): Int {
+            return when (items[position]) {
+                is Item.GroupItem -> Item.TYPE_GROUP
+                is Item.ProfileItem -> Item.TYPE_PROFILE
+            }
+        }
+
+        override fun getItemCount(): Int = items.size
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+            return if (viewType == Item.TYPE_GROUP) {
+                GroupHolder(LayoutGroupItemBinding.inflate(layoutInflater, parent, false))
+            } else {
+                val view = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.layout_profile, parent, false)
+                val lp = view.layoutParams as? ViewGroup.MarginLayoutParams
+                    ?: RecyclerView.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+                    )
+                lp.marginStart = dp2px(16)
+                view.layoutParams = lp
+                ConfigurationHolder(view)
+            }
+        }
+
+        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+            try {
+                when (val item = items[position]) {
+                    is Item.GroupItem -> (holder as GroupHolder).bind(item.group)
+                    is Item.ProfileItem -> (holder as ConfigurationHolder).bind(item.profile)
+                }
+            } catch (ignored: NullPointerException) { // when group deleted
+            }
+        }
+
+        private suspend fun reload() {
+            var newGroupList = ArrayList(SagerDatabase.groupDao.allGroups())
+            if (newGroupList.isEmpty()) {
+                SagerDatabase.groupDao.createGroup(ProxyGroup(ungrouped = true))
+                newGroupList = ArrayList(SagerDatabase.groupDao.allGroups())
+            }
+            newGroupList.find { it.ungrouped }?.let {
+                if (SagerDatabase.proxyDao.countByGroup(it.id) == 0L) {
+                    newGroupList.remove(it)
+                }
+            }
+
+            if (select) {
+                forceExpanded = true
+            } else if (!forceExpanded && expanded.isEmpty()) {
+                // expand the selected group at startup
+                newGroupList.firstOrNull { it.id == DataStore.selectedGroup }?.let {
+                    expanded.add(it.id)
+                } ?: newGroupList.firstOrNull()?.let { expanded.add(it.id) }
+            }
+
+            val newProfilesMap = HashMap<Long, MutableList<ProxyEntity>>()
+            for (group in newGroupList) {
+                newProfilesMap[group.id] = sortedProfiles(group)
+            }
+
+            val showAll = filterQuery.isNotEmpty() || forceExpanded
+            val newItems = ArrayList<Item>()
+            for (group in newGroupList) {
+                newItems.add(Item.GroupItem(group))
+                if (showAll || expanded.contains(group.id)) {
+                    val profiles = newProfilesMap[group.id] ?: continue
+                    if (filterQuery.isEmpty()) {
+                        for (p in profiles) newItems.add(Item.ProfileItem(p))
+                    } else {
+                        val lower = filterQuery
+                        for (p in profiles) {
+                            if (p.displayName().lowercase().contains(lower) ||
+                                p.displayType().lowercase().contains(lower) ||
+                                p.displayAddress().lowercase().contains(lower)
+                            ) {
+                                newItems.add(Item.ProfileItem(p))
+                            }
                         }
                     }
                 }
             }
-        }
 
-        init {
-            reload(true)
-        }
-
-        override fun getItemCount(): Int {
-            return groupList.size
-        }
-
-        override fun createFragment(position: Int): Fragment {
-            return GroupFragment().apply {
-                proxyGroup = groupList[position]
-                groupFragments[proxyGroup.id] = this
-                if (position == selectedGroupIndex) {
-                    selected = true
-                }
-            }
-        }
-
-        override fun getItemId(position: Int): Long {
-            return groupList[position].id
-        }
-
-        override fun containsItem(itemId: Long): Boolean {
-            return groupList.any { it.id == itemId }
-        }
-
-        override suspend fun groupAdd(group: ProxyGroup) {
-            tabLayout.post {
-                groupList.add(group)
-
-                if (groupList.any { !it.ungrouped }) tabLayout.post {
-                    tabLayout.visibility = View.VISIBLE
-                }
-
-                notifyItemInserted(groupList.size - 1)
-                tabLayout.getTabAt(groupList.size - 1)?.select()
-            }
-        }
-
-        override suspend fun groupRemoved(groupId: Long) {
-            val index = groupList.indexOfFirst { it.id == groupId }
-            if (index == -1) return
-
-            tabLayout.post {
-                groupList.removeAt(index)
-                notifyItemRemoved(index)
-            }
-        }
-
-        override suspend fun groupUpdated(group: ProxyGroup) {
-            val index = groupList.indexOfFirst { it.id == group.id }
-            if (index == -1) return
-
-            tabLayout.post {
-                tabLayout.getTabAt(index)?.text = group.displayName()
-            }
-        }
-
-        override suspend fun groupUpdated(groupId: Long) = Unit
-
-        override suspend fun onAdd(profile: ProxyEntity) {
-            if (groupList.find { it.id == profile.groupId } == null) {
-                DataStore.selectedGroup = profile.groupId
-                reload()
-            }
-        }
-
-        override suspend fun onUpdated(data: TrafficData) = Unit
-
-        override suspend fun onUpdated(profile: ProxyEntity, noTraffic: Boolean) = Unit
-
-        override suspend fun onRemoved(groupId: Long, profileId: Long) {
-            val group = groupList.find { it.id == groupId } ?: return
-            if (group.ungrouped && SagerDatabase.proxyDao.countByGroup(groupId) == 0L) {
-                reload()
-            }
-        }
-    }
-
-    class GroupFragment : Fragment() {
-
-        lateinit var proxyGroup: ProxyGroup
-        var selected = false
-
-        override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?,
-        ): View {
-            return LayoutProfileListBinding.inflate(inflater).root
-        }
-
-        lateinit var undoManager: UndoSnackbarManager<ProxyEntity>
-        var adapter: ConfigurationAdapter? = null
-
-        override fun onSaveInstanceState(outState: Bundle) {
-            super.onSaveInstanceState(outState)
-
-            if (::proxyGroup.isInitialized) {
-                outState.putParcelable("proxyGroup", proxyGroup)
-            }
-        }
-
-        override fun onViewStateRestored(savedInstanceState: Bundle?) {
-            super.onViewStateRestored(savedInstanceState)
-
-            savedInstanceState?.getParcelable<ProxyGroup>("proxyGroup")?.also {
-                proxyGroup = it
-                onViewCreated(requireView(), null)
-            }
-        }
-
-        private val isEnabled: Boolean
-            get() {
-                return DataStore.serviceState.let { it.canStop || it == BaseService.State.Stopped }
-            }
-
-        lateinit var layoutManager: LinearLayoutManager
-        lateinit var configurationListView: RecyclerView
-
-        val select by lazy {
-            try {
-                (parentFragment as ConfigurationFragment).select
-            } catch (e: Exception) {
-                Logs.e(e)
-                false
-            }
-        }
-        val selectedItem by lazy {
-            try {
-                (parentFragment as ConfigurationFragment).selectedItem
-            } catch (e: Exception) {
-                Logs.e(e)
-                null
-            }
-        }
-
-        override fun onResume() {
-            super.onResume()
-
-            if (::configurationListView.isInitialized && configurationListView.size == 0) {
-                configurationListView.adapter = adapter
-                runOnDefaultDispatcher {
-                    adapter?.reloadProfiles()
-                }
-            } else if (!::configurationListView.isInitialized) {
-                onViewCreated(requireView(), null)
-            }
-            checkOrderMenu()
-            configurationListView.requestFocus()
-        }
-
-        fun checkOrderMenu() {
-            if (select) return
-
-            val pf = requireParentFragment() as? ToolbarFragment ?: return
-            val menu = pf.toolbar.menu
-            val origin = menu.findItem(R.id.action_order_origin)
-            val byName = menu.findItem(R.id.action_order_by_name)
-            val byDelay = menu.findItem(R.id.action_order_by_delay)
-            when (proxyGroup.order) {
-                GroupOrder.ORIGIN -> {
-                    origin.isChecked = true
-                }
-
-                GroupOrder.BY_NAME -> {
-                    byName.isChecked = true
-                }
-
-                GroupOrder.BY_DELAY -> {
-                    byDelay.isChecked = true
-                }
-            }
-
-            fun updateTo(order: Int) {
-                if (proxyGroup.order == order) return
-                runOnDefaultDispatcher {
-                    proxyGroup.order = order
-                    GroupManager.updateGroup(proxyGroup)
-                }
-            }
-
-            origin.setOnMenuItemClickListener {
-                it.isChecked = true
-                updateTo(GroupOrder.ORIGIN)
-                true
-            }
-            byName.setOnMenuItemClickListener {
-                it.isChecked = true
-                updateTo(GroupOrder.BY_NAME)
-                true
-            }
-            byDelay.setOnMenuItemClickListener {
-                it.isChecked = true
-                updateTo(GroupOrder.BY_DELAY)
-                true
-            }
-        }
-
-        override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-            if (!::proxyGroup.isInitialized) return
-
-            configurationListView = view.findViewById(R.id.configuration_list)
-            layoutManager = FixedLinearLayoutManager(configurationListView)
-            configurationListView.layoutManager = layoutManager
-            adapter = ConfigurationAdapter()
-            ProfileManager.addListener(adapter!!)
-            GroupManager.addListener(adapter!!)
-            configurationListView.adapter = adapter
-            configurationListView.setItemViewCacheSize(20)
-
-            if (!select) {
-
-                undoManager = UndoSnackbarManager(activity as MainActivity, adapter!!)
-
-                ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
-                    ItemTouchHelper.UP or ItemTouchHelper.DOWN, ItemTouchHelper.START
-                ) {
-                    override fun getSwipeDirs(
-                        recyclerView: RecyclerView,
-                        viewHolder: RecyclerView.ViewHolder,
-                    ): Int {
-                        return 0
-                    }
-
-                    override fun getDragDirs(
-                        recyclerView: RecyclerView,
-                        viewHolder: RecyclerView.ViewHolder,
-                    ) = if (isEnabled) super.getDragDirs(recyclerView, viewHolder) else 0
-
-                    override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                    }
-
-                    override fun onMove(
-                        recyclerView: RecyclerView,
-                        viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder,
-                    ): Boolean {
-                        adapter?.move(
-                            viewHolder.bindingAdapterPosition, target.bindingAdapterPosition
-                        )
-                        return true
-                    }
-
-                    override fun clearView(
-                        recyclerView: RecyclerView,
-                        viewHolder: RecyclerView.ViewHolder,
-                    ) {
-                        super.clearView(recyclerView, viewHolder)
-                        adapter?.commitMove()
-                    }
-                }).attachToRecyclerView(configurationListView)
-
-            }
-
-        }
-
-        override fun onDestroy() {
-            adapter?.let {
-                ProfileManager.removeListener(it)
-                GroupManager.removeListener(it)
-            }
-
-            super.onDestroy()
-
-            if (!::undoManager.isInitialized) return
-            undoManager.flush()
-        }
-
-        inner class ConfigurationAdapter : RecyclerView.Adapter<ConfigurationHolder>(),
-            ProfileManager.Listener,
-            GroupManager.Listener,
-            UndoSnackbarManager.Interface<ProxyEntity> {
-
-            init {
-                setHasStableIds(true)
-            }
-
-            var configurationIdList: MutableList<Long> = mutableListOf()
-            val configurationList = HashMap<Long, ProxyEntity>()
-
-            private fun getItem(profileId: Long): ProxyEntity {
-                var profile = configurationList[profileId]
-                if (profile == null) {
-                    profile = ProfileManager.getProfile(profileId)
-                    if (profile != null) {
-                        configurationList[profileId] = profile
-                    }
-                }
-                return profile!!
-            }
-
-            private fun getItemAt(index: Int) = getItem(configurationIdList[index])
-
-            override fun onCreateViewHolder(
-                parent: ViewGroup,
-                viewType: Int,
-            ): ConfigurationHolder {
-                return ConfigurationHolder(
-                    LayoutInflater.from(parent.context)
-                        .inflate(R.layout.layout_profile, parent, false)
-                )
-            }
-
-            override fun getItemId(position: Int): Long {
-                return configurationIdList[position]
-            }
-
-            override fun onBindViewHolder(holder: ConfigurationHolder, position: Int) {
-                try {
-                    holder.bind(getItemAt(position))
-                } catch (ignored: NullPointerException) { // when group deleted
-                }
-            }
-
-            override fun getItemCount(): Int {
-                return configurationIdList.size
-            }
-
-            private val updated = HashSet<ProxyEntity>()
-
-            fun filter(name: String) {
-                if (name.isEmpty()) {
-                    reloadProfiles()
-                    return
-                }
-                configurationIdList.clear()
-                val lower = name.lowercase()
-                configurationIdList.addAll(configurationList.filter {
-                    it.value.displayName().lowercase().contains(lower) ||
-                            it.value.displayType().lowercase().contains(lower) ||
-                            it.value.displayAddress().lowercase().contains(lower)
-                }.keys)
+            onMainDispatcher {
+                groupList.clear()
+                groupList.addAll(newGroupList)
+                profilesMap.clear()
+                profilesMap.putAll(newProfilesMap)
+                items.clear()
+                items.addAll(newItems)
                 notifyDataSetChanged()
             }
+        }
 
-            fun move(from: Int, to: Int) {
-                val first = getItemAt(from)
-                var previousOrder = first.userOrder
-                val (step, range) = if (from < to) Pair(1, from until to) else Pair(
-                    -1, to + 1 downTo from
-                )
-                for (i in range) {
-                    val next = getItemAt(i + step)
-                    val order = next.userOrder
-                    next.userOrder = previousOrder
-                    previousOrder = order
-                    configurationIdList[i] = next.id
-                    updated.add(next)
-                }
-                first.userOrder = previousOrder
-                configurationIdList[to] = first.id
-                updated.add(first)
-                notifyItemMoved(from, to)
-            }
-
-            fun commitMove() = runOnDefaultDispatcher {
-                updated.forEach { SagerDatabase.proxyDao.updateProxy(it) }
-                updated.clear()
-            }
-
-            fun remove(pos: Int) {
-                if (pos < 0) return
-                configurationIdList.removeAt(pos)
-                notifyItemRemoved(pos)
-            }
-
-            override fun undo(actions: List<Pair<Int, ProxyEntity>>) {
-                for ((index, item) in actions) {
-                    configurationListView.post {
-                        configurationList[item.id] = item
-                        configurationIdList.add(index, item.id)
-                        notifyItemInserted(index)
+        private fun rebuild() {
+            val showAll = filterQuery.isNotEmpty() || forceExpanded
+            items.clear()
+            for (group in groupList) {
+                items.add(Item.GroupItem(group))
+                if (showAll || expanded.contains(group.id)) {
+                    val profiles = profilesMap[group.id] ?: continue
+                    if (filterQuery.isEmpty()) {
+                        for (p in profiles) items.add(Item.ProfileItem(p))
+                    } else {
+                        val lower = filterQuery
+                        for (p in profiles) {
+                            if (p.displayName().lowercase().contains(lower) ||
+                                p.displayType().lowercase().contains(lower) ||
+                                p.displayAddress().lowercase().contains(lower)
+                            ) {
+                                items.add(Item.ProfileItem(p))
+                            }
+                        }
                     }
                 }
             }
+            notifyDataSetChanged()
+        }
 
-            override fun commit(actions: List<Pair<Int, ProxyEntity>>) {
-                val profiles = actions.map { it.second }
+        fun filter(query: String) {
+            filterQuery = query.trim().lowercase()
+            rebuild()
+        }
+
+        fun expand(groupId: Long) {
+            expanded.add(groupId)
+            DataStore.selectedGroup = groupId
+            rebuild()
+        }
+
+        fun toggle(groupId: Long) {
+            if (forceExpanded) return
+            if (!expanded.remove(groupId)) {
+                expanded.add(groupId)
+            }
+            DataStore.selectedGroup = groupId
+            rebuild()
+        }
+
+        fun selectedProfileIndex(): Int {
+            val selected = selectedItem?.id ?: DataStore.selectedProxy
+            return items.indexOfFirst { it is Item.ProfileItem && it.profile.id == selected }
+        }
+
+        fun scrollToSelected() {
+            val index = selectedProfileIndex()
+            if (index != -1) {
+                val layoutManager = configurationListView.layoutManager as LinearLayoutManager
+                val first = layoutManager.findFirstVisibleItemPosition()
+                val last = layoutManager.findLastVisibleItemPosition()
+                if (index !in first..last) {
+                    configurationListView.scrollTo(index, true)
+                }
+            }
+        }
+
+        fun removeGroup(index: Int) {
+            items.removeAt(index)
+            notifyItemRemoved(index)
+        }
+
+        fun removeProfile(index: Int) {
+            items.removeAt(index)
+            notifyItemRemoved(index)
+        }
+
+        fun removeProfileAt(profileId: Long) {
+            val index = items.indexOfFirst { it is Item.ProfileItem && it.profile.id == profileId }
+            if (index == -1) return
+            items.removeAt(index)
+            notifyItemRemoved(index)
+        }
+
+        private val updatedGroups = HashSet<ProxyGroup>()
+
+        fun moveGroup(from: Int, to: Int) {
+            val fromGroup = (items[from] as? Item.GroupItem)?.group ?: return
+            val toGroup = (items[to] as? Item.GroupItem)?.group ?: return
+            val fromIndex = groupList.indexOf(fromGroup)
+            val toIndex = groupList.indexOf(toGroup)
+            if (fromIndex == -1 || toIndex == -1) return
+
+            var previousOrder = fromGroup.userOrder
+            val (step, range) = if (fromIndex < toIndex) Pair(1, fromIndex until toIndex) else Pair(
+                -1, toIndex + 1 downTo fromIndex
+            )
+            for (i in range) {
+                val next = groupList[i + step]
+                val order = next.userOrder
+                next.userOrder = previousOrder
+                previousOrder = order
+                groupList[i] = next
+                updatedGroups.add(next)
+            }
+            fromGroup.userOrder = previousOrder
+            groupList[toIndex] = fromGroup
+            updatedGroups.add(fromGroup)
+            rebuild()
+        }
+
+        fun commitMoveGroup() = runOnDefaultDispatcher {
+            updatedGroups.forEach { SagerDatabase.groupDao.updateGroup(it) }
+            updatedGroups.clear()
+        }
+
+        override fun undo(actions: List<Pair<Int, Any>>) {
+            runOnDefaultDispatcher {
+                reload()
+            }
+        }
+
+        override fun commit(actions: List<Pair<Int, Any>>) {
+            val groups = actions.filter { it.second is ProxyGroup }.map { it.second as ProxyGroup }
+            val profiles = actions.filter { it.second is ProxyEntity }.map { it.second as ProxyEntity }
+            if (groups.isNotEmpty()) {
+                runOnDefaultDispatcher {
+                    GroupManager.deleteGroup(groups)
+                    reload()
+                }
+            }
+            if (profiles.isNotEmpty()) {
                 runOnDefaultDispatcher {
                     for (entity in profiles) {
                         ProfileManager.deleteProfile(entity.groupId, entity.id)
                     }
+                    reload()
                 }
             }
-
-            override suspend fun onAdd(profile: ProxyEntity) {
-                if (profile.groupId != proxyGroup.id) return
-
-                configurationListView.post {
-                    if (::undoManager.isInitialized) {
-                        undoManager.flush()
-                    }
-                    val pos = itemCount
-                    configurationList[profile.id] = profile
-                    configurationIdList.add(profile.id)
-                    notifyItemInserted(pos)
-                }
-            }
-
-            override suspend fun onUpdated(profile: ProxyEntity, noTraffic: Boolean) {
-                if (profile.groupId != proxyGroup.id) return
-                val index = configurationIdList.indexOf(profile.id)
-                if (index < 0) return
-                configurationListView.post {
-                    if (::undoManager.isInitialized) {
-                        undoManager.flush()
-                    }
-                    configurationList[profile.id] = profile
-                    notifyItemChanged(index)
-                    //
-                    val oldProfile = configurationList[profile.id]
-                    if (noTraffic && oldProfile != null) {
-                        runOnDefaultDispatcher {
-                            onUpdated(
-                                TrafficData(
-                                    id = profile.id,
-                                    rx = oldProfile.rx,
-                                    tx = oldProfile.tx
-                                )
-                            )
-                        }
-                    }
-                }
-            }
-
-            override suspend fun onUpdated(data: TrafficData) {
-                try {
-                    val index = configurationIdList.indexOf(data.id)
-                    if (index != -1) {
-                        val holder = layoutManager.findViewByPosition(index)
-                            ?.let { configurationListView.getChildViewHolder(it) } as ConfigurationHolder?
-                        if (holder != null) {
-                            onMainDispatcher {
-                                holder.bind(holder.entity, data)
-                            }
-                        }
-                    }
-                } catch (e: Exception) {
-                    Logs.w(e)
-                }
-            }
-
-            override suspend fun onRemoved(groupId: Long, profileId: Long) {
-                if (groupId != proxyGroup.id) return
-                val index = configurationIdList.indexOf(profileId)
-                if (index < 0) return
-
-                configurationListView.post {
-                    configurationIdList.removeAt(index)
-                    configurationList.remove(profileId)
-                    notifyItemRemoved(index)
-                }
-            }
-
-            override suspend fun groupAdd(group: ProxyGroup) = Unit
-            override suspend fun groupRemoved(groupId: Long) = Unit
-
-            override suspend fun groupUpdated(group: ProxyGroup) {
-                if (group.id != proxyGroup.id) return
-                proxyGroup = group
-                reloadProfiles()
-            }
-
-            override suspend fun groupUpdated(groupId: Long) {
-                if (groupId != proxyGroup.id) return
-                proxyGroup = SagerDatabase.groupDao.getById(groupId)!!
-                reloadProfiles()
-            }
-
-            fun reloadProfiles() {
-                var newProfiles = SagerDatabase.proxyDao.getByGroup(proxyGroup.id)
-                when (proxyGroup.order) {
-                    GroupOrder.BY_NAME -> {
-                        newProfiles = newProfiles.sortedBy { it.displayName() }
-
-                    }
-
-                    GroupOrder.BY_DELAY -> {
-                        newProfiles =
-                            newProfiles.sortedBy { if (it.status == 1) it.ping else 114514 }
-                    }
-                }
-
-                configurationList.clear()
-                configurationList.putAll(newProfiles.associateBy { it.id })
-                val newProfileIds = newProfiles.map { it.id }
-
-                var selectedProfileIndex = -1
-
-                if (selected) {
-                    val selectedProxy = selectedItem?.id ?: DataStore.selectedProxy
-                    selectedProfileIndex = newProfileIds.indexOf(selectedProxy)
-                }
-
-                configurationListView.post {
-                    configurationIdList.clear()
-                    configurationIdList.addAll(newProfileIds)
-                    notifyDataSetChanged()
-
-                    if (selectedProfileIndex != -1) {
-                        configurationListView.scrollTo(selectedProfileIndex, true)
-                    } else if (newProfiles.isNotEmpty()) {
-                        configurationListView.scrollTo(0, true)
-                    }
-
-                }
-            }
-
         }
 
-        val profileAccess = Mutex()
-        val reloadAccess = Mutex()
+        override suspend fun onAdd(profile: ProxyEntity) {
+            reload()
+        }
 
-        inner class ConfigurationHolder(val view: View) : RecyclerView.ViewHolder(view),
-            PopupMenu.OnMenuItemClickListener {
-
-            lateinit var entity: ProxyEntity
-
-            val profileName: TextView = view.findViewById(R.id.profile_name)
-            val profileType: TextView = view.findViewById(R.id.profile_type)
-            val profileAddress: TextView = view.findViewById(R.id.profile_address)
-            val profileStatus: TextView = view.findViewById(R.id.profile_status)
-
-            val trafficText: TextView = view.findViewById(R.id.traffic_text)
-            val selectedView: LinearLayout = view.findViewById(R.id.selected_view)
-            val editButton: ImageView = view.findViewById(R.id.edit)
-            val shareLayout: LinearLayout = view.findViewById(R.id.share)
-            val shareLayer: LinearLayout = view.findViewById(R.id.share_layer)
-            val shareButton: ImageView = view.findViewById(R.id.shareIcon)
-            val removeButton: ImageView = view.findViewById(R.id.remove)
-
-            fun bind(proxyEntity: ProxyEntity, trafficData: TrafficData? = null) {
-                val pf = parentFragment as? ConfigurationFragment ?: return
-
-                entity = proxyEntity
-
-                if (select) {
-                    view.setOnClickListener {
-                        (requireActivity() as SelectCallback).returnProfile(proxyEntity.id)
-                    }
-                } else {
-                    view.setOnClickListener {
-                        runOnDefaultDispatcher {
-                            var update: Boolean
-                            var lastSelected: Long
-                            profileAccess.withLock {
-                                update = DataStore.selectedProxy != proxyEntity.id
-                                lastSelected = DataStore.selectedProxy
-                                DataStore.selectedProxy = proxyEntity.id
-                                onMainDispatcher {
-                                    selectedView.visibility = View.VISIBLE
-                                }
-                            }
-
-                            if (update) {
-                                ProfileManager.postUpdate(lastSelected)
-                                if (DataStore.serviceState.canStop && reloadAccess.tryLock()) {
-                                    SagerNet.reloadService()
-                                    reloadAccess.unlock()
-                                }
-                            } else if (SagerNet.isTv) {
-                                if (DataStore.serviceState.started) {
-                                    SagerNet.stopService()
-                                } else {
-                                    SagerNet.startService()
-                                }
-                            }
-                        }
-
-                    }
-                }
-
-                profileName.text = proxyEntity.displayName()
-                profileType.text = proxyEntity.displayType()
-                profileType.setTextColor(requireContext().getProtocolColor(proxyEntity.type))
-
-                var rx = proxyEntity.rx
-                var tx = proxyEntity.tx
-                if (trafficData != null) {
-                    // use new data
-                    tx = trafficData.tx
-                    rx = trafficData.rx
-                }
-
-                val showTraffic = rx + tx != 0L
-                trafficText.isVisible = showTraffic
-                if (showTraffic) {
-                    trafficText.text = view.context.getString(
-                        R.string.traffic,
-                        Formatter.formatFileSize(view.context, tx),
-                        Formatter.formatFileSize(view.context, rx)
-                    )
-                }
-
-                var address = proxyEntity.displayAddress()
-                if (showTraffic && address.length >= 30) {
-                    address = address.substring(0, 27) + "..."
-                }
-
-                if (proxyEntity.requireBean().name.isBlank() || !pf.alwaysShowAddress) {
-                    address = ""
-                }
-
-                profileAddress.text = address
-                (trafficText.parent as View).isGone =
-                    (!showTraffic || proxyEntity.status <= 0) && address.isBlank()
-
-                if (proxyEntity.status <= 0) {
-                    if (showTraffic) {
-                        profileStatus.text = trafficText.text
-                        profileStatus.setTextColor(requireContext().getColorAttr(android.R.attr.textColorSecondary))
-                        trafficText.text = ""
-                    } else {
-                        profileStatus.text = ""
-                    }
-                } else if (proxyEntity.status == 1) {
-                    profileStatus.text = getString(R.string.available, proxyEntity.ping)
-                    profileStatus.setTextColor(requireContext().getColour(R.color.material_green_500))
-                } else {
-                    profileStatus.setTextColor(requireContext().getColour(R.color.material_red_500))
-                    if (proxyEntity.status == 2) {
-                        profileStatus.text = proxyEntity.error
-                    }
-                }
-
-                if (proxyEntity.status == 3) {
-                    val err = proxyEntity.error ?: "<?>"
-                    val msg = Protocols.genFriendlyMsg(err)
-                    profileStatus.text = if (msg != err) msg else getString(R.string.unavailable)
-                    profileStatus.setOnClickListener {
-                        alert(err).tryToShow()
-                    }
-                } else {
-                    profileStatus.setOnClickListener(null)
-                }
-
-                editButton.setOnClickListener {
-                    it.context.startActivity(
-                        proxyEntity.settingIntent(
-                            it.context, proxyGroup.type == GroupType.SUBSCRIPTION
-                        )
-                    )
-                }
-
-                removeButton.setOnClickListener {
-                    adapter?.let {
-                        val index = it.configurationIdList.indexOf(proxyEntity.id)
-                        it.remove(index)
-                        undoManager.remove(index to proxyEntity)
-                    }
-                }
-
-                val selectOrChain = select || proxyEntity.type == ProxyEntity.TYPE_CHAIN
-                shareLayout.isGone = selectOrChain
-                editButton.isGone = select
-                removeButton.isGone = select
-
-                proxyEntity.nekoBean?.apply {
-                    shareLayout.isGone = true
-                }
-
-                runOnDefaultDispatcher {
-                    val selected = (selectedItem?.id ?: DataStore.selectedProxy) == proxyEntity.id
-                    val started =
-                        selected && DataStore.serviceState.started && DataStore.currentProfile == proxyEntity.id
-                    onMainDispatcher {
-                        editButton.isEnabled = !started
-                        removeButton.isEnabled = !started
-                        selectedView.visibility = if (selected) View.VISIBLE else View.INVISIBLE
-                    }
-
-                    fun showShare(anchor: View) {
-                        val popup = PopupMenu(requireContext(), anchor)
-                        popup.menuInflater.inflate(R.menu.profile_share_menu, popup.menu)
-
-                        when {
-                            !proxyEntity.haveStandardLink() -> {
-                                popup.menu.findItem(R.id.action_group_qr).subMenu?.removeItem(R.id.action_standard_qr)
-                                popup.menu.findItem(R.id.action_group_clipboard).subMenu?.removeItem(
-                                    R.id.action_standard_clipboard
-                                )
-                            }
-
-                            !proxyEntity.haveLink() -> {
-                                popup.menu.removeItem(R.id.action_group_qr)
-                                popup.menu.removeItem(R.id.action_group_clipboard)
-                            }
-                        }
-
-                        if (proxyEntity.nekoBean != null) {
-                            popup.menu.removeItem(R.id.action_group_configuration)
-                        }
-
-                        popup.setOnMenuItemClickListener(this@ConfigurationHolder)
-                        popup.show()
-                    }
-
-                    if (!(select || proxyEntity.type == ProxyEntity.TYPE_CHAIN)) {
-                        onMainDispatcher {
-                            shareLayer.setBackgroundColor(Color.TRANSPARENT)
-                            shareButton.setImageResource(R.drawable.ic_social_share)
-                            shareButton.setColorFilter(Color.GRAY)
-                            shareButton.isVisible = true
-
-                            shareLayout.setOnClickListener {
-                                showShare(it)
-                            }
-                        }
-                    }
-                }
-
+        override suspend fun onUpdated(data: TrafficData) {
+            val index = items.indexOfFirst { it is Item.ProfileItem && it.profile.id == data.id }
+            if (index == -1) return
+            val holder = configurationListView.findViewHolderForAdapterPosition(index)
+                as? ConfigurationHolder ?: return
+            onMainDispatcher {
+                holder.bind(holder.entity, data)
             }
+        }
 
-            var currentName = ""
-            fun showCode(link: String) {
-                QRCodeDialog(link, currentName).showAllowingStateLoss(parentFragmentManager)
+        override suspend fun onUpdated(profile: ProxyEntity, noTraffic: Boolean) {
+            val index = items.indexOfFirst { it is Item.ProfileItem && it.profile.id == profile.id }
+            if (index == -1) {
+                reload()
+                return
             }
-
-            fun export(link: String) {
-                val success = SagerNet.trySetPrimaryClip(link)
-                (activity as MainActivity).snackbar(if (success) R.string.action_export_msg else R.string.action_export_err)
-                    .show()
+            profilesMap[profile.groupId]?.let { list ->
+                val pIndex = list.indexOfFirst { it.id == profile.id }
+                if (pIndex != -1) list[pIndex] = profile
             }
-
-            override fun onMenuItemClick(item: MenuItem): Boolean {
-                try {
-                    currentName = entity.displayName()!!
-                    when (item.itemId) {
-                        R.id.action_standard_qr -> showCode(entity.toStdLink())
-                        R.id.action_standard_clipboard -> export(entity.toStdLink())
-                        R.id.action_universal_qr -> showCode(entity.requireBean().toUniversalLink())
-                        R.id.action_universal_clipboard -> export(
-                            entity.requireBean().toUniversalLink()
-                        )
-
-                        R.id.action_config_export_clipboard -> export(entity.exportConfig().first)
-                        R.id.action_config_export_file -> {
-                            val cfg = entity.exportConfig()
-                            DataStore.serverConfig = cfg.first
-                            startFilesForResult(
-                                (parentFragment as ConfigurationFragment).exportConfig, cfg.second
-                            )
-                        }
-                    }
-                } catch (e: Exception) {
-                    Logs.w(e)
-                    (activity as MainActivity).snackbar(e.readableMessage).show()
-                    return true
-                }
-                return true
+            configurationListView.post {
+                items[index] = Item.ProfileItem(profile)
+                notifyItemChanged(index)
             }
+        }
+
+        override suspend fun onRemoved(groupId: Long, profileId: Long) {
+            reload()
+        }
+
+        override suspend fun groupAdd(group: ProxyGroup) {
+            reload()
+        }
+
+        override suspend fun groupRemoved(groupId: Long) {
+            expanded.remove(groupId)
+            reload()
+        }
+
+        override suspend fun groupUpdated(group: ProxyGroup) {
+            reload()
+        }
+
+        override suspend fun groupUpdated(groupId: Long) {
+            reload()
         }
 
     }
+
+    inner class GroupHolder(binding: LayoutGroupItemBinding) :
+        RecyclerView.ViewHolder(binding.root),
+        PopupMenu.OnMenuItemClickListener {
+
+        lateinit var proxyGroup: ProxyGroup
+        val groupName = binding.groupName
+        val groupStatus = binding.groupStatus
+        val groupTraffic = binding.groupTraffic
+        val groupUser = binding.groupUser
+        val editButton = binding.edit
+        val optionsButton = binding.options
+        val updateButton = binding.groupUpdate
+        val subscriptionUpdateProgress = binding.subscriptionUpdateProgress
+
+        override fun onMenuItemClick(item: MenuItem): Boolean {
+
+            fun export(link: String) {
+                val success = SagerNet.trySetPrimaryClip(link)
+                (activity as MainActivity).snackbar(
+                    if (success) R.string.action_export_msg else R.string.action_export_err
+                ).show()
+            }
+
+            when (item.itemId) {
+                R.id.action_universal_qr -> {
+                    QRCodeDialog(
+                        proxyGroup.toUniversalLink(), proxyGroup.displayName()
+                    ).showAllowingStateLoss(parentFragmentManager)
+                }
+
+                R.id.action_universal_clipboard -> {
+                    export(proxyGroup.toUniversalLink())
+                }
+
+                R.id.action_export_clipboard -> {
+                    runOnDefaultDispatcher {
+                        val profiles = SagerDatabase.proxyDao.getByGroup(proxyGroup.id)
+                        val links = profiles.joinToString("\n") { it.toStdLink(compact = true) }
+                        onMainDispatcher {
+                            SagerNet.trySetPrimaryClip(links)
+                            snackbar(getString(R.string.copy_toast_msg)).show()
+                        }
+                    }
+                }
+
+                R.id.action_export_file -> {
+                    startFilesForResult(exportProfiles, "profiles_${proxyGroup.displayName()}.txt")
+                }
+
+                R.id.action_clear -> {
+                    MaterialAlertDialogBuilder(requireContext()).setTitle(R.string.confirm)
+                        .setMessage(R.string.clear_profiles_message)
+                        .setPositiveButton(R.string.yes) { _, _ ->
+                            runOnDefaultDispatcher {
+                                GroupManager.clearGroup(proxyGroup.id)
+                            }
+                        }
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .show()
+                }
+            }
+
+            return true
+        }
+
+        fun bind(group: ProxyGroup) {
+            proxyGroup = group
+
+            itemView.setOnClickListener {
+                adapter.toggle(group.id)
+            }
+
+            editButton.isGone = proxyGroup.ungrouped
+            updateButton.isVisible = proxyGroup.type == GroupType.SUBSCRIPTION
+            groupName.text = proxyGroup.displayName()
+
+            editButton.setOnClickListener {
+                startActivity(Intent(it.context, GroupSettingsActivity::class.java).apply {
+                    putExtra(GroupSettingsActivity.EXTRA_GROUP_ID, group.id)
+                })
+            }
+
+            updateButton.setOnClickListener {
+                GroupUpdater.startUpdate(proxyGroup, true)
+            }
+
+            optionsButton.setOnClickListener {
+                selectedGroup = proxyGroup
+
+                val popup = PopupMenu(requireContext(), it)
+                popup.menuInflater.inflate(R.menu.group_action_menu, popup.menu)
+
+                if (proxyGroup.type != GroupType.SUBSCRIPTION) {
+                    popup.menu.removeItem(R.id.action_share_subscription)
+                }
+                popup.setOnMenuItemClickListener(this)
+                popup.show()
+            }
+
+            if (proxyGroup.id in GroupUpdater.updating) {
+                (groupName.parent as LinearLayout).apply {
+                    setPadding(paddingLeft, dp2px(11), paddingRight, paddingBottom)
+                }
+
+                subscriptionUpdateProgress.isVisible = true
+
+                if (!GroupUpdater.progress.containsKey(proxyGroup.id)) {
+                    subscriptionUpdateProgress.isIndeterminate = true
+                } else {
+                    subscriptionUpdateProgress.isIndeterminate = false
+                    GroupUpdater.progress[proxyGroup.id]?.let {
+                        subscriptionUpdateProgress.max = it.max
+                        subscriptionUpdateProgress.progress = it.progress
+                    }
+                }
+
+                updateButton.isVisible = false
+                editButton.isGone = true
+            } else {
+                (groupName.parent as LinearLayout).apply {
+                    setPadding(paddingLeft, dp2px(15), paddingRight, paddingBottom)
+                }
+
+                subscriptionUpdateProgress.isVisible = false
+                updateButton.isVisible = proxyGroup.type == GroupType.SUBSCRIPTION
+                editButton.isGone = proxyGroup.ungrouped
+            }
+
+            val subscription = proxyGroup.subscription
+            if (subscription != null && subscription.bytesUsed > 0L) { // SIP008 & Open Online Config
+                groupTraffic.isVisible = true
+                groupTraffic.text = if (subscription.bytesRemaining > 0L) {
+                    app.getString(
+                        R.string.subscription_traffic, Formatter.formatFileSize(
+                            app, subscription.bytesUsed
+                        ), Formatter.formatFileSize(
+                            app, subscription.bytesRemaining
+                        )
+                    )
+                } else {
+                    app.getString(
+                        R.string.subscription_used, Formatter.formatFileSize(
+                            app, subscription.bytesUsed
+                        )
+                    )
+                }
+                groupStatus.setPadding(0)
+            } else if (subscription != null && !subscription.subscriptionUserinfo.isNullOrBlank()) { // Raw
+                var text = ""
+
+                fun get(regex: String): String? {
+                    return regex.toRegex().findAll(subscription.subscriptionUserinfo).mapNotNull {
+                        if (it.groupValues.size > 1) it.groupValues[1] else null
+                    }.firstOrNull()
+                }
+
+                try {
+                    var used: Long = 0
+                    get("upload=([0-9]+)")?.apply {
+                        used += toLong()
+                    }
+                    get("download=([0-9]+)")?.apply {
+                        used += toLong()
+                    }
+                    val total = get("total=([0-9]+)")?.toLong() ?: 0
+                    val remain = total - used
+                    if (used > 0 || total > 0) {
+                        text += if (remain > 0) {
+                            getString(
+                                R.string.subscription_traffic,
+                                used.toBytesString(),
+                                remain.toBytesString()
+                            )
+                        } else {
+                            getString(R.string.subscription_used, used.toBytesString())
+                        }
+                    }
+                    get("expire=([0-9]+)")?.apply {
+                        text += "\n"
+                        text += getString(
+                            R.string.subscription_expire,
+                            Util.timeStamp2Text(this.toLong() * 1000)
+                        )
+                    }
+                } catch (_: NumberFormatException) {
+                    // ignore
+                }
+
+                if (text.isNotEmpty()) {
+                    groupTraffic.isVisible = true
+                    groupTraffic.text = text
+                    groupStatus.setPadding(0)
+                }
+            } else {
+                groupTraffic.isVisible = false
+                groupStatus.setPadding(0, 0, 0, dp2px(4))
+            }
+
+            groupUser.text = subscription?.username ?: ""
+
+            runOnDefaultDispatcher {
+                val size = SagerDatabase.proxyDao.countByGroup(group.id)
+                onMainDispatcher {
+                    @Suppress("DEPRECATION") when (group.type) {
+                        GroupType.BASIC -> {
+                            if (size == 0L) {
+                                groupStatus.setText(R.string.group_status_empty)
+                            } else {
+                                groupStatus.text = getString(R.string.group_status_proxies, size)
+                            }
+                        }
+
+                        GroupType.SUBSCRIPTION -> {
+                            groupStatus.text = if (size == 0L) {
+                                getString(R.string.group_status_empty_subscription)
+                            } else {
+                                val date = Date(group.subscription!!.lastUpdated * 1000L)
+                                getString(
+                                    R.string.group_status_proxies_subscription,
+                                    size,
+                                    "${date.month + 1} - ${date.date}"
+                                )
+                            }
+
+                        }
+                    }
+                }
+
+            }
+
+        }
+    }
+
+    private lateinit var selectedGroup: ProxyGroup
+
+    private val exportProfiles =
+        registerForActivityResult(ActivityResultContracts.CreateDocument()) { data ->
+            if (data != null) {
+                runOnDefaultDispatcher {
+                    val profiles = SagerDatabase.proxyDao.getByGroup(selectedGroup.id)
+                    val links = profiles.joinToString("\n") { it.toStdLink(compact = true) }
+                    try {
+                        (requireActivity() as MainActivity).contentResolver.openOutputStream(
+                            data
+                        )!!.bufferedWriter().use {
+                            it.write(links)
+                        }
+                        onMainDispatcher {
+                            snackbar(getString(R.string.action_export_msg)).show()
+                        }
+                    } catch (e: Exception) {
+                        Logs.w(e)
+                        onMainDispatcher {
+                            snackbar(e.readableMessage).show()
+                        }
+                    }
+
+                }
+            }
+        }
+
+    inner class ConfigurationHolder(val view: View) : RecyclerView.ViewHolder(view),
+        PopupMenu.OnMenuItemClickListener {
+
+        lateinit var entity: ProxyEntity
+
+        val profileName: TextView = view.findViewById(R.id.profile_name)
+        val profileType: TextView = view.findViewById(R.id.profile_type)
+        val profileAddress: TextView = view.findViewById(R.id.profile_address)
+        val profileStatus: TextView = view.findViewById(R.id.profile_status)
+
+        val trafficText: TextView = view.findViewById(R.id.traffic_text)
+        val selectedView: LinearLayout = view.findViewById(R.id.selected_view)
+        val editButton: ImageView = view.findViewById(R.id.edit)
+        val shareLayout: LinearLayout = view.findViewById(R.id.share)
+        val shareLayer: LinearLayout = view.findViewById(R.id.share_layer)
+        val shareButton: ImageView = view.findViewById(R.id.shareIcon)
+        val removeButton: ImageView = view.findViewById(R.id.remove)
+
+        fun bind(proxyEntity: ProxyEntity, trafficData: TrafficData? = null) {
+            val pf = parentFragment as? ConfigurationFragment ?: return
+
+            entity = proxyEntity
+
+            if (select) {
+                view.setOnClickListener {
+                    (requireActivity() as SelectCallback).returnProfile(proxyEntity.id)
+                }
+            } else {
+                view.setOnClickListener {
+                    runOnDefaultDispatcher {
+                        var update: Boolean
+                        var lastSelected: Long
+                        profileAccess.withLock {
+                            update = DataStore.selectedProxy != proxyEntity.id
+                            lastSelected = DataStore.selectedProxy
+                            DataStore.selectedProxy = proxyEntity.id
+                            DataStore.selectedGroup = proxyEntity.groupId
+                            onMainDispatcher {
+                                selectedView.visibility = View.VISIBLE
+                            }
+                        }
+
+                        if (update) {
+                            ProfileManager.postUpdate(lastSelected)
+                            if (DataStore.serviceState.canStop && reloadAccess.tryLock()) {
+                                SagerNet.reloadService()
+                                reloadAccess.unlock()
+                            }
+                        } else if (SagerNet.isTv) {
+                            if (DataStore.serviceState.started) {
+                                SagerNet.stopService()
+                            } else {
+                                SagerNet.startService()
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            profileName.text = proxyEntity.displayName()
+            profileType.text = proxyEntity.displayType()
+            profileType.setTextColor(requireContext().getProtocolColor(proxyEntity.type))
+
+            var rx = proxyEntity.rx
+            var tx = proxyEntity.tx
+            if (trafficData != null) {
+                // use new data
+                tx = trafficData.tx
+                rx = trafficData.rx
+            }
+
+            val showTraffic = rx + tx != 0L
+            trafficText.isVisible = showTraffic
+            if (showTraffic) {
+                trafficText.text = view.context.getString(
+                    R.string.traffic,
+                    Formatter.formatFileSize(view.context, tx),
+                    Formatter.formatFileSize(view.context, rx)
+                )
+            }
+
+            var address = proxyEntity.displayAddress()
+            if (showTraffic && address.length >= 30) {
+                address = address.substring(0, 27) + "..."
+            }
+
+            if (proxyEntity.requireBean().name.isBlank() || !pf.alwaysShowAddress) {
+                address = ""
+            }
+
+            profileAddress.text = address
+            (trafficText.parent as View).isGone =
+                (!showTraffic || proxyEntity.status <= 0) && address.isBlank()
+
+            if (proxyEntity.status <= 0) {
+                if (showTraffic) {
+                    profileStatus.text = trafficText.text
+                    profileStatus.setTextColor(
+                        requireContext().getColorAttr(android.R.attr.textColorSecondary)
+                    )
+                    trafficText.text = ""
+                } else {
+                    profileStatus.text = ""
+                }
+            } else if (proxyEntity.status == 1) {
+                profileStatus.text = getString(R.string.available, proxyEntity.ping)
+                profileStatus.setTextColor(requireContext().getColour(R.color.material_green_500))
+            } else {
+                profileStatus.setTextColor(requireContext().getColour(R.color.material_red_500))
+                if (proxyEntity.status == 2) {
+                    profileStatus.text = proxyEntity.error
+                }
+            }
+
+            if (proxyEntity.status == 3) {
+                val err = proxyEntity.error ?: "<?>"
+                val msg = Protocols.genFriendlyMsg(err)
+                profileStatus.text = if (msg != err) msg else getString(R.string.unavailable)
+                profileStatus.setOnClickListener {
+                    alert(err).tryToShow()
+                }
+            } else {
+                profileStatus.setOnClickListener(null)
+            }
+
+            editButton.setOnClickListener {
+                it.context.startActivity(
+                    proxyEntity.settingIntent(
+                        it.context, proxyGroupType() == GroupType.SUBSCRIPTION
+                    )
+                )
+            }
+            removeButton.setOnClickListener {
+                val index = adapter.items.indexOfFirst { item ->
+                    item is Item.ProfileItem && item.profile.id == proxyEntity.id
+                }
+                if (index == -1) return@setOnClickListener
+                adapter.removeProfile(index)
+                undoManager.remove(index to proxyEntity)
+            }
+
+            val selectOrChain = select || proxyEntity.type == ProxyEntity.TYPE_CHAIN
+            shareLayout.isGone = selectOrChain
+            editButton.isGone = select
+            removeButton.isGone = select
+
+            proxyEntity.nekoBean?.apply {
+                shareLayout.isGone = true
+            }
+
+            runOnDefaultDispatcher {
+                val selected = (selectedItem?.id ?: DataStore.selectedProxy) == proxyEntity.id
+                val started =
+                    selected && DataStore.serviceState.started && DataStore.currentProfile == proxyEntity.id
+                onMainDispatcher {
+                    editButton.isEnabled = !started
+                    removeButton.isEnabled = !started
+                    selectedView.visibility = if (selected) View.VISIBLE else View.INVISIBLE
+                }
+
+                fun showShare(anchor: View) {
+                    val popup = PopupMenu(requireContext(), anchor)
+                    popup.menuInflater.inflate(R.menu.profile_share_menu, popup.menu)
+
+                    when {
+                        !proxyEntity.haveStandardLink() -> {
+                            popup.menu.findItem(R.id.action_group_qr).subMenu?.removeItem(R.id.action_standard_qr)
+                            popup.menu.findItem(R.id.action_group_clipboard).subMenu?.removeItem(
+                                R.id.action_standard_clipboard
+                            )
+                        }
+
+                        !proxyEntity.haveLink() -> {
+                            popup.menu.removeItem(R.id.action_group_qr)
+                            popup.menu.removeItem(R.id.action_group_clipboard)
+                        }
+                    }
+
+                    if (proxyEntity.nekoBean != null) {
+                        popup.menu.removeItem(R.id.action_group_configuration)
+                    }
+
+                    popup.setOnMenuItemClickListener(this@ConfigurationHolder)
+                    popup.show()
+                }
+
+                if (!(select || proxyEntity.type == ProxyEntity.TYPE_CHAIN)) {
+                    onMainDispatcher {
+                        shareLayer.setBackgroundColor(Color.TRANSPARENT)
+                        shareButton.setImageResource(R.drawable.ic_social_share)
+                        shareButton.setColorFilter(Color.GRAY)
+                        shareButton.isVisible = true
+
+                        shareLayout.setOnClickListener {
+                            showShare(it)
+                        }
+                    }
+                }
+            }
+
+        }
+
+        fun proxyGroupType(): Int {
+            return SagerDatabase.groupDao.getById(entity.groupId)?.type ?: GroupType.BASIC
+        }
+
+        var currentName = ""
+        fun showCode(link: String) {
+            QRCodeDialog(link, currentName).showAllowingStateLoss(parentFragmentManager)
+        }
+
+        fun export(link: String) {
+            val success = SagerNet.trySetPrimaryClip(link)
+            (activity as MainActivity).snackbar(if (success) R.string.action_export_msg else R.string.action_export_err)
+                .show()
+        }
+
+        override fun onMenuItemClick(item: MenuItem): Boolean {
+            try {
+                currentName = entity.displayName()!!
+                when (item.itemId) {
+                    R.id.action_standard_qr -> showCode(entity.toStdLink())
+                    R.id.action_standard_clipboard -> export(entity.toStdLink())
+                    R.id.action_universal_qr -> showCode(entity.requireBean().toUniversalLink())
+                    R.id.action_universal_clipboard -> export(
+                        entity.requireBean().toUniversalLink()
+                    )
+
+                    R.id.action_config_export_clipboard -> export(entity.exportConfig().first)
+                    R.id.action_config_export_file -> {
+                        val cfg = entity.exportConfig()
+                        DataStore.serverConfig = cfg.first
+                        startFilesForResult(
+                            (parentFragment as ConfigurationFragment).exportConfig, cfg.second
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Logs.w(e)
+                (activity as MainActivity).snackbar(e.readableMessage).show()
+                return true
+            }
+            return true
+        }
+    }
+
+    val profileAccess = Mutex()
+    val reloadAccess = Mutex()
 
     private val exportConfig =
         registerForActivityResult(ActivityResultContracts.CreateDocument()) { data ->

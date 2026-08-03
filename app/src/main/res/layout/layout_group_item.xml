@@ -6,6 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="4dp"
+    android:clickable="true"
+    android:focusable="true"
     app:cardElevation="2dp">
 
     <LinearLayout
@@ -68,6 +70,17 @@
                 app:srcCompat="@drawable/ic_image_edit" />
 
             <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/group_update"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/group_update"
+                android:focusable="true"
+                android:padding="12dp"
+                app:srcCompat="@drawable/ic_baseline_refresh_24" />
+
+            <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/options"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -117,14 +130,6 @@
 
             </LinearLayout>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/group_update"
-                style="?attr/borderlessButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:text="@string/group_update"
-                android:textColor="?accentOrTextSecondary" />
         </LinearLayout>
 
     </LinearLayout>

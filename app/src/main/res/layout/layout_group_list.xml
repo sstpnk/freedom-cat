@@ -12,25 +12,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/group_tab"
+    <com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
+        android:id="@+id/configuration_list"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?colorPrimary"
-        android:elevation="4dp"
-        android:visibility="gone"
-        app:tabIndicatorColor="?tabIndicatorColor"
-        app:tabIndicatorFullWidth="false"
-        app:tabMode="scrollable"
-        app:tabPaddingStart="16dp"
-        app:tabRippleColor="?tabRippleColor"
-        app:tabSelectedTextColor="?tabSelectedTextColor"
-        app:tabTextColor="?tabTextColor"
-        app:tabUnboundedRipple="false" />
-
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/group_pager"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:paddingLeft="4dp"
+        android:paddingTop="4dp"
+        android:paddingRight="4dp"
+        android:paddingBottom="48dp"
+        android:scrollbarSize="0dp"
+        app:fastScrollAutoHide="true"
+        app:fastScrollThumbColor="?colorPrimary"
+        app:fastScrollThumbInactiveColor="?colorPrimary"
+        tools:listitem="@layout/layout_profile" />
 
 </LinearLayout>

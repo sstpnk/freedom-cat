@@ -343,7 +343,7 @@ abstract class ProfileSettingsActivity<T : AbstractBean>(
                                 edit.isVisible = false
                                 options.isVisible = false
                                 groupName.text = group.displayName()
-                                groupUpdate.text = getString(R.string.move)
+                                groupUpdate.contentDescription = getString(R.string.move)
                                 groupUpdate.setOnClickListener {
                                     runOnDefaultDispatcher {
                                         val oldGroupId = ent.groupId

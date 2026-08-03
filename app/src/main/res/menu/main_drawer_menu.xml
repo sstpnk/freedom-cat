@@ -8,11 +8,6 @@
             android:title="@string/menu_configuration" />
 
         <item
-            android:id="@+id/nav_group"
-            android:icon="@drawable/ic_baseline_view_list_24"
-            android:title="@string/menu_group" />
-
-        <item
             android:id="@+id/nav_route"
             android:icon="@drawable/ic_maps_directions"
             android:title="@string/menu_route" />
@@ -35,26 +30,9 @@
             android:icon="@drawable/ic_baseline_transform_24"
             android:title="@string/menu_dashboard" />
         <item
-            android:id="@+id/nav_tools"
+            android:id="@+id/nav_backup"
             android:icon="@drawable/baseline_construction_24"
-            android:title="@string/menu_tools" />
-    </group>
-
-    <group
-        android:id="@+id/about"
-        android:checkableBehavior="single">
-        <item
-            android:id="@+id/nav_tuiguang"
-            android:icon="@drawable/ic_social_share"
-            android:title="@string/ads" />
-        <item
-            android:id="@+id/nav_faq"
-            android:icon="@drawable/ic_device_data_usage"
-            android:title="@string/document" />
-        <item
-            android:id="@+id/nav_about"
-            android:icon="@drawable/ic_baseline_info_24"
-            android:title="@string/menu_about" />
+            android:title="@string/backup" />
     </group>
 
 </menu>

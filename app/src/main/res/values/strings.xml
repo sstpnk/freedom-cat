@@ -12,9 +12,7 @@
     <string name="logcat">Export debug information</string>
     <string name="menu_configuration">Configuration</string>
     <string name="menu_group">Group</string>
-    <string name="menu_about">About</string>
     <string name="theme">Theme</string>
-    <string name="document">Document</string>
     <string name="group_default">Ungrouped</string>
     <string name="quick_toggle">Toggle</string>
     <string name="quick_enable">Enable</string>
@@ -148,9 +146,6 @@
     <string name="route_profile">Select Profile…</string>
     <string name="empty_route">Empty Route</string>
     <string name="empty_route_notice">Set some rules before saving</string>
-    <string name="route_bypass_domain">Domain rule for %s</string>
-    <string name="route_play_store">Play store rule for %s</string>
-    <string name="route_bypass_ip">IP rule for %s</string>
     <string name="route_reset">Reset</string>
     <string name="route_manage_assets">Manage Route Assets</string>
     <string name="route_assets">Assets</string>
@@ -445,7 +440,6 @@
     <string name="ssh_private_key">Private Key</string>
     <string name="ssh_private_key_passphrase">Private Key Passphrase</string>
     <string name="translate_platform">Translate Platform</string>
-    <string name="menu_tools">Tools</string>
     <string name="menu_log">Logs</string>
     <string name="clear_logcat">Clear Logcat</string>
     <string name="wireguard_local_address">Local Address</string>
@@ -526,11 +520,11 @@
     <string name="is_outbound_only">The JSON set is outbound</string>
     <string name="save">Save</string>
     <string name="set_panel_url">Set panel URL</string>
+    <string name="mal_close">Close</string>
     <string name="enable_clash_api">Enable Clash API</string>
     <string name="log_level">Log Level</string>
     <string name="enable_clash_api_summary">Provide clash api and yacd dashboard at 127.0.0.1:9090</string>
     <string name="xtls_flow">Flow (VLESS Sub-protocol)</string>
-    <string name="ads">Ads</string>
     <string name="bypass_lan_in_core">Bypass LAN in Core</string>
     <string name="need_restart">Restart APP to apply changes</string>
     <string name="use_selector">Use selector</string>
