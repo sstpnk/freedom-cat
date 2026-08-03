@@ -1,4 +1,6 @@
 name: Release Build
+permissions:
+  contents: write
 on:
   workflow_dispatch:
     inputs:
@@ -133,7 +135,7 @@ jobs:
           export LOCAL_PROPERTIES="${{ secrets.LOCAL_PROPERTIES }}"
           ./run init action gradle
           ./gradlew bundlePlayRelease
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: AAB
           path: app/build/outputs/bundle/playRelease/app-play-release.aab
