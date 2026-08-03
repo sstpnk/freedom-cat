@@ -50,4 +50,94 @@
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
+    <PreferenceCategory
+        app:key="amneziaCategory"
+        app:title="AmneziaWG">
+        <SwitchPreference
+            app:icon="@drawable/ic_baseline_security_24"
+            app:key="enableAmnezia"
+            app:summary="Use AmneziaWG protocol instead of WireGuard"
+            app:title="Enable AmneziaWG" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_speed_24"
+            app:key="jc"
+            app:title="Junk packet count"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_speed_24"
+            app:key="jmin"
+            app:title="Junk packet min size"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_speed_24"
+            app:key="jmax"
+            app:title="Junk packet max size"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_shutter_speed_24"
+            app:key="s1"
+            app:title="Init packet junk size"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_shutter_speed_24"
+            app:key="s2"
+            app:title="Response packet junk size"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_shutter_speed_24"
+            app:key="s3"
+            app:title="Cookie reply junk size"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_shutter_speed_24"
+            app:key="s4"
+            app:title="Transport packet junk size"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_texture_24"
+            app:key="h1"
+            app:title="Init packet magic header"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_texture_24"
+            app:key="h2"
+            app:title="Response packet magic header"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_texture_24"
+            app:key="h3"
+            app:title="Cookie reply magic header"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_texture_24"
+            app:key="h4"
+            app:title="Transport packet magic header"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_vpn_key_24"
+            app:key="i1"
+            app:title="Additional header 1"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_vpn_key_24"
+            app:key="i2"
+            app:title="Additional header 2"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_vpn_key_24"
+            app:key="i3"
+            app:title="Additional header 3"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_vpn_key_24"
+            app:key="i4"
+            app:title="Additional header 4"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_vpn_key_24"
+            app:key="i5"
+            app:title="Additional header 5"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
 </PreferenceScreen>

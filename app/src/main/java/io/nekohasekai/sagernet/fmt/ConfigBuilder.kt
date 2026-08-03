@@ -22,6 +22,7 @@ import io.nekohasekai.sagernet.fmt.tuic.buildSingBoxOutboundTuicBean
 import io.nekohasekai.sagernet.fmt.v2ray.StandardV2RayBean
 import io.nekohasekai.sagernet.fmt.v2ray.buildSingBoxOutboundStandardV2RayBean
 import io.nekohasekai.sagernet.fmt.wireguard.WireGuardBean
+import io.nekohasekai.sagernet.fmt.wireguard.buildSingBoxEndpointAwgBean
 import io.nekohasekai.sagernet.fmt.wireguard.buildSingBoxOutboundWireguardBean
 import io.nekohasekai.sagernet.ktx.isIpAddress
 import io.nekohasekai.sagernet.ktx.mkPort
@@ -236,6 +237,7 @@ fun buildConfig(
         }
 
         outbounds = mutableListOf()
+        endpoints = mutableListOf()
 
         // init routing object
         route = RouteOptions().apply {
@@ -258,6 +260,7 @@ fun buildConfig(
             lateinit var pastOutbound: SingBoxOption
             lateinit var pastInboundTag: String
             var pastEntity: ProxyEntity? = null
+            var isEndpoint = false
             val externalChainMap = LinkedHashMap<Int, ProxyEntity>()
             externalIndexMap.add(IndexEntity(externalChainMap))
             val chainOutbounds = ArrayList<SingBoxOption>()
@@ -357,7 +360,12 @@ fun buildConfig(
                             buildSingBoxOutboundShadowsocksBean(bean)
 
                         is WireGuardBean ->
-                            buildSingBoxOutboundWireguardBean(bean)
+                            if (bean.enableAmnezia == true) {
+                                isEndpoint = true
+                                buildSingBoxEndpointAwgBean(bean)
+                            } else {
+                                buildSingBoxOutboundWireguardBean(bean)
+                            }
 
                         is SSHBean ->
                             buildSingBoxOutboundSSHBean(bean)
@@ -366,6 +374,11 @@ fun buildConfig(
                             buildSingBoxOutboundAnyTLSBean(bean)
 
                         else -> throw IllegalStateException("can't reach")
+                    }
+
+                    // AmneziaWG is an endpoint, chains are not supported
+                    if (isEndpoint && profileList.size > 1) {
+                        throw IllegalStateException("AmneziaWG is not supported in a chain")
                     }
 
                     // internal mux
@@ -449,8 +462,12 @@ fun buildConfig(
                     }
                 }
 
-                outbounds.add(currentOutbound)
-                chainOutbounds.add(currentOutbound)
+                if (isEndpoint) {
+                    endpoints.add(currentOutbound as SingBoxOptions.Endpoint_AwgOptions)
+                } else {
+                    outbounds.add(currentOutbound)
+                    chainOutbounds.add(currentOutbound)
+                }
                 pastOutbound = currentOutbound
                 pastEntity = proxyEntity
             }

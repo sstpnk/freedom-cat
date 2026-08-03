@@ -134,6 +134,9 @@
                 <data android:scheme="naive+https" />
                 <data android:scheme="naive+quic" />
                 <data android:scheme="hysteria" />
+                <data android:scheme="wg" />
+                <data android:scheme="awg" />
+                <data android:scheme="amneziawg" />
 
             </intent-filter>
 
