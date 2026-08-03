@@ -85,3 +85,5 @@ require (
 replace github.com/matsuridayo/libneko => ../../libneko
 
 replace github.com/sagernet/sing-box => ../../sing-box
+
+exclude google.golang.org/genproto v0.0.0-20230110181048-76db0878b65f
