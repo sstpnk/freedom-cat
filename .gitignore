@@ -20,3 +20,7 @@ jniLibs/
 # local stubs for libcore.aar (built on CI)
 app/src/main/java/go/
 app/src/main/java/libcore/
+
+# signing keystore (local only, uploaded to GitHub Secrets as RELEASE_KEYSTORE)
+release.keystore
+keystore-credentials.txt
