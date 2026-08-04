@@ -31,9 +31,7 @@ import org.json.JSONObject
 import java.io.File
 import java.util.*
 
-class BackupFragment : NamedFragment(R.layout.layout_backup) {
-
-    override fun name0() = app.getString(R.string.backup)
+class BackupFragment : ToolbarFragment(R.layout.layout_backup) {
 
     var content = ""
     private val exportSettings =
@@ -61,6 +59,8 @@ class BackupFragment : NamedFragment(R.layout.layout_backup) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        toolbar.setTitle(R.string.backup)
 
         val binding = LayoutBackupBinding.bind(view)
 

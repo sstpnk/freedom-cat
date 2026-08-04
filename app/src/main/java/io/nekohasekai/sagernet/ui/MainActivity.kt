@@ -129,7 +129,22 @@ class MainActivity : ThemedActivity(),
     fun refreshNavMenu(clashApi: Boolean) {
         if (::navigation.isInitialized) {
             navigation.menu.findItem(R.id.nav_traffic)?.isVisible = clashApi
+            navigation.menu.findItem(R.id.nav_app_proxy)?.title = appProxyMenuTitle()
         }
+    }
+
+    private fun appProxyMenuTitle(): String {
+        val mode = when {
+            !DataStore.proxyApps -> R.string.vpn_mode_full
+            !DataStore.bypass -> R.string.vpn_mode_proxy
+            else -> R.string.vpn_mode_bypass
+        }
+        return getString(R.string.vpn_mode) + " - " + getString(mode)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        refreshNavMenu(DataStore.enableClashAPI)
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -304,6 +319,11 @@ class MainActivity : ThemedActivity(),
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.nav_app_proxy) {
+            binding.drawerLayout.closeDrawers()
+            startActivity(Intent(this, AppManagerActivity::class.java))
+            return true
+        }
         if (item.isChecked) binding.drawerLayout.closeDrawers() else {
             return displayFragmentWithId(item.itemId)
         }

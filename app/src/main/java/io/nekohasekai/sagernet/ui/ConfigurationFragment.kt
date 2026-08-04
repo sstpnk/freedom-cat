@@ -1302,6 +1302,7 @@ class ConfigurationFragment @JvmOverloads constructor(
         val groupStatus = binding.groupStatus
         val groupTraffic = binding.groupTraffic
         val groupUser = binding.groupUser
+        val groupExpand = binding.groupExpand
         val editButton = binding.edit
         val optionsButton = binding.options
         val updateButton = binding.groupUpdate
@@ -1364,6 +1365,9 @@ class ConfigurationFragment @JvmOverloads constructor(
             itemView.setOnClickListener {
                 adapter.toggle(group.id)
             }
+
+            groupExpand.animate().rotation(if (adapter.expanded.contains(group.id)) 0f else -90f)
+                .setDuration(200).start()
 
             editButton.isGone = proxyGroup.ungrouped
             updateButton.isVisible = proxyGroup.type == GroupType.SUBSCRIPTION
@@ -1573,7 +1577,7 @@ class ConfigurationFragment @JvmOverloads constructor(
         val removeButton: ImageView = view.findViewById(R.id.remove)
 
         fun bind(proxyEntity: ProxyEntity, trafficData: TrafficData? = null) {
-            val pf = parentFragment as? ConfigurationFragment ?: return
+            val pf = this@ConfigurationFragment
 
             entity = proxyEntity
 
@@ -1788,7 +1792,7 @@ class ConfigurationFragment @JvmOverloads constructor(
                         val cfg = entity.exportConfig()
                         DataStore.serverConfig = cfg.first
                         startFilesForResult(
-                            (parentFragment as ConfigurationFragment).exportConfig, cfg.second
+                            this@ConfigurationFragment.exportConfig, cfg.second
                         )
                     }
                 }

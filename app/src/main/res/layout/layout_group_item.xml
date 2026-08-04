@@ -39,6 +39,13 @@
                 android:paddingEnd="8dp"
                 android:paddingBottom="12dp">
 
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/group_expand"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="4dp"
+                    app:srcCompat="@drawable/ic_baseline_expand_more_24" />
+
                 <TextView
                     android:id="@+id/group_name"
                     android:layout_width="wrap_content"

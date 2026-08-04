@@ -169,6 +169,10 @@
     <string name="tcp_keep_alive_interval">TCP keep active packet delivery interval</string>
     <string name="proxied_apps">Apps VPN mode</string>
     <string name="proxied_apps_summary">Configure VPN mode for selected apps</string>
+    <string name="vpn_mode">VPN Mode</string>
+    <string name="vpn_mode_full">full</string>
+    <string name="vpn_mode_proxy">proxy</string>
+    <string name="vpn_mode_bypass">bypass</string>
     <string name="on">On</string>
     <string name="off">Off</string>
     <string name="search_apps">Search…</string>

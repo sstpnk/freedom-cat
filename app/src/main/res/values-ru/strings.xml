@@ -296,7 +296,7 @@
 <string name="not_set">Не указано</string>
 <string name="obfs">Obfs</string>
 <string name="obfs_param">Параметры Obfs</string>
-<string name="off">Выключенный</string>
+<string name="off">Выкл</string>
 <string name="on">Включено</string>
 <string name="only">Исключительно</string>
 <string name="ooc_warning">Предупреждение</string>
@@ -335,6 +335,10 @@
 <string name="protocol_version">Версия протокола</string>
 <string name="proxied_apps">Режим VPN для приложений</string>
 <string name="proxied_apps_summary">Настроить режим VPN для выбранных приложений</string>
+<string name="vpn_mode">Режим VPN</string>
+<string name="vpn_mode_full">полный</string>
+<string name="vpn_mode_proxy">прокси</string>
+<string name="vpn_mode_bypass">обход</string>
 <string name="proxy_cat">Настройки сервера</string>
 <string name="proxy_chain">Прокси-цепочка</string>
 <string name="quick_toggle">Переключить</string>

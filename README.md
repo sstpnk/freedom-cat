@@ -1,101 +1,271 @@
-# NekoBox for Android
+# FreedomCat
 
 [![API](https://img.shields.io/badge/API-21%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=21)
-[![Releases](https://img.shields.io/github/v/release/MatsuriDayo/NekoBoxForAndroid)](https://github.com/MatsuriDayo/NekoBoxForAndroid/releases)
+[![Releases](https://img.shields.io/github/v/release/sstpnk/freedom-cat)](https://github.com/sstpnk/freedom-cat/releases)
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-orange.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-sing-box / universal proxy toolchain for Android.
+**[🇷🇺 Русский](#русский)** | **[🇬🇧 English](#english)**
 
-一款使用 sing-box 的 Android 通用代理软件.
+---
 
-## 下载 / Downloads
+## Русский
 
-[![GitHub All Releases](https://img.shields.io/github/downloads/Matsuridayo/NekoBoxForAndroid/total?label=downloads-total&logo=github&style=flat-square)](https://github.com/Matsuridayo/NekoBoxForAndroid/releases)
+### Что это такое
 
-[GitHub Releases 下载](https://github.com/Matsuridayo/NekoBoxForAndroid/releases)
+**FreedomCat** — это форк [NekoBox for Android](https://github.com/MatsuriDayo/NekoBoxForAndroid)
+(в свою очередь форка [SagerNet](https://github.com/SagerNet/SagerNet)) — универсального
+прокси-клиента для Android на базе [sing-box](https://github.com/SagerNet/sing-box).
 
-**Google Play 版本自 2024 年 5 月起已被第三方控制，为非开源版本，请不要下载。**
+Мы взяли проверенную годами кодовую базу NB4A и сделали из неё собственный продукт:
 
-**The Google Play version has been controlled by a third party since May 2024 and is a non-open
-source version. Please do not download it.**
+- упростили и переработали интерфейс (меню, экран конфигураций, раздел бэкапа);
+- настроили автоматическую сборку и **подписанные** релизы через GitHub Actions;
+- добавили поддержку нового протокола **AmneziaWG** (см. ниже);
+- удалили всё лишнее: лишние переводы, неиспользуемые разделы и рекламные интеграции.
 
-## 更新日志 & Telegram 发布频道 / Changelog & Telegram Channel
+> ⚠️ **Важно:** сборки в этом репозитории — это наши собственные подписанные сборки.
+> Они **не** связаны с версиями из Google Play и не зависят от сторонних лиц.
 
-https://t.me/Matsuridayo
+### Возможности
 
-## 项目主页 & 文档 / Homepage & Documents
+- Работа через VPN-сервис (sing-box) с системным TUN;
+- Управление конфигурациями: группы-карточки со свёртываемыми списками профилей;
+- Импорт по ссылке/из буфера обмена/из файла/через QR-код;
+- Поддержка подписок (subscription) с обновлением по расписанию;
+- Маршрутизация: собственные правила (маршруты), блокировка рекламы, блокировка QUIC;
+- **Режим VPN для приложений**: полный / прокси / обход — выбирайте, какие приложения
+  идут через прокси;
+- Статистика трафика, лог, тест задержек;
+- Быстрое переключение сервера и группы.
 
-https://matsuridayo.github.io
+### Поддержка протокола AmneziaWG
 
-## 支持的代理协议 / Supported Proxy Protocols
+**AmneziaWG** — это протокол на основе WireGuard с дополнительным шифрованием трафика,
+который скрывает характер соединения от DPI и позволяет обходить глубокую фильтрацию
+трафика. Протокол разработан проектом [AmneziaVPN](https://github.com/amnezia-vpn)
+и совместим с серверами AmneziaVPN.
 
-* SOCKS (4/4a/5)
-* HTTP(S)
-* SSH
-* Shadowsocks
-* VMess
-* Trojan
-* VLESS
-* AnyTLS
-* ShadowTLS
-* TUIC
-* Hysteria 1/2
-* WireGuard
-* Trojan-Go (trojan-go-plugin)
-* NaïveProxy (naive-plugin)
-* Mieru (mieru-plugin)
+В этом форке поддержка AmneziaWG реализована следующим образом:
 
-请到[这里](https://matsuridayo.github.io/nb4a-plugin/)下载插件以获得完整的代理支持.
+1. **sing-box**: в наш форк
+   [sstpnk/sing-box](https://github.com/sstpnk/sing-box) (ветка `awg`) портирован
+   эндпоинт AmneziaWG (`awg`) поверх [amneziawg-go](https://github.com/amnezia-vpn/amneziawg-go);
+2. **libcore (gomobile)**: обновлённая библиотека подключает порт sing-box с AmneziaWG;
+3. **Интерфейс**: тип профиля AmneziaWG доступен в списке протоколов при создании
+   конфигурации вручную.
 
-Please visit [here](https://matsuridayo.github.io/nb4a-plugin/) to download plugins for full proxy
-supports.
+Благодарим за наработки сообщество AmneziaVPN — без их протокола эта возможность
+была бы невозможна.
 
-## 支持的订阅格式 / Supported Subscription Format
+### Список поддерживаемых протоколов
 
-* 一些广泛使用的格式 (如 Shadowsocks, ClashMeta 和 v2rayN)
-* sing-box 出站
+- SOCKS (4/4a/5)
+- HTTP(S)
+- SSH
+- Shadowsocks
+- VMess
+- Trojan
+- VLESS
+- AnyTLS
+- ShadowTLS
+- TUIC
+- Hysteria 1/2
+- WireGuard
+- **AmneziaWG**
+- Trojan-Go (trojan-go-plugin)
+- NaïveProxy (naive-plugin)
+- Mieru (mieru-plugin)
 
-仅支持解析出站，即节点。分流规则等信息会被忽略。
+### Форматы подписок
 
-* Some widely used formats (like Shadowsocks, ClashMeta and v2rayN)
-* sing-box outbound
+- Распространённые форматы (Shadowsocks, ClashMeta, v2rayN и т.п.)
+- sing-box outbound
 
-Only resolving outbound, i.e. nodes, is supported. Information such as diversion rules are ignored.
+### Сборка из исходников
 
-## 捐助 / Donate
+Требуется: JDK 17+, Android SDK (platform 35), Android NDK.
 
-<details>
+```bash
+git clone --recurse-submodules https://github.com/sstpnk/freedom-cat.git
+cd freedom-cat
+./gradlew :app:assembleOssRelease
+```
 
-如果这个项目对您有帮助, 可以通过捐赠的方式帮助我们维持这个项目.
+Собранный APK появится в `app/build/outputs/apk/oss/release/`.
 
-捐赠满等额 50 USD 可以在「[捐赠榜](https://mtrdnt.pages.dev/donation_list)」显示头像, 如果您未被添加到这里,
-欢迎联系我们补充.
+Релизные сборки автоматически собираются и подписываются GitHub Actions
+(workflow `.github/workflows/release.yml`), для этого в репозитории настроены
+секреты `RELEASE_KEYSTORE` и `SIGNING_PROPERTIES`.
 
-Donations of 50 USD or more can display your avatar on
-the [Donation List](https://mtrdnt.pages.dev/donation_list). If you are not added here, please
-contact us to add it.
+### Лицензия
 
-USDT TRC20
+Проект распространяется под лицензией [GPL-3.0](LICENSE).
 
-`TRhnA7SXE5Sap5gSG3ijxRmdYFiD4KRhPs`
+### Благодарности
 
-XMR
+FreedomCat — это форк, поэтому в первую очередь мы благодарим авторов оригинальных
+проектов:
 
-`49bwESYQjoRL3xmvTcjZKHEKaiGywjLYVQJMUv79bXonGiyDCs8AzE3KiGW2ytTybBCpWJUvov8SjZZEGg66a4e59GXa6k5`
+**NekoBox for Android**
 
-</details>
+- [MatsuriDayo/NekoBoxForAndroid](https://github.com/MatsuriDayo/NekoBoxForAndroid)
 
-## Credits
+**SagerNet**
 
-Core:
+- [SagerNet/SagerNet](https://github.com/SagerNet/SagerNet) и лично
+  [nekohasekai](https://github.com/nekohasekai) — автор SagerNet / NB4A;
 
-- [SagerNet/sing-box](https://github.com/SagerNet/sing-box)
+**sing-box / ядро**
 
-Android GUI:
+- [SagerNet/sing-box](https://github.com/SagerNet/sing-box) — ядро, на котором всё работает;
+
+**gomobile / инструменты сборки**
+
+- [MatsuriDayo/gomobile](https://github.com/MatsuriDayo/gomobile) — сборка Go-ядра в AAR;
+
+**Протокол AmneziaWG**
+
+- [AmneziaVPN](https://github.com/amnezia-vpn) / [amneziawg-go](https://github.com/amnezia-vpn/amneziawg-go);
+
+**Веб-панель**
+
+- [Yacd-meta](https://github.com/MetaCubeX/Yacd-meta);
+
+**Прочие вдохновляющие проекты**
 
 - [shadowsocks/shadowsocks-android](https://github.com/shadowsocks/shadowsocks-android)
-- [SagerNet/SagerNet](https://github.com/SagerNet/SagerNet)
 
-Web Dashboard:
+Полный список контрибьюторов оригинальных проектов можно посмотреть в их репозиториях:
+[NekoBox for Android contributors](https://github.com/MatsuriDayo/NekoBoxForAndroid/graphs/contributors),
+[SagerNet contributors](https://github.com/SagerNet/SagerNet/graphs/contributors).
 
-- [Yacd-meta](https://github.com/MetaCubeX/Yacd-meta)
+---
+
+## English
+
+### What is this
+
+**FreedomCat** is a fork of [NekoBox for Android](https://github.com/MatsuriDayo/NekoBoxForAndroid)
+(which is itself a fork of [SagerNet](https://github.com/SagerNet/SagerNet)) — a universal
+proxy client for Android built on top of [sing-box](https://github.com/SagerNet/sing-box).
+
+We took the battle-tested NB4A codebase and turned it into our own product:
+
+- simplified and reworked the UI (menu, configuration screen, backup section);
+- set up automated builds with **signed** releases via GitHub Actions;
+- added support for the new **AmneziaWG** protocol (see below);
+- removed everything unnecessary: extra translations, unused sections and ad integrations.
+
+> ⚠️ **Important:** the builds in this repository are our own signed builds.
+> They are **not** related to the Google Play versions and do not depend on third parties.
+
+### Features
+
+- VPN service (sing-box) with system TUN;
+- Configuration management: group cards with collapsible profile lists;
+- Import by link / from clipboard / from file / via QR code;
+- Subscription support with scheduled updates;
+- Routing: custom rules (routes), ad blocking, QUIC blocking;
+- **Apps VPN mode**: full / proxy / bypass — choose which apps go through the proxy;
+- Traffic statistics, log, latency testing;
+- Fast server and group switching.
+
+### AmneziaWG protocol support
+
+**AmneziaWG** is a WireGuard-based protocol with additional traffic encryption that
+hides the connection signature from DPI and helps bypass deep traffic filtering.
+The protocol was created by the [AmneziaVPN](https://github.com/amnezia-vpn) project
+and is compatible with AmneziaVPN servers.
+
+In this fork, AmneziaWG support is implemented as follows:
+
+1. **sing-box**: our fork [sstpnk/sing-box](https://github.com/sstpnk/sing-box)
+   (branch `awg`) includes the AmneziaWG (`awg`) endpoint built on top of
+   [amneziawg-go](https://github.com/amnezia-vpn/amneziawg-go);
+2. **libcore (gomobile)**: the updated library links the sing-box port with AmneziaWG;
+3. **UI**: the AmneziaWG profile type is available in the protocol list when creating
+   a configuration manually.
+
+Thanks to the AmneziaVPN community for their work — without their protocol this
+feature would not exist.
+
+### Supported proxy protocols
+
+- SOCKS (4/4a/5)
+- HTTP(S)
+- SSH
+- Shadowsocks
+- VMess
+- Trojan
+- VLESS
+- AnyTLS
+- ShadowTLS
+- TUIC
+- Hysteria 1/2
+- WireGuard
+- **AmneziaWG**
+- Trojan-Go (trojan-go-plugin)
+- NaïveProxy (naive-plugin)
+- Mieru (mieru-plugin)
+
+### Supported subscription formats
+
+- Widely used formats (like Shadowsocks, ClashMeta and v2rayN)
+- sing-box outbound
+
+### Building from source
+
+Requirements: JDK 17+, Android SDK (platform 35), Android NDK.
+
+```bash
+git clone --recurse-submodules https://github.com/sstpnk/freedom-cat.git
+cd freedom-cat
+./gradlew :app:assembleOssRelease
+```
+
+The resulting APK will be in `app/build/outputs/apk/oss/release/`.
+
+Release builds are automatically built and signed by GitHub Actions
+(workflow `.github/workflows/release.yml`), using the `RELEASE_KEYSTORE` and
+`SIGNING_PROPERTIES` repository secrets.
+
+### License
+
+The project is distributed under the [GPL-3.0](LICENSE) license.
+
+### Credits
+
+FreedomCat is a fork, so first of all we thank the authors of the original projects:
+
+**NekoBox for Android**
+
+- [MatsuriDayo/NekoBoxForAndroid](https://github.com/MatsuriDayo/NekoBoxForAndroid)
+
+**SagerNet**
+
+- [SagerNet/SagerNet](https://github.com/SagerNet/SagerNet) and personally
+  [nekohasekai](https://github.com/nekohasekai) — author of SagerNet / NB4A;
+
+**sing-box / core**
+
+- [SagerNet/sing-box](https://github.com/SagerNet/sing-box) — the core everything runs on;
+
+**gomobile / build tooling**
+
+- [MatsuriDayo/gomobile](https://github.com/MatsuriDayo/gomobile) — builds the Go core into an AAR;
+
+**AmneziaWG protocol**
+
+- [AmneziaVPN](https://github.com/amnezia-vpn) / [amneziawg-go](https://github.com/amnezia-vpn/amneziawg-go);
+
+**Web dashboard**
+
+- [Yacd-meta](https://github.com/MetaCubeX/Yacd-meta);
+
+**Other inspiring projects**
+
+- [shadowsocks/shadowsocks-android](https://github.com/shadowsocks/shadowsocks-android)
+
+Full contributor lists of the original projects can be found in their repositories:
+[NekoBox for Android contributors](https://github.com/MatsuriDayo/NekoBoxForAndroid/graphs/contributors),
+[SagerNet contributors](https://github.com/SagerNet/SagerNet/graphs/contributors).
