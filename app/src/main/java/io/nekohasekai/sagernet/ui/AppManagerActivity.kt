@@ -18,6 +18,7 @@ import android.widget.Filterable
 import androidx.annotation.UiThread
 import androidx.core.util.contains
 import androidx.core.util.set
+import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
@@ -25,6 +26,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
 import io.nekohasekai.sagernet.BuildConfig
@@ -212,7 +214,36 @@ class AppManagerActivity : ThemedActivity() {
         supportActionBar?.apply {
             setTitle(R.string.proxied_apps)
             setDisplayHomeAsUpEnabled(true)
-            setHomeAsUpIndicator(R.drawable.ic_navigation_close)
+            setHomeAsUpIndicator(R.drawable.ic_navigation_menu)
+        }
+
+        val navigation: NavigationView = if (themeResId == R.style.Theme_SagerNet_Black) {
+            binding.root.removeView(binding.appsNavView)
+            binding.appsNavViewBlack
+        } else {
+            binding.root.removeView(binding.appsNavViewBlack)
+            binding.appsNavView
+        }
+        navigation.menu.findItem(R.id.nav_app_proxy)?.isChecked = true
+        navigation.setNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_app_proxy -> {
+                    binding.appsDrawerLayout.closeDrawers()
+                    true
+                }
+
+                else -> {
+                    binding.appsDrawerLayout.closeDrawers()
+                    finish()
+                    startActivity(
+                        Intent(this, MainActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                            putExtra(MainActivity.EXTRA_NAV_ID, item.itemId)
+                        }
+                    )
+                    true
+                }
+            }
         }
 
         if (!DataStore.proxyApps) {
@@ -263,6 +294,11 @@ class AppManagerActivity : ThemedActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            android.R.id.home -> {
+                binding.appsDrawerLayout.openDrawer(GravityCompat.START)
+                return true
+            }
+
             R.id.action_invert_selections -> {
                 runOnDefaultDispatcher {
                     val proxiedUidsOld = proxiedUids.clone()

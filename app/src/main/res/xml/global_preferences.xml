@@ -98,11 +98,6 @@
 
     <PreferenceCategory app:title="@string/cag_route">
         <SwitchPreference
-            app:icon="@drawable/ic_navigation_apps"
-            app:key="proxyApps"
-            app:summary="@string/proxied_apps_summary"
-            app:title="@string/proxied_apps" />
-        <SwitchPreference
             app:icon="@drawable/ic_baseline_legend_toggle_24"
             app:key="bypassLan"
             app:title="@string/route_opt_bypass_lan" />

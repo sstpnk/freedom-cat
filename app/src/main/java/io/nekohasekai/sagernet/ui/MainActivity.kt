@@ -58,6 +58,10 @@ class MainActivity : ThemedActivity(),
     lateinit var binding: LayoutMainBinding
     lateinit var navigation: NavigationView
 
+    companion object {
+        const val EXTRA_NAV_ID = "navigate_to"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -76,7 +80,8 @@ class MainActivity : ThemedActivity(),
         navigation.setNavigationItemSelectedListener(this)
 
         if (savedInstanceState == null) {
-            displayFragmentWithId(R.id.nav_configuration)
+            val navId = intent?.getIntExtra(EXTRA_NAV_ID, 0) ?: 0
+            displayFragmentWithId(if (navId != 0) navId else R.id.nav_configuration)
         }
         onBackPressedDispatcher.addCallback {
             if (supportFragmentManager.findFragmentById(R.id.fragment_holder) is ConfigurationFragment) {
@@ -149,6 +154,11 @@ class MainActivity : ThemedActivity(),
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+
+        val navId = intent.getIntExtra(EXTRA_NAV_ID, 0)
+        if (navId != 0) {
+            displayFragmentWithId(navId)
+        }
 
         val uri = intent.data ?: return
 

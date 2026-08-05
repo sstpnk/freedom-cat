@@ -1004,9 +1004,11 @@ class ConfigurationFragment @JvmOverloads constructor(
         }
 
         override fun getItemId(position: Int): Long {
+            // group.id and profile.id come from different Room tables and may collide;
+            // stable IDs must be unique, so groups map to even and profiles to odd IDs.
             return when (val item = items[position]) {
-                is Item.GroupItem -> item.group.id
-                is Item.ProfileItem -> item.profile.id
+                is Item.GroupItem -> item.group.id * 2
+                is Item.ProfileItem -> item.profile.id * 2 + 1
             }
         }
 

@@ -137,15 +137,12 @@ FreedomCat — это форк, поэтому в первую очередь м
 (which is itself a fork of [SagerNet](https://github.com/SagerNet/SagerNet)) — a universal
 proxy client for Android built on top of [sing-box](https://github.com/SagerNet/sing-box).
 
-We took the battle-tested NB4A codebase and turned it into our own product:
+I simply took the battle-tested NB4A codebase and made it an app tailored to my own
+needs and expectations:
 
-- simplified and reworked the UI (menu, configuration screen, backup section);
-- set up automated builds with **signed** releases via GitHub Actions;
+- simplified the UI (groups and connection configurations are now on a single screen);
 - added support for the new **AmneziaWG** protocol (see below);
-- removed everything unnecessary: extra translations, unused sections and ad integrations.
-
-> ⚠️ **Important:** the builds in this repository are our own signed builds.
-> They are **not** related to the Google Play versions and do not depend on third parties.
+- removed everything I don't use.
 
 ### Features
 
@@ -154,7 +151,7 @@ We took the battle-tested NB4A codebase and turned it into our own product:
 - Import by link / from clipboard / from file / via QR code;
 - Subscription support with scheduled updates;
 - Routing: custom rules (routes), ad blocking, QUIC blocking;
-- **Apps VPN mode**: full / proxy / bypass — choose which apps go through the proxy;
+- Apps VPN mode is available directly from the menu;
 - Traffic statistics, log, latency testing;
 - Fast server and group switching.
 
@@ -174,8 +171,8 @@ In this fork, AmneziaWG support is implemented as follows:
 3. **UI**: the AmneziaWG profile type is available in the protocol list when creating
    a configuration manually.
 
-Thanks to the AmneziaVPN community for their work — without their protocol this
-feature would not exist.
+Thanks to the AmneziaVPN community for their work — without them this idea would
+never have come to life.
 
 ### Supported proxy protocols
 
@@ -211,19 +208,14 @@ cd freedom-cat
 ./gradlew :app:assembleOssRelease
 ```
 
-The resulting APK will be in `app/build/outputs/apk/oss/release/`.
-
-Release builds are automatically built and signed by GitHub Actions
-(workflow `.github/workflows/release.yml`), using the `RELEASE_KEYSTORE` and
-`SIGNING_PROPERTIES` repository secrets.
-
 ### License
 
 The project is distributed under the [GPL-3.0](LICENSE) license.
 
 ### Credits
 
-FreedomCat is a fork, so first of all we thank the authors of the original projects:
+FreedomCat is a fork, so first of all I would like to thank the authors of the
+original projects:
 
 **NekoBox for Android**
 
