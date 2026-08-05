@@ -495,6 +495,13 @@ class ConfigurationFragment @JvmOverloads constructor(
                 startActivity(Intent(requireActivity(), WireGuardSettingsActivity::class.java))
             }
 
+            R.id.action_new_awg -> {
+                startActivity(
+                    Intent(requireActivity(), WireGuardSettingsActivity::class.java)
+                        .putExtra(WireGuardSettingsActivity.EXTRA_AMNEZIA, true)
+                )
+            }
+
             R.id.action_new_shadowtls -> {
                 startActivity(Intent(requireActivity(), ShadowTLSSettingsActivity::class.java))
             }

@@ -12,6 +12,10 @@ import moe.matsuri.nb4a.proxy.Type
 
 class WireGuardSettingsActivity : ProfileSettingsActivity<WireGuardBean>() {
 
+    companion object {
+        const val EXTRA_AMNEZIA = "amnezia"
+    }
+
     override fun createEntity() = WireGuardBean()
 
     private val pbm = PreferenceBindingManager()
@@ -43,6 +47,9 @@ class WireGuardSettingsActivity : ProfileSettingsActivity<WireGuardBean>() {
     private val i5 = pbm.add(PreferenceBinding(Type.Text, "i5"))
 
     override fun WireGuardBean.init() {
+        if (intent.getBooleanExtra(EXTRA_AMNEZIA, false)) {
+            enableAmnezia = true
+        }
         pbm.writeToCacheAll(this)
     }
 
