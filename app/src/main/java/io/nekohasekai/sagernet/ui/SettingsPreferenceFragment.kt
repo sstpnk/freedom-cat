@@ -1,6 +1,5 @@
 package io.nekohasekai.sagernet.ui
 
-import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -19,8 +18,6 @@ import io.nekohasekai.sagernet.utils.Theme
 import moe.matsuri.nb4a.ui.*
 
 class SettingsPreferenceFragment : PreferenceFragmentCompat() {
-
-    private lateinit var isProxyApps: SwitchPreference
 
     private lateinit var globalCustomConfig: EditConfigPreference
 
@@ -116,13 +113,6 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         if (Build.VERSION.SDK_INT < 28) {
             metedNetwork.remove()
         }
-        isProxyApps = findPreference(Key.PROXY_APPS)!!
-        isProxyApps.setOnPreferenceChangeListener { _, newValue ->
-            startActivity(Intent(activity, AppManagerActivity::class.java))
-            if (newValue as Boolean) DataStore.dirty = true
-            newValue
-        }
-
         val profileTrafficStatistics =
             findPreference<SwitchPreference>(Key.PROFILE_TRAFFIC_STATISTICS)!!
         val speedInterval = findPreference<SimpleMenuPreference>(Key.SPEED_INTERVAL)!!
@@ -173,9 +163,6 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
     override fun onResume() {
         super.onResume()
 
-        if (::isProxyApps.isInitialized) {
-            isProxyApps.isChecked = DataStore.proxyApps
-        }
         if (::globalCustomConfig.isInitialized) {
             globalCustomConfig.notifyChanged()
         }
