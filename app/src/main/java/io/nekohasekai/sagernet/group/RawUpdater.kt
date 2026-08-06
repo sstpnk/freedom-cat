@@ -807,6 +807,60 @@ object RawUpdater : GroupUpdater() {
                         }
                 }
 
+                json.has("endpoints") -> {
+                    return json.getJSONArray("endpoints")
+                        .filterIsInstance<JSONObject>()
+                        .mapNotNull { endpoint ->
+                            val peers = endpoint.optJSONArray("peers") ?: return@mapNotNull null
+                            val peer = peers.optJSONObject(0) ?: return@mapNotNull null
+                            val endpointAddress = peer.optString("endpoint", "")
+                            val serverAddress = endpointAddress.substringBeforeLast(":")
+                            val serverPort = endpointAddress.substringAfterLast(":").toIntOrNull()
+                                ?: return@mapNotNull null
+                            if (serverAddress.isBlank() || serverPort == 0) {
+                                return@mapNotNull null
+                            }
+                            WireGuardBean().apply {
+                                name = endpoint.optString("tag", "")
+                                    .ifBlank { "AmneziaWG" }
+                                this.serverAddress = serverAddress
+                                this.serverPort = serverPort
+                                privateKey = endpoint.optString("private_key", "")
+                                peerPublicKey = peer.optString("public_key", "")
+                                peerPreSharedKey = peer.optString("pre_shared_key", "")
+                                val addressArr = endpoint.optJSONArray("address")
+                                localAddress = if (addressArr != null) {
+                                    buildString {
+                                        for (i in 0 until addressArr.length()) {
+                                            if (i > 0) append("\n")
+                                            append(addressArr.getString(i))
+                                        }
+                                    }
+                                } else {
+                                    endpoint.optString("address", "")
+                                }
+                                mtu = endpoint.optInt("mtu", 1420)
+                                enableAmnezia = true
+                                jc = endpoint.optInt("jc", 0)
+                                jmin = endpoint.optInt("jmin", 0)
+                                jmax = endpoint.optInt("jmax", 0)
+                                s1 = endpoint.optInt("s1", 0)
+                                s2 = endpoint.optInt("s2", 0)
+                                s3 = endpoint.optInt("s3", 0)
+                                s4 = endpoint.optInt("s4", 0)
+                                h1 = endpoint.optString("h1", "")
+                                h2 = endpoint.optString("h2", "")
+                                h3 = endpoint.optString("h3", "")
+                                h4 = endpoint.optString("h4", "")
+                                i1 = endpoint.optString("i1", "")
+                                i2 = endpoint.optString("i2", "")
+                                i3 = endpoint.optString("i3", "")
+                                i4 = endpoint.optString("i4", "")
+                                i5 = endpoint.optString("i5", "")
+                            }.applyDefaultValues()
+                        }
+                }
+
                 json.has("server") && json.has("server_port") -> {
                     return listOf(ConfigBean().applyDefaultValues().apply {
                         type = 1
