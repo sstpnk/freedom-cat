@@ -289,10 +289,9 @@ class ConfigurationFragment @JvmOverloads constructor(
         }
 
         fun updateTo(order: Int) {
-            if (group.order == order) return
+            if (adapter.groupList.isNotEmpty() && adapter.groupList.all { it.order == order }) return
             runOnDefaultDispatcher {
-                group.order = order
-                GroupManager.updateGroup(group)
+                GroupManager.updateAllGroupOrder(order)
             }
         }
 

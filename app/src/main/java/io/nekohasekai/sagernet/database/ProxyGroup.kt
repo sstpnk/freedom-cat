@@ -118,6 +118,9 @@ data class ProxyGroup(
         @Update
         fun updateGroup(group: ProxyGroup)
 
+        @Update
+        fun updateGroup(groupList: List<ProxyGroup>)
+
         @Query("DELETE FROM proxy_groups")
         fun reset()
 

@@ -7,6 +7,19 @@ import io.nekohasekai.sagernet.ktx.wrapIPV6Host
 import moe.matsuri.nb4a.SingBoxOptions
 import moe.matsuri.nb4a.utils.Util
 import moe.matsuri.nb4a.utils.listByLineOrComma
+import org.ini4j.Ini
+import org.json.JSONObject
+import java.io.ByteArrayOutputStream
+import java.io.StringReader
+import java.net.URI
+import java.net.URLDecoder
+import java.util.Base64
+import java.util.zip.DataFormatException
+import java.util.zip.Inflater
+
+private val AMNEZIA_SCHEMES = setOf("awg", "amneziawg", "amnezia")
+
+private data class WireGuardEndpoint(val address: String, val port: Int)
 
 fun genReserved(anyStr: String): String {
     try {
@@ -76,39 +89,253 @@ fun buildSingBoxEndpointAwgBean(bean: WireGuardBean): SingBoxOptions.Endpoint_Aw
     }
 }
 
-fun parseWireGuardLink(link: String): AbstractBean {
-    val url = Uri.parse(link.replace("awg://", "wg://").replace("amneziawg://", "wg://"))
-    val bean = WireGuardBean().apply {
-        serverAddress = url.host ?: error("Invalid link")
-        serverPort = url.port ?: error("Invalid link")
-        privateKey = url.getQueryParameter("private_key") ?: ""
-        peerPublicKey = url.getQueryParameter("peer_public_key") ?: ""
-        peerPreSharedKey = url.getQueryParameter("pre_shared_key") ?: ""
-        reserved = url.getQueryParameter("reserved")?.replace("-", "") ?: ""
-        localAddress = url.getQueryParameter("local_address")?.replace("-", "\n") ?: ""
-        mtu = url.getQueryParameter("mtu")?.toIntOrNull()
-        enableAmnezia = url.getQueryParameter("enable_amnezia") == "true" ||
-            url.getQueryParameter("junk_packet_count") != null ||
-            url.getQueryParameter("s1") != null
-        jc = url.getQueryParameter("junk_packet_count")?.toIntOrNull() ?: 0
-        jmin = url.getQueryParameter("junk_packet_min_size")?.toIntOrNull() ?: 0
-        jmax = url.getQueryParameter("junk_packet_max_size")?.toIntOrNull() ?: 0
-        s1 = url.getQueryParameter("s1")?.toIntOrNull() ?: 0
-        s2 = url.getQueryParameter("s2")?.toIntOrNull() ?: 0
-        s3 = url.getQueryParameter("s3")?.toIntOrNull() ?: 0
-        s4 = url.getQueryParameter("s4")?.toIntOrNull() ?: 0
-        h1 = url.getQueryParameter("h1") ?: ""
-        h2 = url.getQueryParameter("h2") ?: ""
-        h3 = url.getQueryParameter("h3") ?: ""
-        h4 = url.getQueryParameter("h4") ?: ""
-        i1 = url.getQueryParameter("i1") ?: ""
-        i2 = url.getQueryParameter("i2") ?: ""
-        i3 = url.getQueryParameter("i3") ?: ""
-        i4 = url.getQueryParameter("i4") ?: ""
-        i5 = url.getQueryParameter("i5") ?: ""
+private fun parseEndpoint(endpoint: String?): WireGuardEndpoint? {
+    val value = endpoint?.trim()?.substringAfterLast("@") ?: return null
+    if (value.isBlank() || !value.contains(":")) return null
+
+    val (address, portString) = if (value.startsWith("[")) {
+        val end = value.indexOf(']')
+        if (end <= 0 || end + 1 >= value.length || value[end + 1] != ':') return null
+        value.substring(1, end) to value.substring(end + 2)
+    } else {
+        value.substringBeforeLast(":") to value.substringAfterLast(":")
     }
+    val port = portString.toIntOrNull() ?: return null
+    if (address.isBlank() || port <= 0) return null
+    return WireGuardEndpoint(percentDecode(address), port)
+}
+
+fun parseWireGuardConfig(conf: String): List<WireGuardBean> {
+    val ini = Ini(StringReader(conf))
+    val iface = ini["Interface"] ?: error("Missing 'Interface' selection")
+    val bean = WireGuardBean().applyDefaultValues()
+    val localAddresses = iface.getAll("Address")
+    if (localAddresses.isNullOrEmpty()) error("Empty address in 'Interface' selection")
+    bean.localAddress = localAddresses.flatMap { it.split(",") }.joinToString("\n") { it.trim() }
+    bean.privateKey = iface["PrivateKey"] ?: ""
+    bean.mtu = iface["MTU"]?.toIntOrNull()
+    bean.enableAmnezia = iface["enable_amnezia"]?.toBooleanStrictOrNull() ?: false
+    bean.jc = iface["Jc"]?.toIntOrNull()
+    bean.jmin = iface["Jmin"]?.toIntOrNull()
+    bean.jmax = iface["Jmax"]?.toIntOrNull()
+    bean.s1 = iface["S1"]?.toIntOrNull()
+    bean.s2 = iface["S2"]?.toIntOrNull()
+    bean.s3 = iface["S3"]?.toIntOrNull()
+    bean.s4 = iface["S4"]?.toIntOrNull()
+    bean.h1 = iface["H1"]
+    bean.h2 = iface["H2"]
+    bean.h3 = iface["H3"]
+    bean.h4 = iface["H4"]
+    bean.i1 = iface["I1"]
+    bean.i2 = iface["I2"]
+    bean.i3 = iface["I3"]
+    bean.i4 = iface["I4"]
+    bean.i5 = iface["I5"]
+    bean.applyDefaultValues()
+    bean.enableAmnezia = bean.enableAmnezia == true || bean.hasAmneziaOptions()
+
+    val peers = ini.getAll("Peer")
+    if (peers.isNullOrEmpty()) error("Missing 'Peer' selections")
+    val beans = mutableListOf<WireGuardBean>()
+    for (peer in peers) {
+        val endpoint = parseEndpoint(peer["Endpoint"]) ?: continue
+        val peerBean = bean.clone()
+        peerBean.serverAddress = endpoint.address
+        peerBean.serverPort = endpoint.port
+        peerBean.peerPublicKey = peer["PublicKey"] ?: continue
+        peerBean.peerPreSharedKey = peer["PresharedKey"]
+        beans.add(peerBean.applyDefaultValues())
+    }
+    if (beans.isEmpty()) error("Empty available peer list")
+    return beans
+}
+
+fun parseWireGuardLinks(link: String): List<WireGuardBean> {
+    val schemeEnd = link.indexOf("://")
+    if (schemeEnd <= 0) error("Invalid link")
+    val scheme = link.substring(0, schemeEnd).lowercase()
+    return if (scheme == "vpn") {
+        parseAmneziaVpnLink(link)
+    } else {
+        listOf(parseWireGuardUriLink(link, scheme))
+    }
+}
+
+fun parseWireGuardLink(link: String): AbstractBean {
+    val bean = parseWireGuardLinks(link).firstOrNull() ?: error("Invalid link")
     bean.applyDefaultValues()
     return bean
+}
+
+private fun parseWireGuardUriLink(link: String, scheme: String): WireGuardBean {
+    val body = link.substringAfter("://")
+    val url = URI("wg://$body")
+    val query = parseQuery(url.rawQuery)
+    val endpoint = parseEndpoint(url.rawAuthority) ?: error("Invalid link")
+    val bean = WireGuardBean().apply {
+        serverAddress = endpoint.address
+        serverPort = endpoint.port
+        name = url.rawFragment?.let(::percentDecode) ?: ""
+        privateKey = query.getParam("private_key") ?: ""
+        peerPublicKey = query.getParam("peer_public_key", "public_key") ?: ""
+        peerPreSharedKey = query.getParam("pre_shared_key", "preshared_key") ?: ""
+        reserved = query.getParam("reserved")?.replace("-", "") ?: ""
+        localAddress = query.getParam("local_address", "address")?.replace("-", "\n") ?: ""
+        mtu = query.getParam("mtu")?.toIntOrNull()
+        enableAmnezia =
+            scheme in AMNEZIA_SCHEMES || query.getParam("enable_amnezia")?.equals("true", true) == true
+        jc = query.getIntParam("jc", "junk_packet_count") ?: 0
+        jmin = query.getIntParam("jmin", "junk_packet_min_size") ?: 0
+        jmax = query.getIntParam("jmax", "junk_packet_max_size") ?: 0
+        s1 = query.getIntParam("s1", "init_packet_junk_size") ?: 0
+        s2 = query.getIntParam("s2", "response_packet_junk_size") ?: 0
+        s3 = query.getIntParam("s3", "cookie_reply_junk_size") ?: 0
+        s4 = query.getIntParam("s4", "transport_packet_junk_size") ?: 0
+        h1 = query.getParam("h1", "init_packet_magic_header") ?: ""
+        h2 = query.getParam("h2", "response_packet_magic_header") ?: ""
+        h3 = query.getParam(
+            "h3",
+            "cookie_reply_magic_header",
+            "underload_packet_magic_header"
+        ) ?: ""
+        h4 = query.getParam("h4", "transport_packet_magic_header") ?: ""
+        i1 = query.getParam("i1") ?: ""
+        i2 = query.getParam("i2") ?: ""
+        i3 = query.getParam("i3") ?: ""
+        i4 = query.getParam("i4") ?: ""
+        i5 = query.getParam("i5") ?: ""
+    }
+    bean.applyDefaultValues()
+    if (bean.enableAmnezia != true && bean.hasAmneziaOptions()) {
+        bean.enableAmnezia = true
+    }
+    return bean
+}
+
+private fun parseAmneziaVpnLink(link: String): List<WireGuardBean> {
+    val decoded = decodeAmneziaVpnPayload(link)
+    val trimmed = decoded.trim()
+    if (trimmed.startsWith("[Interface]", ignoreCase = true)) {
+        return parseWireGuardConfig(trimmed).onEach { it.enableAmnezia = true }
+    }
+
+    val root = JSONObject(trimmed)
+    val displayName = listOf(
+        root.optString("displayName"),
+        root.optString("description"),
+        root.optString("name")
+    ).firstOrNull { it.isNotBlank() } ?: ""
+
+    val containers = root.optJSONArray("containers") ?: error("Missing Amnezia containers")
+    for (i in containers.length() - 1 downTo 0) {
+        val container = containers.optJSONObject(i) ?: continue
+        val awg = container.optJSONObject("awg")
+            ?: container.optJSONObject("amnezia-awg")
+            ?: container.optJSONObject("amneziaAwg")
+            ?: continue
+        val lastConfig = awg.optJSONObjectOrString("last_config") ?: continue
+        val config = lastConfig.optString("config")
+        if (config.isBlank()) continue
+
+        val beans = parseWireGuardConfig(config)
+        val mtu = lastConfig.opt("mtu")?.toString()?.toIntOrNull()
+        for (bean in beans) {
+            if (bean.name.isBlank()) bean.name = displayName
+            if (mtu != null && mtu > 0) bean.mtu = mtu
+            bean.enableAmnezia = true
+            bean.applyDefaultValues()
+        }
+        if (beans.isNotEmpty()) return beans
+    }
+
+    error("No AmneziaWG config found")
+}
+
+private fun decodeAmneziaVpnPayload(link: String): String {
+    val payload = link.substringAfter("://").trim().trimStart('/')
+    val padded = payload + "=".repeat((4 - payload.length % 4) % 4)
+    val decoded = Base64.getUrlDecoder().decode(padded)
+    val uncompressed = qUncompress(decoded) ?: decoded
+    return uncompressed.toString(Charsets.UTF_8)
+}
+
+private fun qUncompress(input: ByteArray): ByteArray? {
+    if (input.size <= 4) return null
+    val inflater = Inflater()
+    return try {
+        inflater.setInput(input, 4, input.size - 4)
+        val output = ByteArrayOutputStream()
+        val buffer = ByteArray(4096)
+        while (!inflater.finished()) {
+            val count = inflater.inflate(buffer)
+            if (count == 0) {
+                if (inflater.needsInput() || inflater.needsDictionary()) break
+            } else {
+                output.write(buffer, 0, count)
+            }
+        }
+        output.toByteArray().takeIf { inflater.finished() && it.isNotEmpty() }
+    } catch (_: DataFormatException) {
+        null
+    } finally {
+        inflater.end()
+    }
+}
+
+private fun parseQuery(rawQuery: String?): Map<String, String> {
+    if (rawQuery.isNullOrBlank()) return emptyMap()
+    val result = LinkedHashMap<String, String>()
+    rawQuery.split("&").forEach { part ->
+        if (part.isBlank()) return@forEach
+        val key = part.substringBefore("=")
+        val value = if (part.contains("=")) part.substringAfter("=") else ""
+        result[percentDecode(key).lowercase()] = percentDecode(value)
+    }
+    return result
+}
+
+private fun percentDecode(value: String): String {
+    return URLDecoder.decode(value.replace("+", "%2B"), Charsets.UTF_8.name())
+}
+
+private fun Map<String, String>.getParam(vararg keys: String): String? {
+    for (key in keys) {
+        val value = this[key.lowercase()]
+        if (value != null) return value
+    }
+    return null
+}
+
+private fun Map<String, String>.getIntParam(vararg keys: String): Int? {
+    return getParam(*keys)?.toIntOrNull()
+}
+
+private fun JSONObject.optJSONObjectOrString(name: String): JSONObject? {
+    val value = opt(name) ?: return null
+    return when (value) {
+        is JSONObject -> value
+        is String -> runCatching { JSONObject(value) }.getOrNull()
+        else -> null
+    }
+}
+
+private fun WireGuardBean.hasAmneziaOptions(): Boolean {
+    return (jc ?: 0) > 0 ||
+            (jmin ?: 0) > 0 ||
+            (jmax ?: 0) > 0 ||
+            (s1 ?: 0) > 0 ||
+            (s2 ?: 0) > 0 ||
+            (s3 ?: 0) > 0 ||
+            (s4 ?: 0) > 0 ||
+            !h1.isNullOrBlank() ||
+            !h2.isNullOrBlank() ||
+            !h3.isNullOrBlank() ||
+            !h4.isNullOrBlank() ||
+            !i1.isNullOrBlank() ||
+            !i2.isNullOrBlank() ||
+            !i3.isNullOrBlank() ||
+            !i4.isNullOrBlank() ||
+            !i5.isNullOrBlank()
 }
 
 fun WireGuardBean.toUri(): String {

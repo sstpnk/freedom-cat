@@ -18,20 +18,19 @@ import io.nekohasekai.sagernet.fmt.v2ray.VMessBean
 import io.nekohasekai.sagernet.fmt.v2ray.isTLS
 import io.nekohasekai.sagernet.fmt.v2ray.setTLS
 import io.nekohasekai.sagernet.fmt.wireguard.WireGuardBean
+import io.nekohasekai.sagernet.fmt.wireguard.parseWireGuardConfig
 import io.nekohasekai.sagernet.ktx.*
 import libcore.Libcore
 import moe.matsuri.nb4a.Protocols
 import moe.matsuri.nb4a.proxy.anytls.AnyTLSBean
 import moe.matsuri.nb4a.proxy.config.ConfigBean
 import moe.matsuri.nb4a.utils.Util
-import org.ini4j.Ini
 import org.json.JSONArray
 import org.json.JSONObject
 import org.json.JSONTokener
 import org.yaml.snakeyaml.TypeDescription
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.error.YAMLException
-import java.io.StringReader
 import androidx.core.net.toUri
 
 @Suppress("EXPERIMENTAL_API_USAGE")
@@ -720,52 +719,7 @@ object RawUpdater : GroupUpdater() {
     }
 
     fun parseWireGuard(conf: String): List<WireGuardBean> {
-        val ini = Ini(StringReader(conf))
-        val iface = ini["Interface"] ?: error("Missing 'Interface' selection")
-        val bean = WireGuardBean().applyDefaultValues()
-        val localAddresses = iface.getAll("Address")
-        if (localAddresses.isNullOrEmpty()) error("Empty address in 'Interface' selection")
-        bean.localAddress = localAddresses.flatMap { it.split(",") }.joinToString("\n")
-        bean.privateKey = iface["PrivateKey"]
-        bean.mtu = iface["MTU"]?.toIntOrNull()
-        bean.enableAmnezia = iface["enable_amnezia"]?.toBooleanStrictOrNull() ?: false
-        bean.jc = iface["Jc"]?.toIntOrNull()
-        bean.jmin = iface["Jmin"]?.toIntOrNull()
-        bean.jmax = iface["Jmax"]?.toIntOrNull()
-        bean.s1 = iface["S1"]?.toIntOrNull()
-        bean.s2 = iface["S2"]?.toIntOrNull()
-        bean.s3 = iface["S3"]?.toIntOrNull()
-        bean.s4 = iface["S4"]?.toIntOrNull()
-        bean.h1 = iface["H1"]
-        bean.h2 = iface["H2"]
-        bean.h3 = iface["H3"]
-        bean.h4 = iface["H4"]
-        bean.i1 = iface["I1"]
-        bean.i2 = iface["I2"]
-        bean.i3 = iface["I3"]
-        bean.i4 = iface["I4"]
-        bean.i5 = iface["I5"]
-        if (bean.enableAmnezia == false && (bean.jc ?: 0) > 0 || (bean.jmin ?: 0) > 0 || (bean.jmax ?: 0) > 0 || (bean.s1 ?: 0) > 0 || (bean.s2 ?: 0) > 0 || (bean.s3 ?: 0) > 0 || (bean.s4 ?: 0) > 0) {
-            bean.enableAmnezia = true
-        }
-        val peers = ini.getAll("Peer")
-        if (peers.isNullOrEmpty()) error("Missing 'Peer' selections")
-        val beans = mutableListOf<WireGuardBean>()
-        for (peer in peers) {
-            val endpoint = peer["Endpoint"]
-            if (endpoint.isNullOrBlank() || !endpoint.contains(":")) {
-                continue
-            }
-
-            val peerBean = bean.clone()
-            peerBean.serverAddress = endpoint.substringBeforeLast(":")
-            peerBean.serverPort = endpoint.substringAfterLast(":").toIntOrNull() ?: continue
-            peerBean.peerPublicKey = peer["PublicKey"] ?: continue
-            peerBean.peerPreSharedKey = peer["PresharedKey"]
-            beans.add(peerBean.applyDefaultValues())
-        }
-        if (beans.isEmpty()) error("Empty available peer list")
-        return beans
+        return parseWireGuardConfig(conf)
     }
 
     fun parseJSON(json: Any): List<AbstractBean> {
@@ -814,9 +768,14 @@ object RawUpdater : GroupUpdater() {
                             val peers = endpoint.optJSONArray("peers") ?: return@mapNotNull null
                             val peer = peers.optJSONObject(0) ?: return@mapNotNull null
                             val endpointAddress = peer.optString("endpoint", "")
-                            val serverAddress = endpointAddress.substringBeforeLast(":")
-                            val serverPort = endpointAddress.substringAfterLast(":").toIntOrNull()
-                                ?: return@mapNotNull null
+                            val serverAddress = peer.optString("address")
+                                .ifBlank { endpointAddress.substringBeforeLast(":") }
+                                .removeSurrounding("[", "]")
+                            val serverPort = if (peer.has("port")) {
+                                peer.optInt("port", 0)
+                            } else {
+                                endpointAddress.substringAfterLast(":").toIntOrNull() ?: 0
+                            }
                             if (serverAddress.isBlank() || serverPort == 0) {
                                 return@mapNotNull null
                             }

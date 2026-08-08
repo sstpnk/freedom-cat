@@ -97,6 +97,14 @@ object GroupManager {
         }
     }
 
+    suspend fun updateAllGroupOrder(order: Int) {
+        val groups = SagerDatabase.groupDao.allGroups().filter { it.order != order }
+        if (groups.isEmpty()) return
+        groups.forEach { it.order = order }
+        SagerDatabase.groupDao.updateGroup(groups)
+        iterator { groupUpdated(0L) }
+    }
+
     suspend fun deleteGroup(groupId: Long) {
         SagerDatabase.groupDao.deleteById(groupId)
         SagerDatabase.proxyDao.deleteByGroup(groupId)

@@ -23,10 +23,8 @@
     <uses-permission
         android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="PackageVisibilityPolicy" />
-    <uses-permission android:name="com.android.permission.GET_INSTALLED_APPS" />
 
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <uses-feature
         android:name="android.software.leanback"
@@ -136,7 +134,9 @@
                 <data android:scheme="hysteria" />
                 <data android:scheme="wg" />
                 <data android:scheme="awg" />
+                <data android:scheme="amnezia" />
                 <data android:scheme="amneziawg" />
+                <data android:scheme="vpn" />
 
             </intent-filter>
 
