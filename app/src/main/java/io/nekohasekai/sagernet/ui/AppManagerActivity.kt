@@ -30,6 +30,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
+import androidx.appcompat.content.res.AppCompatResources
 import io.nekohasekai.sagernet.BuildConfig
 import io.nekohasekai.sagernet.R
 import io.nekohasekai.sagernet.SagerNet
@@ -290,8 +291,18 @@ class AppManagerActivity : ThemedActivity() {
         }
 
         binding.showSystemApps.isChecked = sysApps
+
+        // Fixed-size leading slot: swap blank/check icons so the label never shifts
+        val chipBlankIcon = AppCompatResources.getDrawable(this, R.drawable.ic_chip_blank)
+        val chipCheckIcon = AppCompatResources.getDrawable(this, R.drawable.ic_chip_check)
+        fun syncShowSystemChipIcon() {
+            binding.showSystemApps.chipIcon =
+                if (binding.showSystemApps.isChecked) chipCheckIcon else chipBlankIcon
+        }
+        syncShowSystemChipIcon()
         binding.showSystemApps.setOnCheckedChangeListener { _, isChecked ->
             sysApps = isChecked
+            syncShowSystemChipIcon()
             appsAdapter.filter.filter(binding.search.text?.toString() ?: "")
         }
 
