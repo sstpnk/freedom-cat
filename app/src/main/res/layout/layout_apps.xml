@@ -75,18 +75,21 @@
                 style="@style/Widget.MaterialComponents.Chip.Filter"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:checkable="false"
-                android:text="@string/auto_select_proxy_apps" />
+                android:text="@string/auto_select_proxy_apps"
+                app:textStartPadding="16dp" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/show_system_apps"
                 style="@style/Widget.MaterialComponents.Chip.Filter"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:layout_marginBottom="8dp"
-                android:text="@string/show_system_apps" />
+                android:text="@string/show_system_apps"
+                app:checkedIcon="@null"
+                app:textStartPadding="16dp" />
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
