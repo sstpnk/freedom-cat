@@ -16,8 +16,6 @@ object Key {
     const val MODE_VPN = "vpn"
     const val MODE_PROXY = "proxy"
 
-    const val GLOBAL_CUSTOM_CONFIG = "globalCustomConfig"
-
     const val REMOTE_DNS = "remoteDns"
     const val DIRECT_DNS = "directDns"
     const val ENABLE_DNS_ROUTING = "enableDnsRouting"
@@ -57,7 +55,6 @@ object Key {
     const val GLOBAL_ALLOW_INSECURE = "globalAllowInsecure"
 
     const val ACQUIRE_WAKE_LOCK = "acquireWakeLock"
-    const val SHOW_BOTTOM_BAR = "showBottomBar"
 
     const val ALLOW_INSECURE_ON_REQUEST = "allowInsecureOnRequest"
 
@@ -150,7 +147,6 @@ object Key {
     //
 
     const val APP_TLS_VERSION = "appTLSVersion"
-    const val ENABLE_CLASH_API = "enableClashAPI"
 }
 
 object TunImplementation {

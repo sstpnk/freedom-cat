@@ -117,29 +117,9 @@ public class SingBoxOptions {
 
         public RouteOptions route;
 
-        public ExperimentalOptions experimental;
-
     }
 
     // paste generate output here
-
-    public static class ClashAPIOptions extends SingBoxOption {
-
-        public String external_controller;
-
-        public String external_ui;
-
-        public String external_ui_download_url;
-
-        public String external_ui_download_detour;
-
-        public String secret;
-
-        public String default_mode;
-
-        // Generate note: option type:  public List<String> ModeList;
-
-    }
 
     public static class SelectorOutboundOptions extends SingBoxOption {
 
@@ -179,8 +159,6 @@ public class SingBoxOptions {
 
         public RouteOptions route;
 
-        public ExperimentalOptions experimental;
-
     }
 
     public static class LogOptions extends SingBoxOption {
@@ -194,26 +172,6 @@ public class SingBoxOptions {
         public Boolean timestamp;
 
         // Generate note: option type:  public Boolean DisableColor;
-
-    }
-
-    public static class DebugOptions extends SingBoxOption {
-
-        public String listen;
-
-        public Integer gc_percent;
-
-        public Integer max_stack;
-
-        public Integer max_threads;
-
-        public Boolean panic_on_fault;
-
-        public String trace_back;
-
-        public Long memory_limit;
-
-        public Boolean oom_killer;
 
     }
 
@@ -366,30 +324,6 @@ public class SingBoxOptions {
         public String inet4_range;
 
         public String inet6_range;
-
-    }
-
-    public static class ExperimentalOptions extends SingBoxOption {
-
-        public ClashAPIOptions clash_api;
-
-        public V2RayAPIOptions v2ray_api;
-
-        public CacheFile cache_file;
-
-        public DebugOptions debug;
-
-    }
-
-    public static class CacheFile extends SingBoxOption {
-
-        public Boolean enabled;
-
-        public Boolean store_fakeip;
-
-        public String path;
-
-        public String cache_id;
 
     }
 
@@ -2616,26 +2550,6 @@ public class SingBoxOptions {
         public Boolean enabled;
 
         public Integer version;
-
-    }
-
-    public static class V2RayAPIOptions extends SingBoxOption {
-
-        public String listen;
-
-        public V2RayStatsServiceOptions stats;
-
-    }
-
-    public static class V2RayStatsServiceOptions extends SingBoxOption {
-
-        public Boolean enabled;
-
-        public List<String> inbounds;
-
-        public List<String> outbounds;
-
-        public List<String> users;
 
     }
 

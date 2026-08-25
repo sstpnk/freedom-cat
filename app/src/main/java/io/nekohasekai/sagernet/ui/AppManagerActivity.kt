@@ -13,6 +13,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.Filter
 import android.widget.Filterable
 import androidx.annotation.UiThread
@@ -179,6 +180,27 @@ class AppManagerActivity : ThemedActivity() {
 
     private fun isProxiedApp(app: ProxiedApp) = proxiedUids[app.uid]
 
+    private fun splitModeIndex(): Int = when {
+        !DataStore.proxyApps -> 0
+        !DataStore.bypass -> 1
+        else -> 2
+    }
+
+    private fun applySplitMode(mode: Int) {
+        when (mode) {
+            0 -> DataStore.proxyApps = false
+            1 -> {
+                DataStore.proxyApps = true
+                DataStore.bypass = false
+            }
+
+            else -> {
+                DataStore.proxyApps = true
+                DataStore.bypass = true
+            }
+        }
+    }
+
     @UiThread
     private fun loadApps() {
         loader?.cancel()
@@ -246,21 +268,13 @@ class AppManagerActivity : ThemedActivity() {
             }
         }
 
-        if (!DataStore.proxyApps) {
-            DataStore.proxyApps = true
-        }
-
-        binding.bypassGroup.check(if (DataStore.bypass) R.id.appProxyModeBypass else R.id.appProxyModeOn)
-        binding.bypassGroup.setOnCheckedChangeListener { _, checkedId ->
-            when (checkedId) {
-                R.id.appProxyModeDisable -> {
-                    DataStore.proxyApps = false
-                    finish()
-                }
-
-                R.id.appProxyModeOn -> DataStore.bypass = false
-                R.id.appProxyModeBypass -> DataStore.bypass = true
-            }
+        // Split tunneling mode: 0 = all apps (off), 1 = selected only, 2 = all except selected
+        val splitModes = resources.getStringArray(R.array.vpn_split_modes)
+        val modeAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, splitModes)
+        binding.splitMode.setAdapter(modeAdapter)
+        binding.splitMode.setText(splitModes[splitModeIndex()], false)
+        binding.splitMode.setOnItemClickListener { _, _, position, _ ->
+            applySplitMode(position)
         }
         binding.autoSelectProxyApps.setOnClickListener { selectProxyApp() }
 
@@ -353,7 +367,11 @@ class AppManagerActivity : ThemedActivity() {
                         } else proxiedAppString.substring(
                             0, i
                         ) to proxiedAppString.substring(i + 1)
-                        binding.bypassGroup.check(if (enabled.toBoolean()) R.id.appProxyModeBypass else R.id.appProxyModeOn)
+                        val mode = if (enabled.toBoolean()) 2 else 1
+                        applySplitMode(mode)
+                        binding.splitMode.setText(
+                            resources.getStringArray(R.array.vpn_split_modes)[mode], false
+                        )
                         DataStore.individual = apps
                         Snackbar.make(
                             binding.list, R.string.action_import_msg, Snackbar.LENGTH_LONG

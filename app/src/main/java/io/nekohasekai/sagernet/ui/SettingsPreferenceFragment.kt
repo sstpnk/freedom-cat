@@ -3,11 +3,8 @@ package io.nekohasekai.sagernet.ui
 import android.os.Build
 import android.os.Bundle
 import android.view.View
-import android.view.inputmethod.EditorInfo
-import android.widget.EditText
 import androidx.core.app.ActivityCompat
 import androidx.preference.*
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import io.nekohasekai.sagernet.Key
 import io.nekohasekai.sagernet.R
 import io.nekohasekai.sagernet.SagerNet
@@ -18,8 +15,6 @@ import io.nekohasekai.sagernet.utils.Theme
 import moe.matsuri.nb4a.ui.*
 
 class SettingsPreferenceFragment : PreferenceFragmentCompat() {
-
-    private lateinit var globalCustomConfig: EditConfigPreference
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -75,37 +70,7 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         val enableDnsRouting = findPreference<SwitchPreference>(Key.ENABLE_DNS_ROUTING)!!
         val enableFakeDns = findPreference<SwitchPreference>(Key.ENABLE_FAKEDNS)!!
 
-        val logLevel = findPreference<LongClickListPreference>(Key.LOG_LEVEL)!!
         val mtu = findPreference<MTUPreference>(Key.MTU)!!
-        globalCustomConfig = findPreference(Key.GLOBAL_CUSTOM_CONFIG)!!
-        globalCustomConfig.useConfigStore(Key.GLOBAL_CUSTOM_CONFIG)
-
-        logLevel.dialogLayoutResource = R.layout.layout_loglevel_help
-        logLevel.setOnPreferenceChangeListener { _, _ ->
-            needRestart()
-            true
-        }
-        logLevel.setOnLongClickListener {
-            if (context == null) return@setOnLongClickListener true
-
-            val view = EditText(context).apply {
-                inputType = EditorInfo.TYPE_CLASS_NUMBER
-                var size = DataStore.logBufSize
-                if (size == 0) size = 50
-                setText(size.toString())
-            }
-
-            MaterialAlertDialogBuilder(requireContext()).setTitle("Log buffer size (kb)")
-                .setView(view)
-                .setPositiveButton(android.R.string.ok) { _, _ ->
-                    DataStore.logBufSize = view.text.toString().toInt()
-                    if (DataStore.logBufSize <= 0) DataStore.logBufSize = 50
-                    needRestart()
-                }
-                .setNegativeButton(android.R.string.cancel, null)
-                .show()
-            true
-        }
 
         mixedPort.setOnBindEditTextListener(EditTextPreferenceModifiers.Port)
 
@@ -131,12 +96,6 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         val tunImplementation = findPreference<SimpleMenuPreference>(Key.TUN_IMPLEMENTATION)!!
         val resolveDestination = findPreference<SwitchPreference>(Key.RESOLVE_DESTINATION)!!
         val acquireWakeLock = findPreference<SwitchPreference>(Key.ACQUIRE_WAKE_LOCK)!!
-        val enableClashAPI = findPreference<SwitchPreference>(Key.ENABLE_CLASH_API)!!
-        enableClashAPI.setOnPreferenceChangeListener { _, newValue ->
-            (activity as MainActivity?)?.refreshNavMenu(newValue as Boolean)
-            needReload()
-            true
-        }
 
         mixedPort.onPreferenceChangeListener = reloadListener
         appendHttpProxy.onPreferenceChangeListener = reloadListener
@@ -157,15 +116,6 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         resolveDestination.onPreferenceChangeListener = reloadListener
         tunImplementation.onPreferenceChangeListener = reloadListener
         acquireWakeLock.onPreferenceChangeListener = reloadListener
-        globalCustomConfig.onPreferenceChangeListener = reloadListener
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        if (::globalCustomConfig.isInitialized) {
-            globalCustomConfig.notifyChanged()
-        }
     }
 
 }

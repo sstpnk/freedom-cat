@@ -157,13 +157,6 @@ fun buildConfig(
     }
 
     return MyOptions().apply {
-        if (!forTest && DataStore.enableClashAPI) experimental = ExperimentalOptions().apply {
-            clash_api = ClashAPIOptions().apply {
-                external_controller = "127.0.0.1:9090"
-                external_ui = "../files/yacd"
-            }
-        }
-
         log = LogOptions().apply {
             level = when (DataStore.logLevel) {
                 0 -> "panic"
@@ -496,6 +489,14 @@ fun buildConfig(
             tagMap[key] = buildChain(key, p)
         }
 
+        // Explicitly set the default outbound.
+        // Endpoint protocols (AmneziaWG) put the proxy into `endpoints`, so
+        // outbounds[0] is "direct"; without an explicit final sing-box would
+        // route everything through it, leaving the tunnel unused.
+        // TAG_PROXY is valid here for both modes: the selector tag (buildSelector)
+        // and the single-chain outbound/endpoint tag (chainId == 0 && index == 0).
+        route.final_ = TAG_PROXY
+
         // apply user rules
         for (rule in extraRules) {
             if (rule.packages.isNotEmpty()) {
@@ -754,8 +755,6 @@ fun buildConfig(
                 })
             }
         }
-
-        if (!forTest) _hack_custom_config = DataStore.globalCustomConfig
     }.let {
         val configMap = it.asMap()
         Util.mergeJSON(configMap, proxy.requireBean().customConfigJson)

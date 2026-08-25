@@ -108,7 +108,7 @@ class MainActivity : ThemedActivity(),
             onNewIntent(intent)
         }
 
-        refreshNavMenu(DataStore.enableClashAPI)
+        refreshNavMenu()
 
         // sdk 33 notification
         if (Build.VERSION.SDK_INT >= 33) {
@@ -131,9 +131,8 @@ class MainActivity : ThemedActivity(),
         }
     }
 
-    fun refreshNavMenu(clashApi: Boolean) {
+    fun refreshNavMenu() {
         if (::navigation.isInitialized) {
-            navigation.menu.findItem(R.id.nav_traffic)?.isVisible = clashApi
             navigation.menu.findItem(R.id.nav_app_proxy)?.title = appProxyMenuTitle()
         }
     }
@@ -149,7 +148,7 @@ class MainActivity : ThemedActivity(),
 
     override fun onResume() {
         super.onResume()
-        refreshNavMenu(DataStore.enableClashAPI)
+        refreshNavMenu()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -346,7 +345,7 @@ class MainActivity : ThemedActivity(),
         if (fragment is ConfigurationFragment) {
             binding.stats.allowShow = true
             binding.fab.show()
-        } else if (!DataStore.showBottomBar) {
+        } else {
             binding.stats.allowShow = false
             binding.stats.performHide()
             binding.fab.hide()
@@ -365,9 +364,9 @@ class MainActivity : ThemedActivity(),
 
             R.id.nav_route -> displayFragment(RouteFragment())
             R.id.nav_settings -> displayFragment(SettingsFragment())
-            R.id.nav_traffic -> displayFragment(WebviewFragment())
             R.id.nav_backup -> displayFragment(BackupFragment())
             R.id.nav_logcat -> displayFragment(LogcatFragment())
+            R.id.nav_about -> displayFragment(AboutFragment())
 
             else -> return false
         }

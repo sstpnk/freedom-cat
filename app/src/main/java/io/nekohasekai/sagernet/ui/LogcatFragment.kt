@@ -13,7 +13,9 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.doOnLayout
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import io.nekohasekai.sagernet.R
+import io.nekohasekai.sagernet.database.DataStore
 import io.nekohasekai.sagernet.databinding.LayoutLogcatBinding
 import io.nekohasekai.sagernet.ktx.*
 import io.nekohasekai.sagernet.widget.ListListener
@@ -105,12 +107,25 @@ class LogcatFragment : ToolbarFragment(R.layout.layout_logcat),
             R.id.action_send_logcat -> {
                 val context = requireContext()
                 runOnDefaultDispatcher {
-                    SendLog.sendLog(context, "NB4A")
+                    SendLog.sendLog(context, "FC")
                 }
             }
 
             R.id.action_refresh -> {
                 reloadSession()
+            }
+
+            R.id.action_log_level -> {
+                val levels = resources.getStringArray(R.array.log_level)
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(R.string.log_level)
+                    .setSingleChoiceItems(levels, DataStore.logLevel) { dialog, which ->
+                        DataStore.logLevel = which
+                        dialog.dismiss()
+                        needRestart()
+                    }
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show()
             }
         }
         return true

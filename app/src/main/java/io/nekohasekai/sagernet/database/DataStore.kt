@@ -85,8 +85,6 @@ object DataStore : OnPreferenceDataStoreChangeListener {
     }
 
     var appTLSVersion by configurationStore.string(Key.APP_TLS_VERSION)
-    var enableClashAPI by configurationStore.boolean(Key.ENABLE_CLASH_API)
-    var showBottomBar by configurationStore.boolean(Key.SHOW_BOTTOM_BAR)
 
     var allowInsecureOnRequest by configurationStore.boolean(Key.ALLOW_INSECURE_ON_REQUEST)
     var networkChangeResetConnections by configurationStore.boolean(Key.NETWORK_CHANGE_RESET_CONNECTIONS) { true }
@@ -110,8 +108,6 @@ object DataStore : OnPreferenceDataStoreChangeListener {
     var allowAccess by configurationStore.boolean(Key.ALLOW_ACCESS)
     var speedInterval by configurationStore.stringToInt(Key.SPEED_INTERVAL)
     var showGroupInNotification by configurationStore.boolean("showGroupInNotification")
-
-    var globalCustomConfig by configurationStore.string(Key.GLOBAL_CUSTOM_CONFIG) { "" }
 
     var remoteDns by configurationStore.string(Key.REMOTE_DNS) { "https://dns.google/dns-query" }
     var directDns by configurationStore.string(Key.DIRECT_DNS) { "https://223.5.5.5/dns-query" }
@@ -161,8 +157,6 @@ object DataStore : OnPreferenceDataStoreChangeListener {
 
     var tunImplementation by configurationStore.stringToInt(Key.TUN_IMPLEMENTATION) { TunImplementation.GVISOR }
     var profileTrafficStatistics by configurationStore.boolean(Key.PROFILE_TRAFFIC_STATISTICS) { true }
-
-    var yacdURL by configurationStore.string("yacdURL") { "http://127.0.0.1:9090/ui" }
 
     // protocol
 

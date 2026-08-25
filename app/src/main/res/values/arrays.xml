@@ -27,6 +27,12 @@
         <item>4</item>
     </string-array>
 
+    <string-array name="vpn_split_modes">
+        <item>@string/vpn_split_mode_all</item>
+        <item>@string/vpn_split_mode_selected</item>
+        <item>@string/vpn_split_mode_except</item>
+    </string-array>
+
     <string-array name="bypass_private_route">
         <item>1.0.0.0/8</item>
         <item>2.0.0.0/7</item>
@@ -463,11 +469,6 @@
         <item>prefer_ipv4</item>
         <item>ipv4_only</item>
         <item>ipv6_only</item>
-    </string-array>
-
-    <string-array name="exe_prefer_provider">
-        <item>Matsuri</item>
-        <item>SagerNet</item>
     </string-array>
 
     <string-array name="app_tls_version">

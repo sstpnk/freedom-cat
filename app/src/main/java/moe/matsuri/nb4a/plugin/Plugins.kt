@@ -41,16 +41,6 @@ object Plugins {
         return false;
     }
 
-    fun displayExeProvider(pkgName: String): String {
-        return if (pkgName.startsWith(AUTHORITIES_PREFIX_SEKAI_EXE)) {
-            "SagerNet"
-        } else if (pkgName.startsWith(AUTHORITIES_PREFIX_NEKO_EXE)) {
-            "Matsuri"
-        } else {
-            "Unknown"
-        }
-    }
-
     fun getPlugin(pluginId: String): ProviderInfo? {
         if (pluginId.isBlank()) return null
         getPluginExternal(pluginId)?.let { return it }

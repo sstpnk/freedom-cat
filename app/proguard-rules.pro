@@ -4,6 +4,11 @@
 -keep class io.nekohasekai.sagernet.** { *;}
 -keep class moe.matsuri.nb4a.** { *;}
 
+# gomobile libcore: methods called from native code (JNI) must not be stripped/renamed
+# (normally supplied by libcore.aar consumer proguard rules; locally the classes are plain sources)
+-keep class go.** { *; }
+-keep class libcore.** { *; }
+
 # Clean Kotlin
 -assumenosideeffects class kotlin.jvm.internal.Intrinsics {
     static void checkParameterIsNotNull(java.lang.Object, java.lang.String);
