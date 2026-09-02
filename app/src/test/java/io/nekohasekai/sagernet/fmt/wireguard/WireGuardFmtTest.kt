@@ -1,5 +1,6 @@
 package io.nekohasekai.sagernet.fmt.wireguard
 
+import io.nekohasekai.sagernet.database.ProxyEntity
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -48,6 +49,23 @@ class WireGuardFmtTest {
         assertEquals("peer-public", outbound.peer_public_key)
         assertEquals("peer-psk", outbound.pre_shared_key)
         assertEquals(1280, outbound.mtu)
+    }
+
+    @Test
+    fun proxyEntityDisplayTypeDistinguishesWireGuardAndAmneziaWireGuard() {
+        val wireGuard = WireGuardBean().apply {
+            initializeDefaultValues()
+        }
+        val amneziaWireGuard = parseWireGuardConfig(awg31Config()).single()
+
+        assertEquals(
+            "WireGuard",
+            ProxyEntity(type = ProxyEntity.TYPE_WG, wgBean = wireGuard).displayType(),
+        )
+        assertEquals(
+            "AmneziaWG",
+            ProxyEntity(type = ProxyEntity.TYPE_WG, wgBean = amneziaWireGuard).displayType(),
+        )
     }
 
     @Test
