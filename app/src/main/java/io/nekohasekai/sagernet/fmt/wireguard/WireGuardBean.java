@@ -36,6 +36,16 @@ public class WireGuardBean extends AbstractBean {
     public String i3;
     public String i4;
     public String i5;
+    public String headerProtectionKey;
+    public String contentPaddingAddition;
+    public String rekeyAfterTime;
+    public String rekeyTimeout;
+    public String rejectAfterTime;
+    public String keepaliveTimeout;
+    public String maxHandshakeAttempts;
+    public Boolean randomTrailers;
+    public Boolean disableCookies;
+    public String persistentKeepalive;
 
     @Override
     public void initializeDefaultValues() {
@@ -63,11 +73,21 @@ public class WireGuardBean extends AbstractBean {
         if (i3 == null) i3 = "";
         if (i4 == null) i4 = "";
         if (i5 == null) i5 = "";
+        if (headerProtectionKey == null) headerProtectionKey = "";
+        if (contentPaddingAddition == null) contentPaddingAddition = "";
+        if (rekeyAfterTime == null) rekeyAfterTime = "";
+        if (rekeyTimeout == null) rekeyTimeout = "";
+        if (rejectAfterTime == null) rejectAfterTime = "";
+        if (keepaliveTimeout == null) keepaliveTimeout = "";
+        if (maxHandshakeAttempts == null) maxHandshakeAttempts = "";
+        if (randomTrailers == null) randomTrailers = false;
+        if (disableCookies == null) disableCookies = false;
+        if (persistentKeepalive == null) persistentKeepalive = "";
     }
 
     @Override
     public void serialize(ByteBufferOutput output) {
-        output.writeInt(3);
+        output.writeInt(4);
         super.serialize(output);
         output.writeString(localAddress);
         output.writeString(privateKey);
@@ -92,6 +112,16 @@ public class WireGuardBean extends AbstractBean {
         output.writeString(i3);
         output.writeString(i4);
         output.writeString(i5);
+        output.writeString(headerProtectionKey);
+        output.writeString(contentPaddingAddition);
+        output.writeString(rekeyAfterTime);
+        output.writeString(rekeyTimeout);
+        output.writeString(rejectAfterTime);
+        output.writeString(keepaliveTimeout);
+        output.writeString(maxHandshakeAttempts);
+        output.writeBoolean(randomTrailers);
+        output.writeBoolean(disableCookies);
+        output.writeString(persistentKeepalive);
     }
 
     @Override
@@ -122,6 +152,18 @@ public class WireGuardBean extends AbstractBean {
             i3 = input.readString();
             i4 = input.readString();
             i5 = input.readString();
+        }
+        if (version >= 4) {
+            headerProtectionKey = input.readString();
+            contentPaddingAddition = input.readString();
+            rekeyAfterTime = input.readString();
+            rekeyTimeout = input.readString();
+            rejectAfterTime = input.readString();
+            keepaliveTimeout = input.readString();
+            maxHandshakeAttempts = input.readString();
+            randomTrailers = input.readBoolean();
+            disableCookies = input.readBoolean();
+            persistentKeepalive = input.readString();
         }
         initializeDefaultValues();
     }

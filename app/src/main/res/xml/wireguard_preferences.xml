@@ -38,6 +38,11 @@
             app:key="peerPreSharedKey"
             app:title="@string/wireguard_psk" />
         <EditTextPreference
+            app:icon="@drawable/ic_baseline_shutter_speed_24"
+            app:key="persistentKeepalive"
+            app:title="Persistent keepalive"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
             app:defaultValue="1420"
             app:icon="@drawable/baseline_public_24"
             app:key="mtu"
@@ -138,6 +143,54 @@
             app:key="i5"
             app:title="Additional header 5"
             app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:key="amnezia31Category"
+        app:title="AmneziaWG 3.1">
+        <EditTextPreference
+            app:dialogLayout="@layout/layout_password_dialog"
+            app:icon="@drawable/ic_baseline_vpn_key_24"
+            app:key="headerProtectionKey"
+            app:title="Header protection key" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_shutter_speed_24"
+            app:key="contentPaddingAddition"
+            app:title="Content padding addition"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_shutter_speed_24"
+            app:key="rekeyAfterTime"
+            app:title="Rekey after time"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_shutter_speed_24"
+            app:key="rekeyTimeout"
+            app:title="Rekey timeout"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_shutter_speed_24"
+            app:key="rejectAfterTime"
+            app:title="Reject after time"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_shutter_speed_24"
+            app:key="keepaliveTimeout"
+            app:title="Keepalive timeout"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_shutter_speed_24"
+            app:key="maxHandshakeAttempts"
+            app:title="Max handshake attempts"
+            app:useSimpleSummaryProvider="true" />
+        <SwitchPreference
+            app:icon="@drawable/ic_baseline_texture_24"
+            app:key="randomTrailers"
+            app:title="Random trailers" />
+        <SwitchPreference
+            app:icon="@drawable/ic_baseline_texture_24"
+            app:key="disableCookies"
+            app:title="Disable cookies" />
     </PreferenceCategory>
 
 </PreferenceScreen>

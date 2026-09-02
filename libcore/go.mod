@@ -1,6 +1,6 @@
 module libcore
 
-go 1.24.4
+go 1.25.0
 
 require (
 	github.com/matsuridayo/libneko v1.0.0 // replaced
@@ -17,7 +17,7 @@ require (
 
 require (
 	github.com/ajg/form v1.5.1 // indirect
-	github.com/amnezia-vpn/amneziawg-go v0.2.17-0.20251219021448-449d7cffd4ad // indirect
+	github.com/amnezia-vpn/amneziawg-go/v3 v3.1.20260828 // indirect
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/anytls/sing-anytls v0.0.11 // indirect
 	github.com/caddyserver/certmagic v0.23.0 // indirect

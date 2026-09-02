@@ -987,7 +987,7 @@ public class SingBoxOptions {
         // Generate note: Listable
         public List<String> allowed_ips;
 
-        public Integer persistent_keepalive_interval;
+        public String persistent_keepalive_interval;
 
     }
 
@@ -1035,6 +1035,24 @@ public class SingBoxOptions {
         public String i4;
 
         public String i5;
+
+        public String header_protection_key;
+
+        public String content_padding_addition;
+
+        public String rekey_after_time;
+
+        public String rekey_timeout;
+
+        public String reject_after_time;
+
+        public String keepalive_timeout;
+
+        public String max_handshake_attempts;
+
+        public Boolean random_trailers;
+
+        public Boolean disable_cookies;
 
         public List<AwgPeerOptions> peers;
 

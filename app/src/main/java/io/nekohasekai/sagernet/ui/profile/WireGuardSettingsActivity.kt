@@ -26,6 +26,7 @@ class WireGuardSettingsActivity : ProfileSettingsActivity<WireGuardBean>() {
     private val privateKey = pbm.add(PreferenceBinding(Type.Text, "privateKey"))
     private val peerPublicKey = pbm.add(PreferenceBinding(Type.Text, "peerPublicKey"))
     private val peerPreSharedKey = pbm.add(PreferenceBinding(Type.Text, "peerPreSharedKey"))
+    private val persistentKeepalive = pbm.add(PreferenceBinding(Type.Text, "persistentKeepalive"))
     private val mtu = pbm.add(PreferenceBinding(Type.TextToInt, "mtu"))
     private val reserved = pbm.add(PreferenceBinding(Type.Text, "reserved"))
     private val enableAmnezia = pbm.add(PreferenceBinding(Type.Bool, "enableAmnezia"))
@@ -45,6 +46,15 @@ class WireGuardSettingsActivity : ProfileSettingsActivity<WireGuardBean>() {
     private val i3 = pbm.add(PreferenceBinding(Type.Text, "i3"))
     private val i4 = pbm.add(PreferenceBinding(Type.Text, "i4"))
     private val i5 = pbm.add(PreferenceBinding(Type.Text, "i5"))
+    private val headerProtectionKey = pbm.add(PreferenceBinding(Type.Text, "headerProtectionKey"))
+    private val contentPaddingAddition = pbm.add(PreferenceBinding(Type.Text, "contentPaddingAddition"))
+    private val rekeyAfterTime = pbm.add(PreferenceBinding(Type.Text, "rekeyAfterTime"))
+    private val rekeyTimeout = pbm.add(PreferenceBinding(Type.Text, "rekeyTimeout"))
+    private val rejectAfterTime = pbm.add(PreferenceBinding(Type.Text, "rejectAfterTime"))
+    private val keepaliveTimeout = pbm.add(PreferenceBinding(Type.Text, "keepaliveTimeout"))
+    private val maxHandshakeAttempts = pbm.add(PreferenceBinding(Type.Text, "maxHandshakeAttempts"))
+    private val randomTrailers = pbm.add(PreferenceBinding(Type.Bool, "randomTrailers"))
+    private val disableCookies = pbm.add(PreferenceBinding(Type.Bool, "disableCookies"))
 
     override fun WireGuardBean.init() {
         if (intent.getBooleanExtra(EXTRA_AMNEZIA, false)) {
@@ -68,6 +78,7 @@ class WireGuardSettingsActivity : ProfileSettingsActivity<WireGuardBean>() {
             .setOnBindEditTextListener(EditTextPreferenceModifiers.Port)
         (privateKey.preference as EditTextPreference).summaryProvider = PasswordSummaryProvider
         (mtu.preference as EditTextPreference).setOnBindEditTextListener(EditTextPreferenceModifiers.Number)
+        (headerProtectionKey.preference as EditTextPreference).summaryProvider = PasswordSummaryProvider
     }
 
 }

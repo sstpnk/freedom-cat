@@ -8,6 +8,7 @@ import moe.matsuri.nb4a.SingBoxOptions
 import moe.matsuri.nb4a.utils.Util
 import moe.matsuri.nb4a.utils.listByLineOrComma
 import org.ini4j.Ini
+import org.ini4j.Profile
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.StringReader
@@ -79,12 +80,22 @@ fun buildSingBoxEndpointAwgBean(bean: WireGuardBean): SingBoxOptions.Endpoint_Aw
         i3 = bean.i3
         i4 = bean.i4
         i5 = bean.i5
+        header_protection_key = bean.headerProtectionKey
+        content_padding_addition = bean.contentPaddingAddition
+        rekey_after_time = bean.rekeyAfterTime
+        rekey_timeout = bean.rekeyTimeout
+        reject_after_time = bean.rejectAfterTime
+        keepalive_timeout = bean.keepaliveTimeout
+        max_handshake_attempts = bean.maxHandshakeAttempts
+        random_trailers = bean.randomTrailers
+        disable_cookies = bean.disableCookies
         peers = listOf(SingBoxOptions.AwgPeerOptions().apply {
             address = bean.serverAddress
             port = bean.serverPort
             public_key = bean.peerPublicKey
             pre_shared_key = bean.peerPreSharedKey
             allowed_ips = listOf("0.0.0.0/0", "::/0")
+            persistent_keepalive_interval = bean.persistentKeepalive
         })
     }
 }
@@ -131,6 +142,15 @@ fun parseWireGuardConfig(conf: String): List<WireGuardBean> {
     bean.i3 = iface["I3"]
     bean.i4 = iface["I4"]
     bean.i5 = iface["I5"]
+    bean.headerProtectionKey = iface.getParam("HeaderProtectionKey", "header_protection_key")
+    bean.contentPaddingAddition = iface.getParam("ContentPaddingAddition", "content_padding_addition")
+    bean.rekeyAfterTime = iface.getParam("RekeyAfterTime", "rekey_after_time")
+    bean.rekeyTimeout = iface.getParam("RekeyTimeout", "rekey_timeout")
+    bean.rejectAfterTime = iface.getParam("RejectAfterTime", "reject_after_time")
+    bean.keepaliveTimeout = iface.getParam("KeepaliveTimeout", "keepalive_timeout")
+    bean.maxHandshakeAttempts = iface.getParam("MaxHandshakeAttempts", "max_handshake_attempts")
+    bean.randomTrailers = iface.getBoolParam("RandomTrailers", "random_trailers")
+    bean.disableCookies = iface.getBoolParam("DisableCookies", "disable_cookies")
     bean.applyDefaultValues()
     bean.enableAmnezia = bean.enableAmnezia == true || bean.hasAmneziaOptions()
 
@@ -144,6 +164,8 @@ fun parseWireGuardConfig(conf: String): List<WireGuardBean> {
         peerBean.serverPort = endpoint.port
         peerBean.peerPublicKey = peer["PublicKey"] ?: continue
         peerBean.peerPreSharedKey = peer["PresharedKey"]
+        peerBean.persistentKeepalive =
+            peer.getParam("PersistentKeepalive", "persistent_keepalive_interval") ?: ""
         beans.add(peerBean.applyDefaultValues())
     }
     if (beans.isEmpty()) error("Empty available peer list")
@@ -204,6 +226,20 @@ private fun parseWireGuardUriLink(link: String, scheme: String): WireGuardBean {
         i3 = query.getParam("i3") ?: ""
         i4 = query.getParam("i4") ?: ""
         i5 = query.getParam("i5") ?: ""
+        headerProtectionKey = query.getParam("header_protection_key", "headerprotectionkey") ?: ""
+        contentPaddingAddition = query.getParam("content_padding_addition", "contentpaddingaddition") ?: ""
+        rekeyAfterTime = query.getParam("rekey_after_time", "rekeyaftertime") ?: ""
+        rekeyTimeout = query.getParam("rekey_timeout", "rekeytimeout") ?: ""
+        rejectAfterTime = query.getParam("reject_after_time", "rejectaftertime") ?: ""
+        keepaliveTimeout = query.getParam("keepalive_timeout", "keepalivetimeout") ?: ""
+        maxHandshakeAttempts = query.getParam("max_handshake_attempts", "maxhandshakeattempts") ?: ""
+        randomTrailers = query.getBoolParam("random_trailers", "randomtrailers")
+        disableCookies = query.getBoolParam("disable_cookies", "disablecookies")
+        persistentKeepalive = query.getParam(
+            "persistent_keepalive",
+            "persistent_keepalive_interval",
+            "persistentkeepalive"
+        ) ?: ""
     }
     bean.applyDefaultValues()
     if (bean.enableAmnezia != true && bean.hasAmneziaOptions()) {
@@ -239,9 +275,13 @@ private fun parseAmneziaVpnLink(link: String): List<WireGuardBean> {
 
         val beans = parseWireGuardConfig(config)
         val mtu = lastConfig.opt("mtu")?.toString()?.toIntOrNull()
+        val persistentKeepalive = lastConfig.optString("persistent_keep_alive")
         for (bean in beans) {
             if (bean.name.isBlank()) bean.name = displayName
             if (mtu != null && mtu > 0) bean.mtu = mtu
+            if (bean.persistentKeepalive.isBlank() && persistentKeepalive.isNotBlank()) {
+                bean.persistentKeepalive = persistentKeepalive
+            }
             bean.enableAmnezia = true
             bean.applyDefaultValues()
         }
@@ -310,6 +350,11 @@ private fun Map<String, String>.getIntParam(vararg keys: String): Int? {
     return getParam(*keys)?.toIntOrNull()
 }
 
+private fun Map<String, String>.getBoolParam(vararg keys: String): Boolean {
+    val value = getParam(*keys)?.trim()?.lowercase() ?: return false
+    return value == "true" || value == "1" || value == "on" || value == "yes"
+}
+
 private fun JSONObject.optJSONObjectOrString(name: String): JSONObject? {
     val value = opt(name) ?: return null
     return when (value) {
@@ -335,7 +380,16 @@ private fun WireGuardBean.hasAmneziaOptions(): Boolean {
             !i2.isNullOrBlank() ||
             !i3.isNullOrBlank() ||
             !i4.isNullOrBlank() ||
-            !i5.isNullOrBlank()
+            !i5.isNullOrBlank() ||
+            !headerProtectionKey.isNullOrBlank() ||
+            !contentPaddingAddition.isNullOrBlank() ||
+            !rekeyAfterTime.isNullOrBlank() ||
+            !rekeyTimeout.isNullOrBlank() ||
+            !rejectAfterTime.isNullOrBlank() ||
+            !keepaliveTimeout.isNullOrBlank() ||
+            !maxHandshakeAttempts.isNullOrBlank() ||
+            randomTrailers == true ||
+            disableCookies == true
 }
 
 fun WireGuardBean.toUri(): String {
@@ -367,6 +421,29 @@ fun WireGuardBean.toUri(): String {
             .appendQueryParameter("i3", i3 ?: "")
             .appendQueryParameter("i4", i4 ?: "")
             .appendQueryParameter("i5", i5 ?: "")
+            .appendQueryParameter("header_protection_key", headerProtectionKey ?: "")
+            .appendQueryParameter("content_padding_addition", contentPaddingAddition ?: "")
+            .appendQueryParameter("rekey_after_time", rekeyAfterTime ?: "")
+            .appendQueryParameter("rekey_timeout", rekeyTimeout ?: "")
+            .appendQueryParameter("reject_after_time", rejectAfterTime ?: "")
+            .appendQueryParameter("keepalive_timeout", keepaliveTimeout ?: "")
+            .appendQueryParameter("max_handshake_attempts", maxHandshakeAttempts ?: "")
+            .appendQueryParameter("random_trailers", randomTrailers?.toString() ?: "false")
+            .appendQueryParameter("disable_cookies", disableCookies?.toString() ?: "false")
+            .appendQueryParameter("persistent_keepalive", persistentKeepalive ?: "")
     }
     return builder.build().toString()
+}
+
+private fun Profile.Section.getParam(vararg keys: String): String? {
+    for (key in keys) {
+        val value = this[key]
+        if (!value.isNullOrBlank()) return value
+    }
+    return null
+}
+
+private fun Profile.Section.getBoolParam(vararg keys: String): Boolean {
+    val value = getParam(*keys)?.trim()?.lowercase() ?: return false
+    return value == "true" || value == "1" || value == "on" || value == "yes"
 }
