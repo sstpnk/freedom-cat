@@ -256,6 +256,9 @@
 <string name="minimize">Свернуть</string>
 <string name="missing_plugin">Отсутствующий плагин</string>
 <string name="move">Переместить</string>
+<string name="move_to_group">Переместить в группу</string>
+<string name="profile_moved_to_group">Перемещено в %s</string>
+<string name="no_groups_available_for_move">Нет доступных групп</string>
 <string name="mtrl_badge_numberless_content_description">Новое уведомление</string>
 <string name="mtrl_checkbox_state_description_checked">Флажок установлен.</string>
 <string name="mtrl_checkbox_state_description_indeterminate">Флажки установлены частично.</string>

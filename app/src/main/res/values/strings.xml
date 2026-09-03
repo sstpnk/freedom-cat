@@ -522,6 +522,9 @@
         Please update!</string>
     <string name="connection_test_delete_unavailable">Clear unavailable</string>
     <string name="move">Move</string>
+    <string name="move_to_group">Move to group</string>
+    <string name="profile_moved_to_group">Moved to %s</string>
+    <string name="no_groups_available_for_move">No available groups</string>
     <string name="create_shortcut">Create Shortcut</string>
     <string name="app_tls_version">Subscription Min TLS Version</string>
     <string name="hop_interval">Port Hopping Interval(second)</string>

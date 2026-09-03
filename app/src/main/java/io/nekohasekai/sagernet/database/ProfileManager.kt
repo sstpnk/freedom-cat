@@ -1,6 +1,7 @@
 package io.nekohasekai.sagernet.database
 
 import android.database.sqlite.SQLiteCantOpenDatabaseException
+import io.nekohasekai.sagernet.GroupType
 import io.nekohasekai.sagernet.R
 import io.nekohasekai.sagernet.aidl.TrafficData
 import io.nekohasekai.sagernet.fmt.AbstractBean
@@ -94,6 +95,29 @@ object ProfileManager {
         profiles.forEach {
             iterator { onUpdated(it, false) }
         }
+    }
+
+    suspend fun moveProfile(profileId: Long, targetGroupId: Long): ProxyEntity? {
+        val profile = SagerDatabase.proxyDao.getById(profileId) ?: return null
+        val sourceGroupId = profile.groupId
+        if (sourceGroupId == targetGroupId) return profile
+
+        val sourceGroup = SagerDatabase.groupDao.getById(sourceGroupId) ?: return null
+        val targetGroup = SagerDatabase.groupDao.getById(targetGroupId) ?: return null
+        if (sourceGroup.type != GroupType.BASIC || targetGroup.type != GroupType.BASIC) return null
+
+        profile.groupId = targetGroupId
+        profile.userOrder = SagerDatabase.proxyDao.nextOrder(targetGroupId) ?: 1
+        SagerDatabase.proxyDao.updateProxy(profile)
+        GroupManager.rearrange(sourceGroupId)
+
+        if (DataStore.selectedProxy == profileId) {
+            DataStore.selectedGroup = targetGroupId
+        }
+
+        iterator { onRemoved(sourceGroupId, profileId) }
+        iterator { onAdd(profile) }
+        return profile
     }
 
     suspend fun deleteProfile2(groupId: Long, profileId: Long) {

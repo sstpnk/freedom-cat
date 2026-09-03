@@ -1614,6 +1614,7 @@ class ConfigurationFragment @JvmOverloads constructor(
         val shareLayout: LinearLayout = view.findViewById(R.id.share)
         val shareLayer: LinearLayout = view.findViewById(R.id.share_layer)
         val shareButton: ImageView = view.findViewById(R.id.shareIcon)
+        val moveButton: ImageView = view.findViewById(R.id.move)
         val removeButton: ImageView = view.findViewById(R.id.remove)
 
         fun bind(proxyEntity: ProxyEntity, trafficData: TrafficData? = null) {
@@ -1731,6 +1732,9 @@ class ConfigurationFragment @JvmOverloads constructor(
                     )
                 )
             }
+            moveButton.setOnClickListener {
+                showMoveDialog(proxyEntity)
+            }
             removeButton.setOnClickListener {
                 val index = adapter.items.indexOfFirst { item ->
                     item is Item.ProfileItem && item.profile.id == proxyEntity.id
@@ -1743,6 +1747,7 @@ class ConfigurationFragment @JvmOverloads constructor(
             val selectOrChain = select || proxyEntity.type == ProxyEntity.TYPE_CHAIN
             shareLayout.isGone = selectOrChain
             editButton.isGone = select
+            moveButton.isGone = true
             removeButton.isGone = select
 
             proxyEntity.nekoBean?.apply {
@@ -1755,6 +1760,7 @@ class ConfigurationFragment @JvmOverloads constructor(
                     selected && DataStore.serviceState.started && DataStore.currentProfile == proxyEntity.id
                 onMainDispatcher {
                     editButton.isEnabled = !started
+                    moveButton.isEnabled = !started
                     removeButton.isEnabled = !started
                     selectedView.visibility = if (selected) View.VISIBLE else View.INVISIBLE
                 }
@@ -1786,7 +1792,12 @@ class ConfigurationFragment @JvmOverloads constructor(
                 }
 
                 if (!(select || proxyEntity.type == ProxyEntity.TYPE_CHAIN)) {
+                    val canMove = SagerDatabase.groupDao.getById(proxyEntity.groupId)?.type == GroupType.BASIC &&
+                            SagerDatabase.groupDao.allGroups().any {
+                                it.type == GroupType.BASIC && it.id != proxyEntity.groupId
+                            }
                     onMainDispatcher {
+                        moveButton.isVisible = canMove
                         shareLayer.setBackgroundColor(Color.TRANSPARENT)
                         shareButton.setImageResource(R.drawable.ic_social_share)
                         shareButton.setColorFilter(Color.GRAY)
@@ -1799,6 +1810,45 @@ class ConfigurationFragment @JvmOverloads constructor(
                 }
             }
 
+        }
+
+        private fun showMoveDialog(profile: ProxyEntity) {
+            runOnDefaultDispatcher {
+                val sourceGroup = SagerDatabase.groupDao.getById(profile.groupId)
+                val targetGroups = SagerDatabase.groupDao.allGroups().filter {
+                    it.type == GroupType.BASIC && it.id != profile.groupId
+                }
+                onMainDispatcher {
+                    if (sourceGroup?.type != GroupType.BASIC || targetGroups.isEmpty()) {
+                        snackbar(R.string.no_groups_available_for_move).show()
+                        return@onMainDispatcher
+                    }
+
+                    MaterialAlertDialogBuilder(requireContext())
+                        .setTitle(R.string.move_to_group)
+                        .setItems(targetGroups.map { it.displayName() }.toTypedArray()) { _, which ->
+                            val targetGroup = targetGroups[which]
+                            adapter.expanded.add(targetGroup.id)
+                            runOnDefaultDispatcher {
+                                val moved = ProfileManager.moveProfile(profile.id, targetGroup.id)
+                                onMainDispatcher {
+                                    if (moved == null) {
+                                        snackbar(R.string.no_groups_available_for_move).show()
+                                    } else {
+                                        snackbar(
+                                            getString(
+                                                R.string.profile_moved_to_group,
+                                                targetGroup.displayName()
+                                            )
+                                        ).show()
+                                    }
+                                }
+                            }
+                        }
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .show()
+                }
+            }
         }
 
         fun proxyGroupType(): Int {
