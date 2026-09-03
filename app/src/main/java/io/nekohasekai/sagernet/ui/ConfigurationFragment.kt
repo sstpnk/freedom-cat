@@ -440,6 +440,10 @@ class ConfigurationFragment @JvmOverloads constructor(
                 startFilesForResult(importFile, "*/*")
             }
 
+            R.id.action_new_group -> {
+                startActivity(Intent(requireActivity(), GroupSettingsActivity::class.java))
+            }
+
             R.id.action_new_socks -> {
                 startActivity(Intent(requireActivity(), SocksSettingsActivity::class.java))
             }
@@ -1326,6 +1330,24 @@ class ConfigurationFragment @JvmOverloads constructor(
             }
 
             when (item.itemId) {
+                R.id.action_group_edit -> {
+                    startActivity(Intent(requireActivity(), GroupSettingsActivity::class.java).apply {
+                        putExtra(GroupSettingsActivity.EXTRA_GROUP_ID, proxyGroup.id)
+                    })
+                }
+
+                R.id.action_group_delete -> {
+                    MaterialAlertDialogBuilder(requireContext()).setTitle(R.string.confirm)
+                        .setMessage(R.string.delete_group_prompt)
+                        .setPositiveButton(R.string.yes) { _, _ ->
+                            runOnDefaultDispatcher {
+                                GroupManager.deleteGroup(proxyGroup.id)
+                            }
+                        }
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .show()
+                }
+
                 R.id.action_universal_qr -> {
                     QRCodeDialog(
                         proxyGroup.toUniversalLink(), proxyGroup.displayName()
@@ -1399,6 +1421,16 @@ class ConfigurationFragment @JvmOverloads constructor(
 
                 if (proxyGroup.type != GroupType.SUBSCRIPTION) {
                     popup.menu.removeItem(R.id.action_share_subscription)
+                }
+                if (proxyGroup.ungrouped) {
+                    popup.menu.removeItem(R.id.action_group_edit)
+                    popup.menu.removeItem(R.id.action_group_delete)
+                }
+                if (proxyGroup.id in GroupUpdater.updating) {
+                    popup.menu.removeItem(R.id.action_group_edit)
+                    popup.menu.removeItem(R.id.action_group_delete)
+                    popup.menu.removeItem(R.id.action_clear)
+                    popup.menu.removeItem(R.id.action_export)
                 }
                 popup.setOnMenuItemClickListener(this)
                 popup.show()

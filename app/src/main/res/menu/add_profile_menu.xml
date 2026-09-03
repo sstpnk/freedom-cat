@@ -14,6 +14,9 @@
         app:showAsAction="ifRoom">
         <menu>
             <item
+                android:id="@+id/action_new_group"
+                android:title="@string/group_create" />
+            <item
                 android:id="@+id/action_scan_qr_code"
                 android:title="@string/add_profile_methods_scan_qr_code" />
             <item

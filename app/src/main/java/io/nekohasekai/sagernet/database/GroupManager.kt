@@ -106,15 +106,30 @@ object GroupManager {
     }
 
     suspend fun deleteGroup(groupId: Long) {
+        val selectedProfile = SagerDatabase.proxyDao.getById(DataStore.selectedProxy)
+        if (selectedProfile?.groupId == groupId) {
+            DataStore.selectedProxy = 0L
+        }
         SagerDatabase.groupDao.deleteById(groupId)
         SagerDatabase.proxyDao.deleteByGroup(groupId)
+        if (DataStore.selectedGroup == groupId) {
+            DataStore.selectedGroup = DataStore.currentGroupId()
+        }
         iterator { groupRemoved(groupId) }
         SubscriptionUpdater.reconfigureUpdater()
     }
 
     suspend fun deleteGroup(group: List<ProxyGroup>) {
+        val deletedGroupIds = group.map { it.id }.toLongArray()
+        val selectedProfile = SagerDatabase.proxyDao.getById(DataStore.selectedProxy)
+        if (selectedProfile != null && selectedProfile.groupId in deletedGroupIds) {
+            DataStore.selectedProxy = 0L
+        }
         SagerDatabase.groupDao.deleteGroup(group)
-        SagerDatabase.proxyDao.deleteByGroup(group.map { it.id }.toLongArray())
+        SagerDatabase.proxyDao.deleteByGroup(deletedGroupIds)
+        if (DataStore.selectedGroup in deletedGroupIds) {
+            DataStore.selectedGroup = DataStore.currentGroupId()
+        }
         for (proxyGroup in group) iterator { groupRemoved(proxyGroup.id) }
         SubscriptionUpdater.reconfigureUpdater()
     }
