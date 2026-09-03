@@ -4,6 +4,10 @@
 [![Releases](https://img.shields.io/github/v/release/sstpnk/freedom-cat)](https://github.com/sstpnk/freedom-cat/releases)
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-orange.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
+<p align="center">
+  <img src="docs/assets/freedomcat-states.png" alt="FreedomCat connection states" width="640">
+</p>
+
 **[🇷🇺 Русский](#русский)** | **[🇬🇧 English](#english)**
 
 ---
@@ -19,21 +23,25 @@
 Я просто взял проверенную годами кодовую базу NB4A и сделал из нее приложение под свои собственные потребности и ожидания:
 
 - упростил интерфейс (группы и конфигурации подключений теперь на одном экране);
-- добавил поддержку нового протокола **AmneziaWG** (см. ниже);
+- добавил поддержку **AmneziaWG**, включая legacy-конфигурации и AmneziaWG 3.1 (см. ниже);
 - удалил все, чем не пользуюсь.
 
 ### Возможности
 
 - Работа через VPN-сервис (sing-box) с системным TUN;
+- Сплит-туннелирование для приложений: можно гибко выбирать, какие приложения
+  идут через VPN, а какие работают напрямую. Функция работает со всеми
+  поддерживаемыми протоколами, включая WireGuard, legacy AmneziaWG и AmneziaWG 3.1;
 - Управление конфигурациями: группы-карточки со свёртываемыми списками профилей;
 - Импорт по ссылке/из буфера обмена/из файла/через QR-код;
+- Импорт WireGuard/AmneziaWG-конфигураций из `.conf`, `.vpn`, `wireguard://`, `amneziawg://` и `vpn://`;
 - Поддержка подписок (subscription) с обновлением по расписанию;
 - Маршрутизация: собственные правила (маршруты), блокировка рекламы, блокировка QUIC;
 - Режим VPN для приложений доступен непосредственно из меню;
 - Статистика трафика, лог, тест задержек;
 - Быстрое переключение сервера и группы.
 
-### Поддержка протокола AmneziaWG
+### Поддержка WireGuard и AmneziaWG
 
 **AmneziaWG** — это протокол на основе WireGuard с дополнительным шифрованием трафика,
 который скрывает характер соединения от DPI и позволяет обходить глубокую фильтрацию
@@ -46,8 +54,13 @@
    [sstpnk/sing-box](https://github.com/sstpnk/sing-box) (ветка `awg`) портирован
    эндпоинт AmneziaWG (`awg`) поверх [amneziawg-go](https://github.com/amnezia-vpn/amneziawg-go);
 2. **libcore (gomobile)**: обновлённая библиотека подключает порт sing-box с AmneziaWG;
-3. **Интерфейс**: тип профиля AmneziaWG доступен в списке протоколов при создании
-   конфигурации вручную.
+3. **Разбор конфигураций**: поддерживаются обычный WireGuard, legacy AmneziaWG
+   (`Jc`, `Jmin`, `Jmax`, `S1`, `S2`, `H1`-`H4`) и AmneziaWG 3.1 с новыми
+   параметрами endpoint;
+4. **Импорт**: поддерживаются `.conf`, `.vpn`, `wireguard://`, `amneziawg://`
+   и `vpn://`, включая экспорт из приложения Amnezia;
+5. **Интерфейс**: AmneziaWG-профили корректно отображаются как `AmneziaWG`
+   и доступны для ручного редактирования параметров.
 
 Благодарим за наработки сообщество AmneziaVPN — без них сама идея бы не нашла воплощения.
 
@@ -141,21 +154,25 @@ I simply took the battle-tested NB4A codebase and made it an app tailored to my 
 needs and expectations:
 
 - simplified the UI (groups and connection configurations are now on a single screen);
-- added support for the new **AmneziaWG** protocol (see below);
+- added **AmneziaWG** support, including legacy configs and AmneziaWG 3.1 (see below);
 - removed everything I don't use.
 
 ### Features
 
 - VPN service (sing-box) with system TUN;
+- Per-app split tunneling: choose which apps go through VPN and which apps stay
+  direct. This works with every supported protocol, including WireGuard, legacy
+  AmneziaWG and AmneziaWG 3.1;
 - Configuration management: group cards with collapsible profile lists;
 - Import by link / from clipboard / from file / via QR code;
+- WireGuard/AmneziaWG import from `.conf`, `.vpn`, `wireguard://`, `amneziawg://` and `vpn://`;
 - Subscription support with scheduled updates;
 - Routing: custom rules (routes), ad blocking, QUIC blocking;
 - Apps VPN mode is available directly from the menu;
 - Traffic statistics, log, latency testing;
 - Fast server and group switching.
 
-### AmneziaWG protocol support
+### WireGuard and AmneziaWG support
 
 **AmneziaWG** is a WireGuard-based protocol with additional traffic encryption that
 hides the connection signature from DPI and helps bypass deep traffic filtering.
@@ -168,8 +185,12 @@ In this fork, AmneziaWG support is implemented as follows:
    (branch `awg`) includes the AmneziaWG (`awg`) endpoint built on top of
    [amneziawg-go](https://github.com/amnezia-vpn/amneziawg-go);
 2. **libcore (gomobile)**: the updated library links the sing-box port with AmneziaWG;
-3. **UI**: the AmneziaWG profile type is available in the protocol list when creating
-   a configuration manually.
+3. **Config parsing**: plain WireGuard, legacy AmneziaWG (`Jc`, `Jmin`, `Jmax`,
+   `S1`, `S2`, `H1`-`H4`) and AmneziaWG 3.1 endpoint parameters are supported;
+4. **Import**: `.conf`, `.vpn`, `wireguard://`, `amneziawg://` and `vpn://`
+   imports are supported, including exports from the Amnezia app;
+5. **UI**: AmneziaWG profiles are shown as `AmneziaWG` and their connection
+   parameters can be edited manually.
 
 Thanks to the AmneziaVPN community for their work — without them this idea would
 never have come to life.
