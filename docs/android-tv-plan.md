@@ -33,6 +33,7 @@ The project can launch on TV, but the current UI still follows the phone interac
 ### First Release
 
 Add a dedicated `ossTv` product flavor in the existing `vendor` flavor dimension.
+The first TV build supports only `ossTv`; `fdroidTv` and `playTv` stay out of scope until there is a tested TV UX.
 
 Expected command:
 
@@ -274,7 +275,6 @@ Estimate: 1-2 days.
 
 ## Open Questions
 
-- Should the first TV build support only `ossTv`, or should it also support `fdroidTv` and `playTv` later?
 - Which Android TV devices should define the test baseline?
 - Should TV import prioritize subscription links over single profile links?
 - Should editing profiles on TV be disabled, read-only, or partially supported?

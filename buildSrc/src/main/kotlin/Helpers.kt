@@ -179,6 +179,7 @@ fun Project.setupApp() {
         flavorDimensions += "vendor"
         productFlavors {
             create("oss")
+            create("ossTv")
             create("fdroid")
             create("play")
             create("preview") {
@@ -193,6 +194,7 @@ fun Project.setupApp() {
         applicationVariants.all {
             outputs.all {
                 this as BaseVariantOutputImpl
+                val isTv = flavorName == "ossTv"
                 val isPreview = outputFileName.contains("-preview")
                 outputFileName = if (isPreview) {
                     outputFileName.replace(
@@ -200,9 +202,14 @@ fun Project.setupApp() {
                         "FreedomCat-" + requireMetadata().getProperty("PRE_VERSION_NAME")
                     ).replace("-preview", "")
                 } else {
-                    outputFileName.replace(project.name, "FreedomCat-$versionName")
+                    var name = outputFileName.replace(project.name, "FreedomCat-$versionName")
                         .replace("-release", "")
-                        .replace("-oss", "")
+                    name = if (isTv) {
+                        name.replace("-ossTv", "-tv")
+                    } else {
+                        name.replace("-oss", "")
+                    }
+                    name
                 }
             }
         }
