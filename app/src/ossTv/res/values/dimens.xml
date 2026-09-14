@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="tv_card_margin">10dp</dimen>
+    <dimen name="tv_card_min_height">84dp</dimen>
+    <dimen name="tv_card_stroke_width">2dp</dimen>
+    <dimen name="tv_icon_touch_size">56dp</dimen>
+    <dimen name="tv_icon_padding">16dp</dimen>
+    <dimen name="tv_list_horizontal_padding">24dp</dimen>
+    <dimen name="tv_list_top_padding">12dp</dimen>
+    <dimen name="tv_list_bottom_padding">96dp</dimen>
+    <dimen name="tv_profile_name_text_size">18sp</dimen>
+    <dimen name="tv_secondary_text_size">15sp</dimen>
+</resources>

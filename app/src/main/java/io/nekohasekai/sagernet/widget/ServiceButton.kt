@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.progressindicator.BaseProgressIndicator
 import io.nekohasekai.sagernet.R
+import io.nekohasekai.sagernet.SagerNet
 import io.nekohasekai.sagernet.bg.BaseService
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -67,6 +68,21 @@ class ServiceButton @JvmOverloads constructor(
     private var checked = false
     private var delayedAnimation: Job? = null
     private lateinit var progress: BaseProgressIndicator<*>
+
+    init {
+        if (SagerNet.isTv) {
+            isFocusable = true
+            setOnFocusChangeListener { view, hasFocus ->
+                val scale = if (hasFocus) 1.12f else 1f
+                view.animate()
+                    .scaleX(scale)
+                    .scaleY(scale)
+                    .setDuration(resources.getInteger(android.R.integer.config_shortAnimTime).toLong())
+                    .start()
+            }
+        }
+    }
+
     fun initProgress(progress: BaseProgressIndicator<*>) {
         this.progress = progress
         progress.progressDrawable?.addSpringAnimationEndListener(this)

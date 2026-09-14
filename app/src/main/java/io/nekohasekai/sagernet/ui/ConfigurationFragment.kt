@@ -339,10 +339,47 @@ class ConfigurationFragment @JvmOverloads constructor(
     }
 
     override fun onKeyDown(ketCode: Int, event: KeyEvent): Boolean {
+        if (SagerNet.isTv && ketCode == KeyEvent.KEYCODE_MENU && openFocusedItemMenu()) {
+            return true
+        }
+
         configurationListView.apply {
             if (!hasFocus()) requestFocus()
         }
         return super.onKeyDown(ketCode, event)
+    }
+
+    private fun openFocusedItemMenu(): Boolean {
+        if (!::configurationListView.isInitialized) return false
+
+        val focused = requireActivity().currentFocus ?: configurationListView.findFocus()
+        val holder = focused?.let { configurationListView.findContainingViewHolder(it) }
+            ?: return false
+
+        return when (holder) {
+            is GroupHolder -> {
+                holder.optionsButton.performClick()
+                true
+            }
+
+            is ConfigurationHolder -> {
+                when {
+                    holder.shareLayout.isVisible -> {
+                        holder.shareLayout.performClick()
+                        true
+                    }
+
+                    holder.editButton.isVisible && holder.editButton.isEnabled -> {
+                        holder.editButton.performClick()
+                        true
+                    }
+
+                    else -> false
+                }
+            }
+
+            else -> false
+        }
     }
 
     private val importFile =
