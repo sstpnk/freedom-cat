@@ -14,4 +14,12 @@
     <string name="tv_home_open_settings">Settings</string>
     <string name="tv_home_speed_idle">Speed will appear after connection</string>
     <string name="tv_home_status_ready">Ready</string>
+    <string name="tv_import_title">Add profile or subscription</string>
+    <string name="tv_import_hint">Paste a subscription URL or a profile link</string>
+    <string name="tv_import_from_clipboard">Paste from clipboard</string>
+    <string name="tv_import_action">Import</string>
+    <string name="tv_import_open_full_list">Open full configuration list</string>
+    <string name="tv_import_empty">Enter a link first</string>
+    <string name="tv_import_subscription_added">Subscription added and update started</string>
+    <string name="tv_import_profile_added">Profile imported</string>
 </resources>

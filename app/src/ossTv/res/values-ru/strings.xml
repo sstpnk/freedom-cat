@@ -14,4 +14,12 @@
     <string name="tv_home_open_settings">Настройки</string>
     <string name="tv_home_speed_idle">Скорость появится после подключения</string>
     <string name="tv_home_status_ready">Готово</string>
+    <string name="tv_import_title">Добавить профиль или подписку</string>
+    <string name="tv_import_hint">Вставьте ссылку подписки или ссылку профиля</string>
+    <string name="tv_import_from_clipboard">Вставить из буфера</string>
+    <string name="tv_import_action">Импортировать</string>
+    <string name="tv_import_open_full_list">Открыть полный список конфигураций</string>
+    <string name="tv_import_empty">Сначала введите ссылку</string>
+    <string name="tv_import_subscription_added">Подписка добавлена, обновление запущено</string>
+    <string name="tv_import_profile_added">Профиль импортирован</string>
 </resources>

@@ -72,7 +72,7 @@ class TvHomeFragment : Fragment(R.layout.layout_tv_home),
             }
         }
         view.findViewById<MaterialButton>(R.id.profiles_button).setOnClickListener {
-            mainActivity().displayConfigurationList()
+            mainActivity().displayFragment(TvImportFragment())
         }
         view.findViewById<MaterialButton>(R.id.settings_button).setOnClickListener {
             mainActivity().displayFragmentWithId(R.id.nav_settings)
