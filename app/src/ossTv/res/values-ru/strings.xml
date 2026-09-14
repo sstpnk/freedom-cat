@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tv_home_title">FreedomCat TV</string>
+    <string name="tv_home_profiles">Профили</string>
+    <string name="tv_home_profile_list">Все профили</string>
+    <string name="tv_home_selected_profile">Выбранный профиль</string>
+    <string name="tv_home_no_profile">Профиль не выбран</string>
+    <string name="tv_home_no_profiles">Профилей пока нет</string>
+    <string name="tv_home_open_profiles">Профили и импорт</string>
+    <string name="tv_home_update_subscriptions">Обновить подписки</string>
+    <string name="tv_home_connection_test">Проверка соединения</string>
+    <string name="tv_home_no_subscriptions">Нет подписок для обновления</string>
+    <string name="tv_home_subscription_update_started">Обновление подписок запущено</string>
+    <string name="tv_home_open_settings">Настройки</string>
+    <string name="tv_home_speed_idle">Скорость появится после подключения</string>
+    <string name="tv_home_status_ready">Готово</string>
+</resources>

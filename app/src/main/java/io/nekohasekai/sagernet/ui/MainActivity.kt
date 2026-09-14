@@ -60,6 +60,12 @@ class MainActivity : ThemedActivity(),
 
     companion object {
         const val EXTRA_NAV_ID = "navigate_to"
+        private const val TV_HOME_FRAGMENT_CLASS = "io.nekohasekai.sagernet.ui.TvHomeFragment"
+    }
+
+    interface StatusAwareFragment {
+        fun onServiceStateChanged(state: BaseService.State)
+        fun onSpeedUpdated(stats: SpeedDisplayData)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,7 +90,8 @@ class MainActivity : ThemedActivity(),
             displayFragmentWithId(if (navId != 0) navId else R.id.nav_configuration)
         }
         onBackPressedDispatcher.addCallback {
-            if (supportFragmentManager.findFragmentById(R.id.fragment_holder) is ConfigurationFragment) {
+            val fragment = supportFragmentManager.findFragmentById(R.id.fragment_holder)
+            if (fragment is ConfigurationFragment || fragment.isTvHomeFragment()) {
                 moveTaskToBack(true)
             } else {
                 displayFragmentWithId(R.id.nav_configuration)
@@ -92,9 +99,7 @@ class MainActivity : ThemedActivity(),
         }
 
         binding.fab.setOnClickListener {
-            if (DataStore.serviceState.canStop) SagerNet.stopService() else connect.launch(
-                null
-            )
+            toggleServiceFromUi()
         }
         binding.stats.setOnClickListener { if (DataStore.serviceState.connected) binding.stats.testConnection() }
 
@@ -175,6 +180,14 @@ class MainActivity : ThemedActivity(),
             error("not started")
         }
         return connection.service!!.urlTest()
+    }
+
+    fun toggleServiceFromUi() {
+        if (DataStore.serviceState.canStop) {
+            SagerNet.stopService()
+        } else {
+            connect.launch(null)
+        }
     }
 
     suspend fun importSubscription(uri: Uri) {
@@ -359,7 +372,7 @@ class MainActivity : ThemedActivity(),
     fun displayFragmentWithId(@IdRes id: Int): Boolean {
         when (id) {
             R.id.nav_configuration -> {
-                displayFragment(ConfigurationFragment())
+                displayFragment(createConfigurationFragment())
             }
 
             R.id.nav_route -> displayFragment(RouteFragment())
@@ -374,6 +387,29 @@ class MainActivity : ThemedActivity(),
         return true
     }
 
+    fun displayConfigurationList() {
+        displayFragment(ConfigurationFragment())
+        navigation.menu.findItem(R.id.nav_configuration).isChecked = true
+    }
+
+    private fun createConfigurationFragment(): Fragment {
+        if (SagerNet.isTv) {
+            try {
+                val fragment = Class.forName(TV_HOME_FRAGMENT_CLASS)
+                    .getDeclaredConstructor()
+                    .newInstance()
+                if (fragment is Fragment) return fragment
+            } catch (_: ReflectiveOperationException) {
+                // The phone APK can still run on TV devices; keep the legacy list as fallback.
+            }
+        }
+        return ConfigurationFragment()
+    }
+
+    private fun Fragment?.isTvHomeFragment(): Boolean {
+        return this?.javaClass?.name == TV_HOME_FRAGMENT_CLASS
+    }
+
     private fun changeState(
         state: BaseService.State,
         msg: String? = null,
@@ -383,6 +419,8 @@ class MainActivity : ThemedActivity(),
 
         binding.fab.changeState(state, DataStore.serviceState, animate)
         binding.stats.changeState(state)
+        (supportFragmentManager.findFragmentById(R.id.fragment_holder) as? StatusAwareFragment)
+            ?.onServiceStateChanged(state)
         if (msg != null) snackbar(getString(R.string.vpn_error, msg)).show()
     }
 
@@ -422,6 +460,8 @@ class MainActivity : ThemedActivity(),
     // ONLY do UI update here, write DB in bg process
     override fun cbSpeedUpdate(stats: SpeedDisplayData) {
         binding.stats.updateSpeed(stats.txRateProxy, stats.rxRateProxy)
+        (supportFragmentManager.findFragmentById(R.id.fragment_holder) as? StatusAwareFragment)
+            ?.onSpeedUpdated(stats)
     }
 
     override fun cbTrafficUpdate(data: TrafficData) {

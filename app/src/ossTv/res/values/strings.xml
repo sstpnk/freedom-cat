@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tv_home_title">FreedomCat TV</string>
+    <string name="tv_home_profiles">Profiles</string>
+    <string name="tv_home_profile_list">All profiles</string>
+    <string name="tv_home_selected_profile">Selected profile</string>
+    <string name="tv_home_no_profile">No profile selected</string>
+    <string name="tv_home_no_profiles">No profiles yet</string>
+    <string name="tv_home_open_profiles">Profiles and import</string>
+    <string name="tv_home_update_subscriptions">Update subscriptions</string>
+    <string name="tv_home_connection_test">Connection test</string>
+    <string name="tv_home_no_subscriptions">No subscriptions to update</string>
+    <string name="tv_home_subscription_update_started">Subscription update started</string>
+    <string name="tv_home_open_settings">Settings</string>
+    <string name="tv_home_speed_idle">Speed will appear after connection</string>
+    <string name="tv_home_status_ready">Ready</string>
+</resources>

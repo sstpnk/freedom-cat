@@ -10,4 +10,13 @@
     <dimen name="tv_list_bottom_padding">96dp</dimen>
     <dimen name="tv_profile_name_text_size">18sp</dimen>
     <dimen name="tv_secondary_text_size">15sp</dimen>
+    <dimen name="tv_screen_padding_horizontal">56dp</dimen>
+    <dimen name="tv_screen_padding_vertical">36dp</dimen>
+    <dimen name="tv_home_gap">24dp</dimen>
+    <dimen name="tv_home_status_width">388dp</dimen>
+    <dimen name="tv_home_panel_radius">8dp</dimen>
+    <dimen name="tv_home_button_height">58dp</dimen>
+    <dimen name="tv_home_title_text_size">34sp</dimen>
+    <dimen name="tv_home_status_text_size">22sp</dimen>
+    <dimen name="tv_home_profile_text_size">24sp</dimen>
 </resources>

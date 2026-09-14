@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/tv_home_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/tv_home_background"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/tv_screen_padding_horizontal"
+    android:paddingTop="@dimen/tv_screen_padding_vertical"
+    android:paddingEnd="@dimen/tv_screen_padding_horizontal"
+    android:paddingBottom="@dimen/tv_screen_padding_vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/tv_home_title"
+            android:textColor="@color/material_light_blue_50"
+            android:textSize="@dimen/tv_home_title_text_size"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/state_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/tv_panel_background"
+            android:paddingStart="22dp"
+            android:paddingTop="10dp"
+            android:paddingEnd="22dp"
+            android:paddingBottom="10dp"
+            android:textColor="@color/tv_status_text"
+            android:textSize="@dimen/tv_home_status_text_size"
+            android:textStyle="bold"
+            tools:text="@string/not_connected" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/tv_home_gap"
+        android:layout_weight="1"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/status_panel"
+            android:layout_width="@dimen/tv_home_status_width"
+            android:layout_height="match_parent"
+            android:background="@drawable/tv_panel_background"
+            android:orientation="vertical"
+            android:padding="28dp">
+
+            <TextView
+                android:id="@+id/selected_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/tv_home_selected_profile"
+                android:textColor="@color/material_blue_grey_100"
+                android:textSize="@dimen/tv_secondary_text_size" />
+
+            <LinearLayout
+                android:id="@+id/selected_profile_panel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:background="@drawable/tv_selected_profile_background"
+                android:orientation="vertical"
+                android:padding="22dp">
+
+                <TextView
+                    android:id="@+id/selected_profile_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="2"
+                    android:textColor="@color/material_light_blue_50"
+                    android:textSize="@dimen/tv_home_profile_text_size"
+                    android:textStyle="bold"
+                    tools:text="HostVDS" />
+
+                <TextView
+                    android:id="@+id/selected_profile_meta"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:ellipsize="end"
+                    android:maxLines="2"
+                    android:textColor="@color/material_blue_grey_100"
+                    android:textSize="@dimen/tv_secondary_text_size"
+                    tools:text="AmneziaWG / Ungrouped" />
+
+                <TextView
+                    android:id="@+id/selected_profile_traffic"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="@color/material_blue_grey_100"
+                    android:textSize="@dimen/tv_secondary_text_size"
+                    tools:text="12 MB / 48 MB" />
+
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/connect_button"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/tv_home_button_height"
+                android:layout_marginTop="24dp"
+                android:focusable="true"
+                android:text="@string/connect"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                app:backgroundTint="@color/tv_primary_button_background"
+                app:cornerRadius="8dp" />
+
+            <TextView
+                android:id="@+id/speed_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:text="@string/tv_home_speed_idle"
+                android:textColor="@color/material_blue_grey_100"
+                android:textSize="@dimen/tv_secondary_text_size" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/profiles_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/tv_home_button_height"
+                    android:focusable="true"
+                    android:text="@string/tv_home_open_profiles"
+                    android:textAllCaps="false"
+                    android:textColor="@color/material_light_blue_50"
+                    app:backgroundTint="@color/tv_secondary_button_background"
+                    app:cornerRadius="8dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/settings_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/tv_home_button_height"
+                    android:layout_marginTop="10dp"
+                    android:focusable="true"
+                    android:text="@string/tv_home_open_settings"
+                    android:textAllCaps="false"
+                    android:textColor="@color/material_light_blue_50"
+                    app:backgroundTint="@color/tv_secondary_button_background"
+                    app:cornerRadius="8dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="@dimen/tv_home_gap"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/profile_list_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/tv_home_profile_list"
+                android:textColor="@color/material_light_blue_50"
+                android:textSize="@dimen/tv_home_status_text_size"
+                android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/profile_list"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="14dp"
+                android:layout_weight="1"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:focusable="true"
+                android:paddingBottom="8dp"
+                tools:listitem="@layout/layout_tv_profile_item" />
+
+            <TextView
+                android:id="@+id/empty_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/tv_home_no_profiles"
+                android:textColor="@color/material_blue_grey_100"
+                android:textSize="@dimen/tv_secondary_text_size"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <LinearLayout
+                android:id="@+id/action_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/update_subscriptions_button"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/tv_home_button_height"
+                    android:layout_weight="1"
+                    android:focusable="true"
+                    android:text="@string/tv_home_update_subscriptions"
+                    android:textAllCaps="false"
+                    android:textColor="@color/material_light_blue_50"
+                    app:backgroundTint="@color/tv_secondary_button_background"
+                    app:cornerRadius="8dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/connection_test_button"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/tv_home_button_height"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:focusable="true"
+                    android:text="@string/tv_home_connection_test"
+                    android:textAllCaps="false"
+                    android:textColor="@color/material_light_blue_50"
+                    app:backgroundTint="@color/tv_secondary_button_background"
+                    app:cornerRadius="8dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
