@@ -293,6 +293,75 @@ class WireGuardFmtTest {
     }
 
     @Test
+    fun parsesVpnStackGeneratedAwg31ConfigContract() {
+        val bean = parseWireGuardConfig(
+            """
+                [Interface]
+                PrivateKey = client-private
+                Address = 10.8.0.2/32
+                DNS = 1.1.1.1
+                MTU = 1280
+
+                # --- Транспортная маскировка ---
+                Jc = 3
+                Jmin = 50
+                Jmax = 1000
+                S1 = 103
+                S2 = 21
+                S3 = 43
+                S4 = 12
+
+                # --- Динамические заголовки пакетов ---
+                H1 = 1
+                H2 = 2
+                H3 = 3
+                H4 = 4
+
+                # --- AmneziaWG 3.1 ---
+                HeaderProtectionKey = AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+                ContentPaddingAddition = 0-0
+                RekeyAfterTime = 0-0
+                RekeyTimeout = 0-0
+                RejectAfterTime = 0-0
+                KeepaliveTimeout = 0-0
+                MaxHandshakeAttempts = 0-0
+                RandomTrailers = on
+                DisableCookies = off
+
+                # --- Маскировочные CPS-пакеты ---
+                I1 = <b 0x160301>
+                I2 = <r 3><b 0x0303><r 32>
+                I3 = <b 0x00><r 5>
+                I4 = <r 40>
+                I5 = <b 0xC0000000><r 8><b 0x04><r 100>
+
+                [Peer]
+                PublicKey = peer-public
+                PresharedKey = peer-psk
+                AllowedIPs = 0.0.0.0/0, ::/0
+                PersistentKeepalive = 25
+                Endpoint = vpn.example.test:51820
+            """.trimIndent()
+        ).single()
+
+        assertTrue(bean.enableAmnezia == true)
+        assertEquals("vpn.example.test", bean.serverAddress)
+        assertEquals(51820, bean.serverPort)
+        assertEquals(1280, bean.mtu)
+        assertEquals(43, bean.s3)
+        assertEquals(12, bean.s4)
+        assertEquals("1", bean.h1)
+        assertEquals("4", bean.h4)
+        assertEquals("<b 0x160301>", bean.i1)
+        assertEquals("<b 0xC0000000><r 8><b 0x04><r 100>", bean.i5)
+        assertBeanField(bean, "headerProtectionKey", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")
+        assertBeanField(bean, "contentPaddingAddition", "0-0")
+        assertBeanField(bean, "randomTrailers", true)
+        assertBeanField(bean, "disableCookies", false)
+        assertBeanField(bean, "persistentKeepalive", "25")
+    }
+
+    @Test
     fun awg31ConfigBuildsSingBoxEndpointWithNewOptions() {
         val endpoint = buildSingBoxEndpointAwgBean(parseWireGuardConfig(awg31Config()).single())
 
