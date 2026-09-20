@@ -1100,12 +1100,6 @@ class ConfigurationFragment @JvmOverloads constructor(
                 SagerDatabase.groupDao.createGroup(ProxyGroup(ungrouped = true))
                 newGroupList = ArrayList(SagerDatabase.groupDao.allGroups())
             }
-            newGroupList.find { it.ungrouped }?.let {
-                if (SagerDatabase.proxyDao.countByGroup(it.id) == 0L) {
-                    newGroupList.remove(it)
-                }
-            }
-
             if (select) {
                 forceExpanded = true
             } else if (!forceExpanded && expanded.isEmpty()) {
@@ -1436,7 +1430,7 @@ class ConfigurationFragment @JvmOverloads constructor(
             groupExpand.animate().rotation(if (adapter.expanded.contains(group.id)) 0f else -90f)
                 .setDuration(200).start()
 
-            editButton.isGone = proxyGroup.ungrouped
+            editButton.isVisible = proxyGroup.id !in GroupUpdater.updating
             updateButton.isVisible = proxyGroup.type == GroupType.SUBSCRIPTION
             groupName.text = proxyGroup.displayName()
 
@@ -1458,10 +1452,6 @@ class ConfigurationFragment @JvmOverloads constructor(
 
                 if (proxyGroup.type != GroupType.SUBSCRIPTION) {
                     popup.menu.removeItem(R.id.action_share_subscription)
-                }
-                if (proxyGroup.ungrouped) {
-                    popup.menu.removeItem(R.id.action_group_edit)
-                    popup.menu.removeItem(R.id.action_group_delete)
                 }
                 if (proxyGroup.id in GroupUpdater.updating) {
                     popup.menu.removeItem(R.id.action_group_edit)
@@ -1499,7 +1489,7 @@ class ConfigurationFragment @JvmOverloads constructor(
 
                 subscriptionUpdateProgress.isVisible = false
                 updateButton.isVisible = proxyGroup.type == GroupType.SUBSCRIPTION
-                editButton.isGone = proxyGroup.ungrouped
+                editButton.isVisible = true
             }
 
             val subscription = proxyGroup.subscription

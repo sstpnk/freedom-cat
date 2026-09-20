@@ -46,7 +46,9 @@ object DataStore : OnPreferenceDataStoreChangeListener {
 
     fun currentGroupId(): Long {
         val currentSelected = configurationStore.getLong(Key.PROFILE_GROUP, -1)
-        if (currentSelected > 0L) return currentSelected
+        if (currentSelected > 0L && SagerDatabase.groupDao.getById(currentSelected) != null) {
+            return currentSelected
+        }
         val groups = SagerDatabase.groupDao.allGroups()
         if (groups.isNotEmpty()) {
             val groupId = groups[0].id
