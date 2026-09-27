@@ -54,6 +54,14 @@
                 android:textColor="?android:attr/textColorSecondary"
                 android:textSize="14sp" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/about_check_update"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="16dp"
+                android:text="@string/check_update_release" />
+
             <TextView
                 android:id="@+id/about_intro"
                 android:layout_width="match_parent"

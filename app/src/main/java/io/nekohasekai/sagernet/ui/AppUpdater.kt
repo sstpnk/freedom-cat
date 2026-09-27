@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import androidx.activity.result.ActivityResultLauncher
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.FileProvider
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import io.nekohasekai.sagernet.BuildConfig
@@ -34,6 +35,7 @@ class AppUpdater(
     }
 
     private var activeUpdate: UpdateInfo? = null
+    private var progressDialog: AlertDialog? = null
 
     fun checkOnStartup() {
         runOnDefaultDispatcher {
@@ -54,6 +56,29 @@ class AppUpdater(
         val apkFile = update.localFile
         if (apkFile.isFile) {
             installOrRequestPermission(update)
+        }
+    }
+
+    fun checkManually() {
+        showProgress(R.string.check_update_release, R.string.update_checking)
+        runOnDefaultDispatcher {
+            runCatching {
+                checkLatestRelease()
+            }.onSuccess { update ->
+                onMainDispatcher {
+                    dismissProgress()
+                    if (update == null) {
+                        activity.snackbar(activity.getString(R.string.check_update_no)).show()
+                    } else {
+                        showUpdateDialog(update)
+                    }
+                }
+            }.onFailure { error ->
+                onMainDispatcher {
+                    dismissProgress()
+                    activity.alert(error.readableMessage).show()
+                }
+            }
         }
     }
 
@@ -111,17 +136,19 @@ class AppUpdater(
     }
 
     private fun downloadAndInstall(update: UpdateInfo) {
-        activity.snackbar(activity.getString(R.string.update_download_started)).show()
+        showProgress(R.string.update_dialog_title, R.string.update_download_started)
         runOnDefaultDispatcher {
             runCatching {
                 downloadApk(update)
             }.onSuccess {
                 onMainDispatcher {
-                    activity.snackbar(activity.getString(R.string.update_download_complete)).show()
+                    progressDialog?.setMessage(activity.getString(R.string.update_download_complete))
+                    dismissProgress()
                     installOrRequestPermission(update)
                 }
             }.onFailure { error ->
                 onMainDispatcher {
+                    dismissProgress()
                     activity.alert(error.readableMessage).show()
                 }
             }
@@ -189,6 +216,21 @@ class AppUpdater(
                 .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         )
+    }
+
+    private fun showProgress(titleRes: Int, messageRes: Int) {
+        dismissProgress()
+        progressDialog = MaterialAlertDialogBuilder(activity)
+            .setTitle(titleRes)
+            .setMessage(messageRes)
+            .setCancelable(false)
+            .create()
+            .also { it.show() }
+    }
+
+    private fun dismissProgress() {
+        progressDialog?.dismiss()
+        progressDialog = null
     }
 
     private fun updateCacheDir(): File {

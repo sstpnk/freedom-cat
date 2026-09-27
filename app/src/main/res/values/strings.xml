@@ -10,7 +10,7 @@
     <string name="app_version">Version</string>
     <string name="version_x">Version (%s)</string>
     <string name="logcat">Export debug information</string>
-    <string name="menu_configuration">Configuration</string>
+    <string name="menu_configuration">VPN Configurations</string>
     <string name="menu_group">Group</string>
     <string name="theme">Theme</string>
     <string name="group_default">Ungrouped</string>
@@ -20,10 +20,10 @@
     <string name="tile_title">Switcher</string>
     <string name="menu_traffic">Traffic</string>
     <string name="menu_about">About</string>
-    <string name="about_intro">FreedomCat is a universal proxy client for Android built on top of sing-box.\n\nIt is a fork of NekoBox for Android tailored to the author\'s own needs and expectations:</string>
-    <string name="about_feature_ui">• simplified UI — groups and connection configurations on a single screen;</string>
-    <string name="about_feature_awg">• support for the AmneziaWG protocol (WireGuard with traffic obfuscation to bypass DPI);</string>
-    <string name="about_feature_minimal">• nothing excessive — everything unused has been removed.</string>
+    <string name="about_intro">FreedomCat is a universal VPN client for Android built on sing-box. It works for everyday VPN use, precise routing, and servers where connection stability and censorship resistance matter.</string>
+    <string name="about_feature_ui">• split tunneling for apps: route only selected apps through VPN, or exclude apps that should stay direct;</string>
+    <string name="about_feature_awg">• WireGuard and AmneziaWG, including new AmneziaWG 3.1 configurations;</string>
+    <string name="about_feature_minimal">• separate phone and Android TV builds, with controls made for touchscreens or remotes.</string>
     <string name="about_protocols">Supported protocols: SOCKS, HTTP(S), SSH, Shadowsocks, VMess, Trojan, VLESS, AnyTLS, ShadowTLS, TUIC, Hysteria 1/2, WireGuard, AmneziaWG and more.</string>
     <string name="github_releases_hint">New versions are available on GitHub</string>
     <string name="project_url">https://github.com/sstpnk/freedom-cat</string>
@@ -493,7 +493,7 @@
     <string name="tools_network">Network</string>
     <string name="mtu" translatable="false">MTU</string>
 
-    <string name="backup">Backup</string>
+    <string name="backup">Backup and Import</string>
     <string name="backup_groups_and_configurations">Groups and configurations</string>
     <string name="backup_rules">Routing rules</string>
     <string name="backup_settings">Settings</string>
@@ -537,7 +537,7 @@
     <string name="is_outbound_only">The JSON set is outbound</string>
     <string name="save">Save</string>
     <string name="mal_close">Close</string>
-    <string name="log_level">Log Level</string>
+    <string name="log_level">Detail Level</string>
     <string name="xtls_flow">Flow (VLESS Sub-protocol)</string>
     <string name="bypass_lan_in_core">Bypass LAN in Core</string>
     <string name="need_restart">Restart APP to apply changes</string>
@@ -577,9 +577,10 @@
     <string name="wake_reset_connections">Reset outbound connections when device wake from sleep</string>
     <string name="preview_version_hint">This application is a preview version and may contain many problems. If you do not want to test it, please go to GitHub to download the Release version!</string>
     <string name="check_update_preview">Check for preview version updates</string>
-    <string name="check_update_release">Check for release version updates</string>
+    <string name="check_update_release">Check for updates</string>
     <string name="update_dialog_title">New version available</string>
     <string name="update_dialog_message">Current version: %1$s\nAvailable version: %2$s\nDo you want to download it?</string>
+    <string name="update_checking">Checking for updates…</string>
     <string name="update_download_started">Downloading update…</string>
     <string name="update_download_complete">Update downloaded. Opening installer…</string>
     <string name="update_download_failed">Unable to save downloaded update.</string>
@@ -587,7 +588,7 @@
     <string name="update_install_permission_message">Android requires permission to install apps from this source. Enable it for FreedomCat, then return to continue installation.</string>
     <string name="update_asset_not_found">Release asset not found: %s</string>
     <string name="update_no_supported_abi">No compatible APK found for this device architecture.</string>
-    <string name="check_update_no">Check successful, but no updates.</string>
+    <string name="check_update_no">You are using the latest version.</string>
     <string name="reset_settings">Restore default settings</string>
     <string name="reset_settings_message">Restore default settings, but data such as nodes and groups will be retained. To completely clear data, clear application data directly in the system settings.</string>
     <string name="minimize">Minimize</string>

@@ -31,6 +31,9 @@ class AboutFragment : ToolbarFragment(R.layout.layout_about) {
                 Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/sstpnk/freedom-cat"))
             )
         }
+        binding.aboutCheckUpdate.setOnClickListener {
+            (activity as? MainActivity)?.checkForUpdatesManually()
+        }
     }
 
 }

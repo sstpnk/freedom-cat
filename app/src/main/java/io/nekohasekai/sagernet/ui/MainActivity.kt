@@ -66,6 +66,7 @@ class MainActivity : ThemedActivity(),
     }
 
     private lateinit var appUpdater: AppUpdater
+    private var serviceControlsVisible = false
     private val unknownSourcesSettings =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if (::appUpdater.isInitialized) {
@@ -114,6 +115,11 @@ class MainActivity : ThemedActivity(),
         binding.stats.setOnClickListener { if (DataStore.serviceState.connected) binding.stats.testConnection() }
 
         setContentView(binding.root)
+        if (savedInstanceState != null) {
+            serviceControlsVisible =
+                supportFragmentManager.findFragmentById(R.id.fragment_holder) is ConfigurationFragment
+            applyServiceControlsVisibility()
+        }
         changeState(BaseService.State.Idle)
         connection.connect(this, this)
         DataStore.configurationStore.registerChangeListener(this)
@@ -164,7 +170,11 @@ class MainActivity : ThemedActivity(),
             !DataStore.bypass -> R.string.vpn_mode_proxy
             else -> R.string.vpn_mode_bypass
         }
-        return getString(R.string.vpn_mode) + " - " + getString(mode)
+        return getString(R.string.vpn_mode) + ": " + getString(mode)
+    }
+
+    fun checkForUpdatesManually() {
+        appUpdater.checkManually()
     }
 
     override fun onResume() {
@@ -371,18 +381,24 @@ class MainActivity : ThemedActivity(),
 
     @SuppressLint("CommitTransaction")
     fun displayFragment(fragment: Fragment) {
-        if (fragment is ConfigurationFragment) {
-            binding.stats.allowShow = true
-            binding.fab.show()
-        } else {
-            binding.stats.allowShow = false
-            binding.stats.performHide()
-            binding.fab.hide()
-        }
+        serviceControlsVisible = fragment is ConfigurationFragment
+        applyServiceControlsVisibility()
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_holder, fragment)
             .commitAllowingStateLoss()
         binding.drawerLayout.closeDrawers()
+    }
+
+    private fun applyServiceControlsVisibility() {
+        binding.stats.allowShow = serviceControlsVisible
+        if (serviceControlsVisible) {
+            binding.fab.show()
+            binding.stats.changeState(DataStore.serviceState)
+        } else {
+            binding.stats.performHide()
+            binding.fab.hide()
+            binding.fabProgress.hide()
+        }
     }
 
     fun displayFragmentWithId(@IdRes id: Int): Boolean {
@@ -434,7 +450,11 @@ class MainActivity : ThemedActivity(),
         DataStore.serviceState = state
 
         binding.fab.changeState(state, DataStore.serviceState, animate)
-        binding.stats.changeState(state)
+        if (serviceControlsVisible) {
+            binding.stats.changeState(state)
+        } else {
+            binding.stats.performHide()
+        }
         (supportFragmentManager.findFragmentById(R.id.fragment_holder) as? StatusAwareFragment)
             ?.onServiceStateChanged(state)
         if (msg != null) snackbar(getString(R.string.vpn_error, msg)).show()
@@ -442,7 +462,7 @@ class MainActivity : ThemedActivity(),
 
     override fun snackbarInternal(text: CharSequence): Snackbar {
         return Snackbar.make(binding.coordinator, text, Snackbar.LENGTH_LONG).apply {
-            if (binding.fab.isShown) {
+            if (serviceControlsVisible && binding.fab.isShown) {
                 anchorView = binding.fab
             }
             // TODO
