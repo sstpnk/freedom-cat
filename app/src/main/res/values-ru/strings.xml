@@ -470,6 +470,13 @@
 <string name="update_current_subscription">Обновить подписку текущей группы</string>
 <string name="update_dialog_message">Текущая версия: %1$s\nДоступная версия: %2$s\nХотите загрузить её?</string>
 <string name="update_dialog_title">Доступна новая версия</string>
+<string name="update_download_started">Загрузка обновления…</string>
+<string name="update_download_complete">Обновление загружено. Открываем установщик…</string>
+<string name="update_download_failed">Не удалось сохранить загруженное обновление.</string>
+<string name="update_install_permission_title">Разрешите установку обновления</string>
+<string name="update_install_permission_message">Android требует разрешение на установку приложений из этого источника. Разрешите его для FreedomCat, затем вернитесь для продолжения установки.</string>
+<string name="update_asset_not_found">В релизе не найден файл: %s</string>
+<string name="update_no_supported_abi">Для архитектуры этого устройства нет совместимого APK.</string>
 <string name="update_settings">Обновить настройки</string>
 <string name="update_subscription_warning">Прокси-сервер не подключен, вы уверены, что хотите продолжить обновление?</string>
 <string name="update_when_connected_only">Обновлять только при подключении</string>

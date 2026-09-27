@@ -580,6 +580,13 @@
     <string name="check_update_release">Check for release version updates</string>
     <string name="update_dialog_title">New version available</string>
     <string name="update_dialog_message">Current version: %1$s\nAvailable version: %2$s\nDo you want to download it?</string>
+    <string name="update_download_started">Downloading update…</string>
+    <string name="update_download_complete">Update downloaded. Opening installer…</string>
+    <string name="update_download_failed">Unable to save downloaded update.</string>
+    <string name="update_install_permission_title">Allow update installation</string>
+    <string name="update_install_permission_message">Android requires permission to install apps from this source. Enable it for FreedomCat, then return to continue installation.</string>
+    <string name="update_asset_not_found">Release asset not found: %s</string>
+    <string name="update_no_supported_abi">No compatible APK found for this device architecture.</string>
     <string name="check_update_no">Check successful, but no updates.</string>
     <string name="reset_settings">Restore default settings</string>
     <string name="reset_settings_message">Restore default settings, but data such as nodes and groups will be retained. To completely clear data, clear application data directly in the system settings.</string>

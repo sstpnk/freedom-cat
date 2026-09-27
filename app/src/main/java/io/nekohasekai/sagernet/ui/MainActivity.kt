@@ -11,6 +11,7 @@ import android.os.RemoteException
 import android.view.KeyEvent
 import android.view.MenuItem
 import androidx.activity.addCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.IdRes
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
@@ -61,7 +62,16 @@ class MainActivity : ThemedActivity(),
     companion object {
         const val EXTRA_NAV_ID = "navigate_to"
         private const val TV_HOME_FRAGMENT_CLASS = "io.nekohasekai.sagernet.ui.TvHomeFragment"
+        private var updateAutoCheckStarted = false
     }
+
+    private lateinit var appUpdater: AppUpdater
+    private val unknownSourcesSettings =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (::appUpdater.isInitialized) {
+                appUpdater.installDownloadedUpdateIfAllowed()
+            }
+        }
 
     interface StatusAwareFragment {
         fun onServiceStateChanged(state: BaseService.State)
@@ -108,6 +118,7 @@ class MainActivity : ThemedActivity(),
         connection.connect(this, this)
         DataStore.configurationStore.registerChangeListener(this)
         GroupManager.userInterface = GroupInterfaceAdapter(this)
+        appUpdater = AppUpdater(this, unknownSourcesSettings)
 
         if (intent?.action == Intent.ACTION_VIEW) {
             onNewIntent(intent)
@@ -133,6 +144,11 @@ class MainActivity : ThemedActivity(),
                 .setMessage(R.string.preview_version_hint)
                 .setPositiveButton(android.R.string.ok, null)
                 .show()
+        }
+
+        if (!BuildConfig.DEBUG && !updateAutoCheckStarted) {
+            updateAutoCheckStarted = true
+            appUpdater.checkOnStartup()
         }
     }
 
