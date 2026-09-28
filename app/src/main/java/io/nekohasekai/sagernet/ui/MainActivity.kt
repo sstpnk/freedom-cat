@@ -14,6 +14,7 @@ import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.IdRes
 import androidx.core.app.ActivityCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceDataStore
@@ -391,13 +392,15 @@ class MainActivity : ThemedActivity(),
 
     private fun applyServiceControlsVisibility() {
         binding.stats.allowShow = serviceControlsVisible
+        binding.stats.isVisible = serviceControlsVisible
+        binding.fab.isVisible = serviceControlsVisible
+        binding.fabProgress.isVisible = serviceControlsVisible && binding.fabProgress.isVisible
         if (serviceControlsVisible) {
             binding.fab.show()
             binding.stats.changeState(DataStore.serviceState)
         } else {
             binding.stats.performHide()
-            binding.fab.hide()
-            binding.fabProgress.hide()
+            binding.fabProgress.isVisible = false
         }
     }
 

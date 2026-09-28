@@ -64,18 +64,25 @@ class StatsBar @JvmOverloads constructor(
 
 
     override fun setOnClickListener(l: OnClickListener?) {
-        statusText = findViewById(R.id.status)
-        txText = findViewById(R.id.tx)
-        rxText = findViewById(R.id.rx)
+        ensureViews()
         super.setOnClickListener(l)
     }
 
+    private fun ensureViews() {
+        if (this::statusText.isInitialized) return
+        statusText = findViewById(R.id.status)
+        txText = findViewById(R.id.tx)
+        rxText = findViewById(R.id.rx)
+    }
+
     private fun setStatus(text: CharSequence) {
+        ensureViews()
         statusText.text = text
         TooltipCompat.setTooltipText(this, text)
     }
 
     fun changeState(state: BaseService.State) {
+        ensureViews()
         hideOnScroll = false
         if (state == BaseService.State.Connected) {
             if (allowShow) performShow()
@@ -97,6 +104,7 @@ class StatsBar @JvmOverloads constructor(
 
     @SuppressLint("SetTextI18n")
     fun updateSpeed(txRate: Long, rxRate: Long) {
+        ensureViews()
         txText.text = "▲  ${
             context.getString(
                 R.string.speed, Formatter.formatFileSize(context, txRate)
@@ -110,6 +118,7 @@ class StatsBar @JvmOverloads constructor(
     }
 
     fun testConnection() {
+        ensureViews()
         val activity = context as MainActivity
         isEnabled = false
         setStatus(app.getText(R.string.connection_test_testing))
