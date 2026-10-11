@@ -25,3 +25,6 @@ app/src/main/java/libcore/
 # signing keystore (local only, uploaded to GitHub Secrets as RELEASE_KEYSTORE)
 release.keystore
 keystore-credentials.txt
+
+# local build dependencies fetched by buildScript/lib/core/get_source.sh
+/deps/

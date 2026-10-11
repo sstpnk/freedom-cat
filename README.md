@@ -92,9 +92,15 @@
 
 Требуется: JDK 17+, Android SDK (platform 35), Android NDK.
 
+Ядро `libcore` собирается из исходников sing-box и libneko. Перед сборкой
+запустите `bash buildScript/lib/core/get_source.sh`: скрипт клонирует оба
+репозитория в `deps/` внутри проекта и переключает их на закреплённые коммиты.
+Каталог `deps/` локальный, перечислен в `.gitignore` и в репозиторий не попадает.
+
 ```bash
 git clone --recurse-submodules https://github.com/sstpnk/freedom-cat.git
 cd freedom-cat
+bash buildScript/lib/core/get_source.sh
 ./gradlew :app:assembleOssRelease
 ```
 
@@ -223,9 +229,15 @@ never have come to life.
 
 Requirements: JDK 17+, Android SDK (platform 35), Android NDK.
 
+`libcore` is built from sing-box and libneko sources. Run
+`bash buildScript/lib/core/get_source.sh` first: it clones both repositories into
+`deps/` inside the project and checks out the pinned revisions. `deps/` is
+local-only, listed in `.gitignore`, and never committed.
+
 ```bash
 git clone --recurse-submodules https://github.com/sstpnk/freedom-cat.git
 cd freedom-cat
+bash buildScript/lib/core/get_source.sh
 ./gradlew :app:assembleOssRelease
 ```
 

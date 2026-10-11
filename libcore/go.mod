@@ -82,8 +82,8 @@ require (
 	lukechampine.com/blake3 v1.3.0 // indirect
 )
 
-replace github.com/matsuridayo/libneko => ../../libneko
+replace github.com/matsuridayo/libneko => ../deps/libneko
 
-replace github.com/sagernet/sing-box => ../../sing-box
+replace github.com/sagernet/sing-box => ../deps/sing-box
 
 exclude google.golang.org/genproto v0.0.0-20230110181048-76db0878b65f
