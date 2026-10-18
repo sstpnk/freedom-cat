@@ -49,7 +49,7 @@ fun buildSingBoxOutboundWireguardBean(bean: WireGuardBean): SingBoxOptions.Outbo
         type = "wireguard"
         server = bean.serverAddress
         server_port = bean.serverPort
-        local_address = bean.localAddress.listByLineOrComma()
+        local_address = normalizeIpPrefixes(bean.localAddress.listByLineOrComma(), keepInvalid = true)
         private_key = bean.privateKey
         peer_public_key = bean.peerPublicKey
         pre_shared_key = bean.peerPreSharedKey
@@ -62,7 +62,7 @@ fun buildSingBoxEndpointAwgBean(bean: WireGuardBean): SingBoxOptions.Endpoint_Aw
     return SingBoxOptions.Endpoint_AwgOptions().apply {
         type = "awg"
         private_key = bean.privateKey
-        address = bean.localAddress.listByLineOrComma()
+        address = normalizeIpPrefixes(bean.localAddress.listByLineOrComma(), keepInvalid = true)
         mtu = bean.mtu
         jc = bean.jc
         jmin = bean.jmin
@@ -94,6 +94,9 @@ fun buildSingBoxEndpointAwgBean(bean: WireGuardBean): SingBoxOptions.Endpoint_Aw
             port = bean.serverPort
             public_key = bean.peerPublicKey
             pre_shared_key = bean.peerPreSharedKey
+            // Keep the peer a full tunnel. AllowedIPs are enforced as route
+            // rules (see ConfigBuilder): a peer filter would silently drop
+            // destinations that were resolved from a domain name.
             allowed_ips = listOf("0.0.0.0/0", "::/0")
             persistent_keepalive_interval = bean.persistentKeepalive
         })
@@ -122,7 +125,10 @@ fun parseWireGuardConfig(conf: String): List<WireGuardBean> {
     val bean = WireGuardBean().applyDefaultValues()
     val localAddresses = iface.getAll("Address")
     if (localAddresses.isNullOrEmpty()) error("Empty address in 'Interface' selection")
-    bean.localAddress = localAddresses.flatMap { it.split(",") }.joinToString("\n") { it.trim() }
+    bean.localAddress = normalizeIpPrefixes(
+        localAddresses.flatMap { it.split(",") },
+        keepInvalid = true,
+    ).joinToString("\n")
     bean.privateKey = iface["PrivateKey"] ?: ""
     bean.mtu = iface["MTU"]?.toIntOrNull()
     bean.enableAmnezia = iface["enable_amnezia"]?.toBooleanStrictOrNull() ?: false
@@ -164,6 +170,12 @@ fun parseWireGuardConfig(conf: String): List<WireGuardBean> {
         peerBean.serverPort = endpoint.port
         peerBean.peerPublicKey = peer["PublicKey"] ?: continue
         peerBean.peerPreSharedKey = peer["PresharedKey"]
+        peerBean.allowedIPs = peer.getAll("AllowedIPs")
+            ?.flatMap { it.split(",") }
+            ?.map { it.trim() }
+            ?.filter { it.isNotEmpty() }
+            ?.joinToString("\n")
+            ?: ""
         peerBean.persistentKeepalive =
             peer.getParam("PersistentKeepalive", "persistent_keepalive_interval") ?: ""
         beans.add(peerBean.applyDefaultValues())
@@ -202,7 +214,12 @@ private fun parseWireGuardUriLink(link: String, scheme: String): WireGuardBean {
         peerPublicKey = query.getParam("peer_public_key", "public_key") ?: ""
         peerPreSharedKey = query.getParam("pre_shared_key", "preshared_key") ?: ""
         reserved = query.getParam("reserved")?.replace("-", "") ?: ""
-        localAddress = query.getParam("local_address", "address")?.replace("-", "\n") ?: ""
+        localAddress = normalizeIpPrefixes(
+            query.getParam("local_address", "address")?.replace("-", "\n")
+                ?.listByLineOrComma().orEmpty(),
+            keepInvalid = true,
+        ).joinToString("\n")
+        allowedIPs = query.getParam("allowed_ips", "allowedips")?.replace("-", "\n") ?: ""
         mtu = query.getParam("mtu")?.toIntOrNull()
         enableAmnezia =
             scheme in AMNEZIA_SCHEMES || query.getParam("enable_amnezia")?.equals("true", true) == true
@@ -401,6 +418,7 @@ fun WireGuardBean.toUri(): String {
         .appendQueryParameter("pre_shared_key", peerPreSharedKey)
         .appendQueryParameter("reserved", reserved.replace(",", "-"))
         .appendQueryParameter("local_address", localAddress.replace("\n", "-"))
+        .appendQueryParameter("allowed_ips", allowedIPs.replace("\n", "-"))
         .appendQueryParameter("mtu", mtu?.toString() ?: "")
     if (enableAmnezia == true) {
         builder

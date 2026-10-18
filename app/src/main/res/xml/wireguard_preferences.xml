@@ -23,6 +23,11 @@
             app:title="@string/wireguard_local_address"
             app:useSimpleSummaryProvider="true" />
         <EditTextPreference
+            app:icon="@drawable/ic_baseline_shutter_speed_24"
+            app:key="allowedIPs"
+            app:title="Allowed IPs"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
             app:icon="@drawable/ic_baseline_vpn_key_24"
             app:key="privateKey"
             app:title="@string/ssh_private_key"

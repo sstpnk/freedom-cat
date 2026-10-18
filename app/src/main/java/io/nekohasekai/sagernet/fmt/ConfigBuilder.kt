@@ -24,6 +24,7 @@ import io.nekohasekai.sagernet.fmt.v2ray.buildSingBoxOutboundStandardV2RayBean
 import io.nekohasekai.sagernet.fmt.wireguard.WireGuardBean
 import io.nekohasekai.sagernet.fmt.wireguard.buildSingBoxEndpointAwgBean
 import io.nekohasekai.sagernet.fmt.wireguard.buildSingBoxOutboundWireguardBean
+import io.nekohasekai.sagernet.fmt.wireguard.ipPrefixComplement
 import io.nekohasekai.sagernet.ktx.isIpAddress
 import io.nekohasekai.sagernet.ktx.mkPort
 import io.nekohasekai.sagernet.utils.PackageCache
@@ -724,6 +725,26 @@ fun buildConfig(
                 source_ip_cidr = listOf("224.0.0.0/3", "ff00::/8")
                 action = "reject"
             })
+            // WireGuard/AmneziaWG AllowedIPs describe a split tunnel: traffic
+            // outside the profile routes must stay direct. Otherwise the
+            // tunnel peer does not match it and silently drops the packet.
+            val splitTunnel = (proxy.requireBean() as? WireGuardBean)
+                ?.allowedIPs?.listByLineOrComma().orEmpty()
+            if (splitTunnel.isNotEmpty()) {
+                // FakeDNS addresses are routing markers, never real destinations.
+                val allowed = if (useFakeDns) {
+                    splitTunnel + listOf("198.18.0.0/15", "fc00::/18")
+                } else {
+                    splitTunnel
+                }
+                val bypassCidrs = ipPrefixComplement(allowed)
+                if (bypassCidrs.isNotEmpty()) {
+                    route.rules.add(Rule_DefaultOptions().apply {
+                        ip_cidr = bypassCidrs
+                        outbound = TAG_BYPASS
+                    })
+                }
+            }
             // FakeDNS obj
             if (useFakeDns) {
                 dns.fakeip = DNSFakeIPOptions().apply {

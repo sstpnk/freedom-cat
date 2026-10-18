@@ -13,6 +13,7 @@ import io.nekohasekai.sagernet.fmt.KryoConverters;
 public class WireGuardBean extends AbstractBean {
 
     public String localAddress;
+    public String allowedIPs;
     public String privateKey;
     public String peerPublicKey;
     public String peerPreSharedKey;
@@ -51,6 +52,7 @@ public class WireGuardBean extends AbstractBean {
     public void initializeDefaultValues() {
         super.initializeDefaultValues();
         if (localAddress == null) localAddress = "";
+        if (allowedIPs == null) allowedIPs = "";
         if (privateKey == null) privateKey = "";
         if (peerPublicKey == null) peerPublicKey = "";
         if (peerPreSharedKey == null) peerPreSharedKey = "";
@@ -87,7 +89,7 @@ public class WireGuardBean extends AbstractBean {
 
     @Override
     public void serialize(ByteBufferOutput output) {
-        output.writeInt(4);
+        output.writeInt(5);
         super.serialize(output);
         output.writeString(localAddress);
         output.writeString(privateKey);
@@ -122,6 +124,7 @@ public class WireGuardBean extends AbstractBean {
         output.writeBoolean(randomTrailers);
         output.writeBoolean(disableCookies);
         output.writeString(persistentKeepalive);
+        output.writeString(allowedIPs);
     }
 
     @Override
@@ -164,6 +167,9 @@ public class WireGuardBean extends AbstractBean {
             randomTrailers = input.readBoolean();
             disableCookies = input.readBoolean();
             persistentKeepalive = input.readString();
+        }
+        if (version >= 5) {
+            allowedIPs = input.readString();
         }
         initializeDefaultValues();
     }

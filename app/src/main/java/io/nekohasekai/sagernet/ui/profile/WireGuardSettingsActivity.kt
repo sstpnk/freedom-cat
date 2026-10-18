@@ -23,6 +23,7 @@ class WireGuardSettingsActivity : ProfileSettingsActivity<WireGuardBean>() {
     private val serverAddress = pbm.add(PreferenceBinding(Type.Text, "serverAddress"))
     private val serverPort = pbm.add(PreferenceBinding(Type.TextToInt, "serverPort"))
     private val localAddress = pbm.add(PreferenceBinding(Type.Text, "localAddress"))
+    private val allowedIPs = pbm.add(PreferenceBinding(Type.Text, "allowedIPs"))
     private val privateKey = pbm.add(PreferenceBinding(Type.Text, "privateKey"))
     private val peerPublicKey = pbm.add(PreferenceBinding(Type.Text, "peerPublicKey"))
     private val peerPreSharedKey = pbm.add(PreferenceBinding(Type.Text, "peerPreSharedKey"))

@@ -18,6 +18,7 @@ import io.nekohasekai.sagernet.fmt.v2ray.VMessBean
 import io.nekohasekai.sagernet.fmt.v2ray.isTLS
 import io.nekohasekai.sagernet.fmt.v2ray.setTLS
 import io.nekohasekai.sagernet.fmt.wireguard.WireGuardBean
+import io.nekohasekai.sagernet.fmt.wireguard.normalizeIpPrefixes
 import io.nekohasekai.sagernet.fmt.wireguard.parseWireGuardConfig
 import io.nekohasekai.sagernet.ktx.*
 import libcore.Libcore
@@ -788,15 +789,22 @@ object RawUpdater : GroupUpdater() {
                                 peerPublicKey = peer.optString("public_key", "")
                                 peerPreSharedKey = peer.optString("pre_shared_key", "")
                                 val addressArr = endpoint.optJSONArray("address")
-                                localAddress = if (addressArr != null) {
-                                    buildString {
-                                        for (i in 0 until addressArr.length()) {
-                                            if (i > 0) append("\n")
-                                            append(addressArr.getString(i))
-                                        }
-                                    }
-                                } else {
-                                    endpoint.optString("address", "")
+                                localAddress = normalizeIpPrefixes(
+                                    if (addressArr != null) {
+                                        (0 until addressArr.length()).map { addressArr.getString(it) }
+                                    } else {
+                                        listOf(endpoint.optString("address", ""))
+                                    },
+                                    keepInvalid = true,
+                                ).joinToString("\n")
+                                val allowedIpsValue =
+                                    peer.opt("allowed_ips") ?: endpoint.opt("allowed_ips")
+                                allowedIPs = when (allowedIpsValue) {
+                                    is JSONArray -> (0 until allowedIpsValue.length())
+                                        .joinToString("\n") { allowedIpsValue.getString(it) }
+
+                                    is String -> allowedIpsValue
+                                    else -> ""
                                 }
                                 mtu = endpoint.optInt("mtu", 1420)
                                 enableAmnezia = true
@@ -816,6 +824,19 @@ object RawUpdater : GroupUpdater() {
                                 i3 = endpoint.optString("i3", "")
                                 i4 = endpoint.optString("i4", "")
                                 i5 = endpoint.optString("i5", "")
+                                headerProtectionKey = endpoint.optString("header_protection_key", "")
+                                contentPaddingAddition = endpoint.optString("content_padding_addition", "")
+                                rekeyAfterTime = endpoint.optString("rekey_after_time", "")
+                                rekeyTimeout = endpoint.optString("rekey_timeout", "")
+                                rejectAfterTime = endpoint.optString("reject_after_time", "")
+                                keepaliveTimeout = endpoint.optString("keepalive_timeout", "")
+                                maxHandshakeAttempts = endpoint.optString("max_handshake_attempts", "")
+                                randomTrailers = endpoint.optFlag("random_trailers")
+                                disableCookies = endpoint.optFlag("disable_cookies")
+                                persistentKeepalive = peer.optString(
+                                    "persistent_keepalive",
+                                    peer.optString("persistent_keepalive_interval", ""),
+                                )
                             }.applyDefaultValues()
                         }
                 }
@@ -838,6 +859,18 @@ object RawUpdater : GroupUpdater() {
 
         proxies.forEach { it.initializeDefaultValues() }
         return proxies
+    }
+
+    /** Reads a JSON boolean that generated configs may encode as "on"/"off". */
+    private fun JSONObject.optFlag(name: String): Boolean {
+        return when (val value = opt(name)) {
+            is Boolean -> value
+            is Number -> value.toInt() != 0
+            is String -> value.equals("true", true) || value.equals("on", true) ||
+                    value.equals("yes", true) || value == "1"
+
+            else -> false
+        }
     }
 
 }

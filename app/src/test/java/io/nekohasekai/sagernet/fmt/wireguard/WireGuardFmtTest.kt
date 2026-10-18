@@ -150,6 +150,80 @@ class WireGuardFmtTest {
     }
 
     @Test
+    fun masklessAddressIsAcceptedAndNormalized() {
+        val bean = parseWireGuardConfig(
+            """
+                [Interface]
+                PrivateKey = client-private
+                Address = 10.8.0.2
+                MTU = 1280
+
+                [Peer]
+                PublicKey = peer-public
+                Endpoint = 94.183.188.21:51820
+            """.trimIndent()
+        ).single()
+
+        assertEquals("10.8.0.2/32", bean.localAddress)
+        assertEquals(listOf("10.8.0.2/32"), buildSingBoxEndpointAwgBean(bean).address)
+    }
+
+    @Test
+    fun allowedIpsAreParsedFromConfig() {
+        val bean = parseWireGuardConfig(
+            """
+                [Interface]
+                PrivateKey = client-private
+                Address = 10.8.0.2
+                Jc = 3
+
+                [Peer]
+                PublicKey = peer-public
+                AllowedIPs = 0.0.0.0/5, 8.0.0.0/7, 8.8.8.8/32
+                Endpoint = 94.183.188.21:51820
+            """.trimIndent()
+        ).single()
+
+        assertEquals("0.0.0.0/5\n8.0.0.0/7\n8.8.8.8/32", bean.allowedIPs)
+        // The peer stays a full tunnel; AllowedIPs are enforced by route rules.
+        assertEquals(
+            listOf("0.0.0.0/0", "::/0"),
+            buildSingBoxEndpointAwgBean(bean).peers.single().allowed_ips,
+        )
+    }
+
+    @Test
+    fun missingAllowedIpsKeepsFullTunnelPeer() {
+        val bean = parseWireGuardConfig(
+            """
+                [Interface]
+                PrivateKey = client-private
+                Address = 10.8.0.2
+
+                [Peer]
+                PublicKey = peer-public
+                Endpoint = 94.183.188.21:51820
+            """.trimIndent()
+        ).single()
+
+        assertEquals(
+            listOf("0.0.0.0/0", "::/0"),
+            buildSingBoxEndpointAwgBean(bean).peers.single().allowed_ips,
+        )
+    }
+
+    @Test
+    fun wireGuardUriParsesAllowedIps() {
+        val bean = parseWireGuardLinks(
+            "awg://awg.example.com:51820?private_key=client&peer_public_key=peer" +
+                    "&local_address=10.8.0.2&allowed_ips=0.0.0.0/1-fd00::/8"
+        ).single()
+
+        assertEquals("10.8.0.2/32", bean.localAddress)
+        assertEquals("0.0.0.0/1\nfd00::/8", bean.allowedIPs)
+    }
+
+    @Test
     fun wireGuardConfigParsesIpv6PeerEndpoint() {
         val bean = parseWireGuardConfig(
             """
@@ -298,7 +372,7 @@ class WireGuardFmtTest {
             """
                 [Interface]
                 PrivateKey = client-private
-                Address = 10.8.0.2/32
+                Address = 10.8.0.2
                 DNS = 1.1.1.1
                 MTU = 1280
 
@@ -338,7 +412,7 @@ class WireGuardFmtTest {
                 [Peer]
                 PublicKey = peer-public
                 PresharedKey = peer-psk
-                AllowedIPs = 0.0.0.0/0, ::/0
+                AllowedIPs = 0.0.0.0/5, 8.0.0.0/7, 11.0.0.0/8, 12.0.0.0/6, 8.8.8.8/32, 1.1.1.1/32
                 PersistentKeepalive = 25
                 Endpoint = vpn.example.test:51820
             """.trimIndent()
@@ -348,6 +422,11 @@ class WireGuardFmtTest {
         assertEquals("vpn.example.test", bean.serverAddress)
         assertEquals(51820, bean.serverPort)
         assertEquals(1280, bean.mtu)
+        assertEquals("10.8.0.2/32", bean.localAddress)
+        assertEquals(
+            "0.0.0.0/5\n8.0.0.0/7\n11.0.0.0/8\n12.0.0.0/6\n8.8.8.8/32\n1.1.1.1/32",
+            bean.allowedIPs,
+        )
         assertEquals(43, bean.s3)
         assertEquals(12, bean.s4)
         assertEquals("1", bean.h1)
