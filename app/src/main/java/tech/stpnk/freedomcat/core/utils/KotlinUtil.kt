@@ -4,17 +4,17 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.drawable.Drawable
 import androidx.appcompat.content.res.AppCompatResources
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.ktx.Logs
 import java.io.File
 
-// SagerNet Class
+// FreedomCatApp Class
 
 const val KB = 1024L
 const val MB = KB * 1024
 const val GB = MB * 1024
 
-fun SagerNet.cleanWebview() {
+fun FreedomCatApp.cleanWebview() {
     var pathToClean = "app_webview"
     if (isBgProcess) pathToClean += "_$process"
     try {

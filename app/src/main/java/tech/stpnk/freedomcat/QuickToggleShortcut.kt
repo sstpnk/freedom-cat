@@ -29,14 +29,14 @@ import androidx.core.content.getSystemService
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
-import tech.stpnk.freedomcat.aidl.ISagerNetService
+import tech.stpnk.freedomcat.aidl.IServiceBridge
 import tech.stpnk.freedomcat.bg.BaseService
-import tech.stpnk.freedomcat.bg.SagerConnection
+import tech.stpnk.freedomcat.bg.ServiceBridge
 import tech.stpnk.freedomcat.database.DataStore
 
 @Suppress("DEPRECATION")
-class QuickToggleShortcut : Activity(), SagerConnection.Callback {
-    private val connection = SagerConnection(SagerConnection.CONNECTION_ID_SHORTCUT)
+class QuickToggleShortcut : Activity(), ServiceBridge.Callback {
+    private val connection = ServiceBridge(ServiceBridge.CONNECTION_ID_SHORTCUT)
     private var profileId = -1L
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,20 +60,20 @@ class QuickToggleShortcut : Activity(), SagerConnection.Callback {
         }
     }
 
-    override fun onServiceConnected(service: ISagerNetService) {
+    override fun onServiceConnected(service: IServiceBridge) {
         val state = BaseService.State.values()[service.state]
         when {
             state.canStop -> {
                 if (profileId == DataStore.selectedProxy || profileId == -1L) {
-                    SagerNet.stopService()
+                    FreedomCatApp.stopService()
                 } else {
                     DataStore.selectedProxy = profileId
-                    SagerNet.reloadService()
+                    FreedomCatApp.reloadService()
                 }
             }
             state == BaseService.State.Stopped -> {
                 if (profileId >= 0L) DataStore.selectedProxy = profileId
-                SagerNet.startService()
+                FreedomCatApp.startService()
             }
         }
         finish()

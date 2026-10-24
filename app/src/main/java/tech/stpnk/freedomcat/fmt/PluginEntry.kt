@@ -1,7 +1,7 @@
 package tech.stpnk.freedomcat.fmt
 
 import tech.stpnk.freedomcat.R
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 
 enum class PluginEntry(
     val pluginId: String,
@@ -11,12 +11,12 @@ enum class PluginEntry(
 ) {
     TrojanGo(
         "trojan-go-plugin",
-        SagerNet.application.getString(R.string.action_trojan_go),
+        FreedomCatApp.application.getString(R.string.action_trojan_go),
         "tech.stpnk.freedomcat.plugin.trojan_go"
     ),
     MieruProxy(
         "mieru-plugin",
-        SagerNet.application.getString(R.string.action_mieru),
+        FreedomCatApp.application.getString(R.string.action_mieru),
         "moe.matsuri.exe.mieru",
         DownloadSource(
             playStore = false,
@@ -26,7 +26,7 @@ enum class PluginEntry(
     ),
     NaiveProxy(
         "naive-plugin",
-        SagerNet.application.getString(R.string.action_naive),
+        FreedomCatApp.application.getString(R.string.action_naive),
         "moe.matsuri.exe.naive",
         DownloadSource(
             playStore = false,
@@ -36,7 +36,7 @@ enum class PluginEntry(
     ),
     Hysteria(
         "hysteria-plugin",
-        SagerNet.application.getString(R.string.action_hysteria),
+        FreedomCatApp.application.getString(R.string.action_hysteria),
         "moe.matsuri.exe.hysteria",
         DownloadSource(
             playStore = false,

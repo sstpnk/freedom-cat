@@ -3,7 +3,7 @@ package tech.stpnk.freedomcat.bg.proto
 import tech.stpnk.freedomcat.aidl.SpeedDisplayData
 import tech.stpnk.freedomcat.aidl.TrafficData
 import tech.stpnk.freedomcat.bg.BaseService
-import tech.stpnk.freedomcat.bg.SagerConnection
+import tech.stpnk.freedomcat.bg.ServiceBridge
 import tech.stpnk.freedomcat.database.DataStore
 import tech.stpnk.freedomcat.database.ProfileManager
 import tech.stpnk.freedomcat.fmt.TAG_BYPASS
@@ -160,10 +160,10 @@ class TrafficLooper
 
             // broadcast (MainActivity)
             if (data.state == BaseService.State.Connected
-                && data.binder.callbackIdMap.containsValue(SagerConnection.CONNECTION_ID_MAIN_ACTIVITY_FOREGROUND)
+                && data.binder.callbackIdMap.containsValue(ServiceBridge.CONNECTION_ID_MAIN_ACTIVITY_FOREGROUND)
             ) {
                 data.binder.broadcast { b ->
-                    if (data.binder.callbackIdMap[b] == SagerConnection.CONNECTION_ID_MAIN_ACTIVITY_FOREGROUND) {
+                    if (data.binder.callbackIdMap[b] == ServiceBridge.CONNECTION_ID_MAIN_ACTIVITY_FOREGROUND) {
                         b.cbSpeedUpdate(speed)
                         if (profileTrafficStatistics) {
                             idMap.forEach { (id, item) ->

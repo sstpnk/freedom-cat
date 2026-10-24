@@ -16,7 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.progressindicator.BaseProgressIndicator
 import tech.stpnk.freedomcat.R
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.bg.BaseService
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -70,7 +70,7 @@ class ServiceButton @JvmOverloads constructor(
     private lateinit var progress: BaseProgressIndicator<*>
 
     init {
-        if (SagerNet.isTv) {
+        if (FreedomCatApp.isTv) {
             isFocusable = true
             setOnFocusChangeListener { view, hasFocus ->
                 val scale = if (hasFocus) 1.12f else 1f

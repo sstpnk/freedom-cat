@@ -8,7 +8,7 @@ import android.net.NetworkRequest
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.ktx.Logs
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -76,7 +76,7 @@ object DefaultNetworkListener {
         networkActor.send(NetworkMessage.Start(key, listener))
 
     suspend fun get() = if (fallback) @TargetApi(23) {
-        SagerNet.connectivity.activeNetwork
+        FreedomCatApp.connectivity.activeNetwork
             ?: throw UnknownHostException() // failed to listen, return current if available
     } else NetworkMessage.Get().run {
         networkActor.send(this)
@@ -126,21 +126,21 @@ object DefaultNetworkListener {
             fallback = false
             when (Build.VERSION.SDK_INT) {
                 in 31..Int.MAX_VALUE -> @TargetApi(31) {
-                    SagerNet.connectivity.registerBestMatchingNetworkCallback(
+                    FreedomCatApp.connectivity.registerBestMatchingNetworkCallback(
                         request, Callback, mainHandler
                     )
                 }
                 in 28 until 31 -> @TargetApi(28) {  // we want REQUEST here instead of LISTEN
-                    SagerNet.connectivity.requestNetwork(request, Callback, mainHandler)
+                    FreedomCatApp.connectivity.requestNetwork(request, Callback, mainHandler)
                 }
                 in 26 until 28 -> @TargetApi(26) {
-                    SagerNet.connectivity.registerDefaultNetworkCallback(Callback, mainHandler)
+                    FreedomCatApp.connectivity.registerDefaultNetworkCallback(Callback, mainHandler)
                 }
                 in 24 until 26 -> @TargetApi(24) {
-                    SagerNet.connectivity.registerDefaultNetworkCallback(Callback)
+                    FreedomCatApp.connectivity.registerDefaultNetworkCallback(Callback)
                 }
                 else -> {
-                    SagerNet.connectivity.requestNetwork(request, Callback)
+                    FreedomCatApp.connectivity.requestNetwork(request, Callback)
                     // known bug on API 23: https://stackoverflow.com/a/33509180/2245107
                 }
             }
@@ -150,5 +150,5 @@ object DefaultNetworkListener {
         }
     }
 
-    private fun unregister() = SagerNet.connectivity.unregisterNetworkCallback(Callback)
+    private fun unregister() = FreedomCatApp.connectivity.unregisterNetworkCallback(Callback)
 }

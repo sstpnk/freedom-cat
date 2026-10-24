@@ -15,7 +15,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.jakewharton.processphoenix.ProcessPhoenix
 import tech.stpnk.freedomcat.BuildConfig
 import tech.stpnk.freedomcat.R
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.bg.Executable
 import tech.stpnk.freedomcat.database.*
 import tech.stpnk.freedomcat.database.preference.KeyValuePair
@@ -139,20 +139,20 @@ class BackupFragment : ToolbarFragment(R.layout.layout_backup) {
             put("version", 1)
             if (profile) {
                 put("profiles", JSONArray().apply {
-                    SagerDatabase.proxyDao.getAll().forEach {
+                    AppDatabase.proxyDao.getAll().forEach {
                         put(it.toBase64Str())
                     }
                 })
 
                 put("groups", JSONArray().apply {
-                    SagerDatabase.groupDao.allGroups().forEach {
+                    AppDatabase.groupDao.allGroups().forEach {
                         put(it.toBase64Str())
                     }
                 })
             }
             if (rule) {
                 put("rules", JSONArray().apply {
-                    SagerDatabase.rulesDao.allRules().forEach {
+                    AppDatabase.rulesDao.allRules().forEach {
                         put(it.toBase64Str())
                     }
                 })
@@ -228,7 +228,7 @@ class BackupFragment : ToolbarFragment(R.layout.layout_backup) {
             MaterialAlertDialogBuilder(requireContext()).setTitle(R.string.backup_import)
                 .setView(import.root)
                 .setPositiveButton(R.string.backup_import) { _, _ ->
-                    SagerNet.stopService()
+                    FreedomCatApp.stopService()
 
                     val binding = LayoutProgressBinding.inflate(layoutInflater)
                     binding.content.text = getString(R.string.backup_importing)
@@ -276,8 +276,8 @@ class BackupFragment : ToolbarFragment(R.layout.layout_backup) {
                 profiles.add(ProxyEntity.CREATOR.createFromParcel(parcel))
                 parcel.recycle()
             }
-            SagerDatabase.proxyDao.reset()
-            SagerDatabase.proxyDao.insert(profiles)
+            AppDatabase.proxyDao.reset()
+            AppDatabase.proxyDao.insert(profiles)
 
             val groups = mutableListOf<ProxyGroup>()
             val jsonGroups = content.getJSONArray("groups")
@@ -289,8 +289,8 @@ class BackupFragment : ToolbarFragment(R.layout.layout_backup) {
                 groups.add(ProxyGroup.CREATOR.createFromParcel(parcel))
                 parcel.recycle()
             }
-            SagerDatabase.groupDao.reset()
-            SagerDatabase.groupDao.insert(groups)
+            AppDatabase.groupDao.reset()
+            AppDatabase.groupDao.insert(groups)
         }
         if (rule && content.has("rules")) {
             val rules = mutableListOf<RuleEntity>()
@@ -303,8 +303,8 @@ class BackupFragment : ToolbarFragment(R.layout.layout_backup) {
                 rules.add(ParcelizeBridge.createRule(parcel))
                 parcel.recycle()
             }
-            SagerDatabase.rulesDao.reset()
-            SagerDatabase.rulesDao.insert(rules)
+            AppDatabase.rulesDao.reset()
+            AppDatabase.rulesDao.insert(rules)
         }
         if (setting && content.has("settings")) {
             val settings = mutableListOf<KeyValuePair>()

@@ -20,7 +20,7 @@ import com.github.shadowsocks.plugin.fragment.AlertDialogFragment
 import tech.stpnk.freedomcat.GroupType
 import tech.stpnk.freedomcat.Key
 import tech.stpnk.freedomcat.R
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.database.*
 import tech.stpnk.freedomcat.database.preference.OnPreferenceDataStoreChangeListener
 import tech.stpnk.freedomcat.ktx.Logs
@@ -213,7 +213,7 @@ class GroupSettingsActivity(
                 if (editingId == 0L) {
                     ProxyGroup().init()
                 } else {
-                    val entity = SagerDatabase.groupDao.getById(editingId)
+                    val entity = AppDatabase.groupDao.getById(editingId)
                     if (entity == null) {
                         onMainDispatcher {
                             finish()
@@ -243,7 +243,7 @@ class GroupSettingsActivity(
         if (editingId == 0L) {
             GroupManager.createGroup(ProxyGroup().apply { serialize() })
         } else if (needSave()) {
-            val entity = SagerDatabase.groupDao.getById(DataStore.editingId)
+            val entity = AppDatabase.groupDao.getById(DataStore.editingId)
             if (entity == null) {
                 finish()
                 return
@@ -304,7 +304,7 @@ class GroupSettingsActivity(
                 }
             } catch (e: Exception) {
                 Toast.makeText(
-                    SagerNet.application,
+                    FreedomCatApp.application,
                     "Error on createPreferences, please try again.",
                     Toast.LENGTH_SHORT
                 ).show()

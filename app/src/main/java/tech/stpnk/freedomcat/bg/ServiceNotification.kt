@@ -14,11 +14,11 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import tech.stpnk.freedomcat.Action
 import tech.stpnk.freedomcat.R
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.aidl.SpeedDisplayData
 import tech.stpnk.freedomcat.database.DataStore
 import tech.stpnk.freedomcat.database.ProxyEntity
-import tech.stpnk.freedomcat.database.SagerDatabase
+import tech.stpnk.freedomcat.database.AppDatabase
 import tech.stpnk.freedomcat.ktx.app
 import tech.stpnk.freedomcat.ktx.getColorAttr
 import tech.stpnk.freedomcat.ktx.runOnMainDispatcher
@@ -48,7 +48,7 @@ class ServiceNotification(
 
         fun genTitle(ent: ProxyEntity): String {
             val gn = if (DataStore.showGroupInNotification)
-                SagerDatabase.groupDao.getById(ent.groupId)?.displayName() else null
+                AppDatabase.groupDao.getById(ent.groupId)?.displayName() else null
             return if (gn == null) ent.displayName() else "[$gn] ${ent.displayName()}"
         }
     }
@@ -117,7 +117,7 @@ class ServiceNotification(
         .setTicker(service.getString(R.string.forward_success))
         .setContentTitle(title)
         .setOnlyAlertOnce(true)
-        .setContentIntent(SagerNet.configureIntent(service))
+        .setContentIntent(FreedomCatApp.configureIntent(service))
         .setSmallIcon(R.drawable.ic_service_active)
         .setCategory(NotificationCompat.CATEGORY_SERVICE)
         .setPriority(if (visible) NotificationCompat.PRIORITY_LOW else NotificationCompat.PRIORITY_MIN)
@@ -198,7 +198,7 @@ class ServiceNotification(
                 }
             } catch (e: Exception) {
                 Toast.makeText(
-                    SagerNet.application,
+                    FreedomCatApp.application,
                     "startForeground: $e",
                     Toast.LENGTH_LONG
                 ).show()

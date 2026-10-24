@@ -7,7 +7,7 @@ import android.view.View
 import androidx.core.view.ViewCompat
 import tech.stpnk.freedomcat.BuildConfig
 import tech.stpnk.freedomcat.R
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.databinding.LayoutAboutBinding
 import tech.stpnk.freedomcat.widget.ListListener
 
@@ -24,7 +24,7 @@ class AboutFragment : ToolbarFragment(R.layout.layout_about) {
         ViewCompat.setOnApplyWindowInsetsListener(binding.aboutScroll, ListListener)
 
         binding.aboutVersion.text =
-            "${SagerNet.appVersionNameForDisplay} (${BuildConfig.VERSION_CODE})"
+            "${FreedomCatApp.appVersionNameForDisplay} (${BuildConfig.VERSION_CODE})"
 
         binding.aboutLink.setOnClickListener {
             startActivity(

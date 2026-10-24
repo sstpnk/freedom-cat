@@ -7,7 +7,7 @@ import android.content.pm.ProviderInfo
 import android.net.Uri
 import android.os.Build
 import android.widget.Toast
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.plugin.PluginManager.loadString
 import tech.stpnk.freedomcat.utils.PackageCache
 
@@ -70,7 +70,7 @@ object Plugins {
         if (providers.size > 1) {
             val message =
                 "Conflicting plugins found from: ${providers.joinToString { it.packageName }}"
-            Toast.makeText(SagerNet.application, message, Toast.LENGTH_LONG).show()
+            Toast.makeText(FreedomCatApp.application, message, Toast.LENGTH_LONG).show()
         }
 
         return providers[0]
@@ -96,10 +96,10 @@ object Plugins {
             flags =
                 flags or PackageManager.MATCH_DIRECT_BOOT_UNAWARE or PackageManager.MATCH_DIRECT_BOOT_AWARE
         }
-        val list1 = SagerNet.application.packageManager.queryIntentContentProviders(
+        val list1 = FreedomCatApp.application.packageManager.queryIntentContentProviders(
             Intent(ACTION_NATIVE_PLUGIN, buildUri(pluginId, "tech.stpnk.freedomcat")), flags
         )
-        val list2 = SagerNet.application.packageManager.queryIntentContentProviders(
+        val list2 = FreedomCatApp.application.packageManager.queryIntentContentProviders(
             Intent(ACTION_NATIVE_PLUGIN, buildUri(pluginId, "moe.matsuri.lite")), flags
         )
         return (list1 + list2).mapNotNull {

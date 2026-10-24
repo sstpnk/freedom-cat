@@ -7,7 +7,7 @@ This document describes a separate Android TV build for FreedomCat. The first TV
 - `AndroidManifest.xml` already declares `LEANBACK_LAUNCHER`.
 - `android.software.leanback` is optional.
 - `android.hardware.touchscreen` is optional.
-- `SagerNet.isTv` already detects TV mode through `UiModeManager`.
+- `FreedomCatApp.isTv` already detects TV mode through `UiModeManager`.
 - `MainActivity` already handles some DPAD navigation for the drawer.
 
 The project can launch on TV, but the current UI still follows the phone interaction model. It depends on dense lists, floating actions, overflow menus, touch-sized controls, and several editor screens that are hard to use with a remote.
@@ -54,7 +54,7 @@ The TV flavor should use the same `versionName` and `versionCode` as the phone b
 
 ### Later Release
 
-When the TV UX is stable, add a `device` flavor dimension or merge back into one APK. The unified APK should choose phone or TV UI at runtime using `SagerNet.isTv` and feature checks.
+When the TV UX is stable, add a `device` flavor dimension or merge back into one APK. The unified APK should choose phone or TV UI at runtime using `FreedomCatApp.isTv` and feature checks.
 
 ## Source Set Layout
 

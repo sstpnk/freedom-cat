@@ -305,7 +305,7 @@ private fun tryResolveVmess4Kitsunebi(server: String): VMessBean {
     }
 }
 
-// SagerNet's
+// FreedomCatApp's
 // Do not support some format and then throw exception
 fun parseV2RayN(link: String): VMessBean {
     val result = link.substringAfter("vmess://").decodeBase64UrlSafe()

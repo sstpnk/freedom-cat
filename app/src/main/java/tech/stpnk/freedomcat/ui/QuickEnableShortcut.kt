@@ -25,13 +25,13 @@ import android.content.pm.ShortcutManager
 import android.os.Build
 import android.os.Bundle
 import androidx.core.content.getSystemService
-import tech.stpnk.freedomcat.SagerNet
-import tech.stpnk.freedomcat.aidl.ISagerNetService
+import tech.stpnk.freedomcat.FreedomCatApp
+import tech.stpnk.freedomcat.aidl.IServiceBridge
 import tech.stpnk.freedomcat.bg.BaseService
-import tech.stpnk.freedomcat.bg.SagerConnection
+import tech.stpnk.freedomcat.bg.ServiceBridge
 
-class QuickEnableShortcut : Activity(), SagerConnection.Callback {
-    private val connection = SagerConnection(SagerConnection.CONNECTION_ID_SHORTCUT)
+class QuickEnableShortcut : Activity(), ServiceBridge.Callback {
+    private val connection = ServiceBridge(ServiceBridge.CONNECTION_ID_SHORTCUT)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,10 +41,10 @@ class QuickEnableShortcut : Activity(), SagerConnection.Callback {
         }
     }
 
-    override fun onServiceConnected(service: ISagerNetService) {
+    override fun onServiceConnected(service: IServiceBridge) {
         val state = BaseService.State.values()[service.state]
         if (state == BaseService.State.Stopped) {
-            SagerNet.startService()
+            FreedomCatApp.startService()
         }
         finish()
     }

@@ -8,14 +8,14 @@ import android.os.IBinder
 import android.os.RemoteException
 import tech.stpnk.freedomcat.Action
 import tech.stpnk.freedomcat.Key
-import tech.stpnk.freedomcat.aidl.ISagerNetService
-import tech.stpnk.freedomcat.aidl.ISagerNetServiceCallback
+import tech.stpnk.freedomcat.aidl.IServiceBridge
+import tech.stpnk.freedomcat.aidl.IServiceBridgeCallback
 import tech.stpnk.freedomcat.aidl.SpeedDisplayData
 import tech.stpnk.freedomcat.aidl.TrafficData
 import tech.stpnk.freedomcat.database.DataStore
 import tech.stpnk.freedomcat.ktx.runOnMainDispatcher
 
-class SagerConnection(
+class ServiceBridge(
     private var connectionId: Int,
     private var listenForDeath: Boolean = false
 ) : ServiceConnection, IBinder.DeathRecipient {
@@ -38,7 +38,7 @@ class SagerConnection(
     }
 
     interface Callback {
-        // smaller ISagerNetServiceCallback
+        // smaller IServiceBridgeCallback
 
         fun cbSpeedUpdate(stats: SpeedDisplayData) {}
         fun cbTrafficUpdate(data: TrafficData) {}
@@ -48,7 +48,7 @@ class SagerConnection(
 
         fun missingPlugin(profileName: String, pluginName: String) {}
 
-        fun onServiceConnected(service: ISagerNetService)
+        fun onServiceConnected(service: IServiceBridge)
 
         /**
          * Different from Android framework, this method will be called even when you call `detachService`.
@@ -60,7 +60,7 @@ class SagerConnection(
     private var connectionActive = false
     private var callbackRegistered = false
     private var callback: Callback? = null
-    private val serviceCallback = object : ISagerNetServiceCallback.Stub() {
+    private val serviceCallback = object : IServiceBridgeCallback.Stub() {
 
         override fun stateChanged(state: Int, profileName: String?, msg: String?) {
             if (state < 0) return // skip private
@@ -104,7 +104,7 @@ class SagerConnection(
 
     private var binder: IBinder? = null
 
-    var service: ISagerNetService? = null
+    var service: IServiceBridge? = null
 
     fun updateConnectionId(id: Int) {
         connectionId = id
@@ -117,7 +117,7 @@ class SagerConnection(
 
     override fun onServiceConnected(name: ComponentName?, binder: IBinder) {
         this.binder = binder
-        val service = ISagerNetService.Stub.asInterface(binder)!!
+        val service = IServiceBridge.Stub.asInterface(binder)!!
         this.service = service
         try {
             if (listenForDeath) binder.linkToDeath(this, 0)

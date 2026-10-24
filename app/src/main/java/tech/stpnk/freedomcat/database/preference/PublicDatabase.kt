@@ -5,7 +5,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import dev.matrix.roomigrant.GenerateRoomMigrations
 import tech.stpnk.freedomcat.Key
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -14,8 +14,8 @@ import kotlinx.coroutines.launch
 abstract class PublicDatabase : RoomDatabase() {
     companion object {
         val instance by lazy {
-            SagerNet.application.getDatabasePath(Key.DB_PROFILE).parentFile?.mkdirs()
-            Room.databaseBuilder(SagerNet.application, PublicDatabase::class.java, Key.DB_PUBLIC)
+            FreedomCatApp.application.getDatabasePath(Key.DB_PROFILE).parentFile?.mkdirs()
+            Room.databaseBuilder(FreedomCatApp.application, PublicDatabase::class.java, Key.DB_PUBLIC)
                 .setJournalMode(JournalMode.TRUNCATE)
                 .allowMainThreadQueries()
                 .enableMultiInstanceInvalidation()

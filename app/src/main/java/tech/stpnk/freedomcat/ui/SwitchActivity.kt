@@ -2,7 +2,7 @@ package tech.stpnk.freedomcat.ui
 
 import android.os.Bundle
 import tech.stpnk.freedomcat.R
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.database.DataStore
 import tech.stpnk.freedomcat.database.ProfileManager
 import tech.stpnk.freedomcat.ktx.runOnMainDispatcher
@@ -30,7 +30,7 @@ class SwitchActivity : ThemedActivity(R.layout.layout_empty),
             ProfileManager.postUpdate(old, true)
             ProfileManager.postUpdate(profileId, true)
         }
-        SagerNet.reloadService()
+        FreedomCatApp.reloadService()
         finish()
     }
 }

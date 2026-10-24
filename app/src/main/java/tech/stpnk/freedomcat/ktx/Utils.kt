@@ -31,10 +31,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.jakewharton.processphoenix.ProcessPhoenix
 import tech.stpnk.freedomcat.BuildConfig
 import tech.stpnk.freedomcat.R
-import tech.stpnk.freedomcat.SagerNet
-import tech.stpnk.freedomcat.aidl.ISagerNetService
+import tech.stpnk.freedomcat.FreedomCatApp
+import tech.stpnk.freedomcat.aidl.IServiceBridge
 import tech.stpnk.freedomcat.bg.BaseService
-import tech.stpnk.freedomcat.bg.SagerConnection
+import tech.stpnk.freedomcat.bg.ServiceBridge
 import tech.stpnk.freedomcat.database.DataStore
 import tech.stpnk.freedomcat.ui.MainActivity
 import tech.stpnk.freedomcat.ui.ThemedActivity
@@ -194,7 +194,7 @@ fun RecyclerView.scrollTo(index: Int, force: Boolean = false) {
     }, 300L)
 }
 
-val app get() = SagerNet.application
+val app get() = FreedomCatApp.application
 
 val shortAnimTime by lazy {
     app.resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
@@ -243,7 +243,7 @@ fun Fragment.startFilesForResult(
 fun Fragment.needReload() {
     if (DataStore.serviceState.started) {
         snackbar(getString(R.string.need_reload)).setAction(R.string.apply) {
-            SagerNet.reloadService()
+            FreedomCatApp.reloadService()
         }.show()
     }
 }
@@ -256,17 +256,17 @@ fun Fragment.needRestart() {
 
 fun triggerFullRestart(ctx: Context) {
     runOnDefaultDispatcher {
-        SagerNet.stopService()
+        FreedomCatApp.stopService()
         delay(500)
-        SagerConnection.restartingApp = true
-        val connection = SagerConnection(SagerConnection.CONNECTION_ID_RESTART_BG)
+        ServiceBridge.restartingApp = true
+        val connection = ServiceBridge(ServiceBridge.CONNECTION_ID_RESTART_BG)
         connection.connect(ctx, RestartCallback {
             ProcessPhoenix.triggerRebirth(ctx, Intent(ctx, MainActivity::class.java))
         })
     }
 }
 
-private class RestartCallback(val callback: () -> Unit) : SagerConnection.Callback {
+private class RestartCallback(val callback: () -> Unit) : ServiceBridge.Callback {
     override fun stateChanged(
         state: BaseService.State,
         profileName: String?,
@@ -274,7 +274,7 @@ private class RestartCallback(val callback: () -> Unit) : SagerConnection.Callba
     ) {
     }
 
-    override fun onServiceConnected(service: ISagerNetService) {
+    override fun onServiceConnected(service: IServiceBridge) {
         callback()
     }
 }

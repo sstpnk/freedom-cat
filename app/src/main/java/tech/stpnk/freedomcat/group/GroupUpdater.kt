@@ -60,13 +60,13 @@ abstract class GroupUpdater {
             lookupJobs.add(GlobalScope.launch(lookupPool) {
                 try {
                     val results = if (
-                        SagerNet.underlyingNetwork != null &&
+                        FreedomCatApp.underlyingNetwork != null &&
                         DataStore.enableFakeDns &&
                         DataStore.serviceState.started &&
                         DataStore.serviceMode == Key.MODE_VPN
                     ) {
                         // FakeDNS
-                        SagerNet.underlyingNetwork!!
+                        FreedomCatApp.underlyingNetwork!!
                             .getAllByName(profile.serverAddress)
                             .filterNotNull()
                     } else {

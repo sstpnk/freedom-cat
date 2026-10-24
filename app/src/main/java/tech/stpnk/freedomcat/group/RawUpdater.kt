@@ -120,7 +120,7 @@ object RawUpdater : GroupUpdater() {
 
         if (subscription.forceResolve) forceResolve(proxies, proxyGroup.id)
 
-        val exists = SagerDatabase.proxyDao.getByGroup(proxyGroup.id)
+        val exists = AppDatabase.proxyDao.getByGroup(proxyGroup.id)
         val duplicate = ArrayList<String>()
         if (subscription.deduplication) {
             Logs.d("Before deduplication: ${proxies.size}")
@@ -204,7 +204,7 @@ object RawUpdater : GroupUpdater() {
                 }
             } else {
                 changed++
-                SagerDatabase.proxyDao.addProxy(
+                AppDatabase.proxyDao.addProxy(
                     ProxyEntity(
                         groupId = proxyGroup.id, userOrder = userOrder
                     ).apply {
@@ -216,22 +216,22 @@ object RawUpdater : GroupUpdater() {
             userOrder++
         }
 
-        SagerDatabase.proxyDao.updateProxy(toUpdate).also {
+        AppDatabase.proxyDao.updateProxy(toUpdate).also {
             Logs.d("Updated profiles: $it")
         }
 
-        SagerDatabase.proxyDao.deleteProxy(toDelete).also {
+        AppDatabase.proxyDao.deleteProxy(toDelete).also {
             Logs.d("Deleted profiles: $it")
         }
 
-        val existCount = SagerDatabase.proxyDao.countByGroup(proxyGroup.id).toInt()
+        val existCount = AppDatabase.proxyDao.countByGroup(proxyGroup.id).toInt()
 
         if (existCount != proxies.size) {
             Logs.e("Exist profiles: $existCount, new profiles: ${proxies.size}")
         }
 
         subscription.lastUpdated = (System.currentTimeMillis() / 1000).toInt()
-        SagerDatabase.groupDao.updateGroup(proxyGroup)
+        AppDatabase.groupDao.updateGroup(proxyGroup)
         finishUpdate(proxyGroup)
 
         userInterface?.onUpdateSuccess(

@@ -6,7 +6,7 @@ import android.os.Build
 import android.util.Log
 import com.jakewharton.processphoenix.ProcessPhoenix
 import tech.stpnk.freedomcat.BuildConfig
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.database.preference.PublicDatabase
 import tech.stpnk.freedomcat.ktx.Logs
 import tech.stpnk.freedomcat.ktx.app
@@ -62,7 +62,7 @@ object CrashHandler : Thread.UncaughtExceptionHandler {
 
     fun buildReportHeader(): String {
         var report = ""
-        report += "FreedomCat ${SagerNet.appVersionNameForDisplay} (${BuildConfig.VERSION_CODE})\n"
+        report += "FreedomCat ${FreedomCatApp.appVersionNameForDisplay} (${BuildConfig.VERSION_CODE})\n"
         report += "Date: ${getCurrentMilliSecondUTCTimeStamp()}\n\n"
         report += "OS_VERSION: ${getSystemPropertyWithAndroidAPI("os.version")}\n"
         report += "SDK_INT: ${Build.VERSION.SDK_INT}\n"

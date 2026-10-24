@@ -1,7 +1,7 @@
 package tech.stpnk.freedomcat.bg.proto
 
 import android.os.SystemClock
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.bg.AbstractInstance
 import tech.stpnk.freedomcat.bg.GuardedProcessPool
 import tech.stpnk.freedomcat.database.DataStore
@@ -91,7 +91,7 @@ abstract class BoxInstance(
 
     override fun launch() {
         // TODO move, this is not box
-        val cacheDir = File(SagerNet.application.cacheDir, "tmpcfg")
+        val cacheDir = File(FreedomCatApp.application.cacheDir, "tmpcfg")
         cacheDir.mkdirs()
 
         for ((chain) in config.externalIndex) {

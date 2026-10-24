@@ -24,11 +24,11 @@ import com.github.shadowsocks.plugin.fragment.AlertDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import tech.stpnk.freedomcat.Key
 import tech.stpnk.freedomcat.R
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.database.DataStore
 import tech.stpnk.freedomcat.database.ProfileManager
 import tech.stpnk.freedomcat.database.RuleEntity
-import tech.stpnk.freedomcat.database.SagerDatabase
+import tech.stpnk.freedomcat.database.AppDatabase
 import tech.stpnk.freedomcat.database.preference.OnPreferenceDataStoreChangeListener
 import tech.stpnk.freedomcat.ktx.Logs
 import tech.stpnk.freedomcat.ktx.app
@@ -229,7 +229,7 @@ class RouteSettingsActivity(
                 if (editingId == 0L) {
                     init(intent.getStringExtra(EXTRA_PACKAGE_NAME))
                 } else {
-                    val ruleEntity = SagerDatabase.rulesDao.getById(editingId)
+                    val ruleEntity = AppDatabase.rulesDao.getById(editingId)
                     if (ruleEntity == null) {
                         onMainDispatcher {
                             finish()
@@ -274,7 +274,7 @@ class RouteSettingsActivity(
 
             ProfileManager.createRule(RuleEntity().apply { serialize() })
         } else {
-            val entity = SagerDatabase.rulesDao.getById(DataStore.editingId)
+            val entity = AppDatabase.rulesDao.getById(DataStore.editingId)
             if (entity == null) {
                 finish()
                 return
@@ -328,7 +328,7 @@ class RouteSettingsActivity(
                 }
             } catch (e: Exception) {
                 Toast.makeText(
-                    SagerNet.application,
+                    FreedomCatApp.application,
                     "Error on createPreferences, please try again.",
                     Toast.LENGTH_SHORT
                 ).show()

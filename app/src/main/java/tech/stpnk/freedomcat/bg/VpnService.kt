@@ -46,7 +46,7 @@ class VpnService : BaseVpnService(),
 
     @SuppressLint("WakelockTimeout")
     override fun acquireWakeLock() {
-        wakeLock = SagerNet.power.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "sagernet:vpn")
+        wakeLock = FreedomCatApp.power.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "freedomcat:vpn")
             .apply { acquire() }
     }
 
@@ -63,7 +63,7 @@ class VpnService : BaseVpnService(),
     }
 
     override val data = BaseService.Data(this)
-    override val tag = "SagerNetVpnService"
+    override val tag = "FreedomCatVpnService"
     override fun createNotification(profileName: String) =
         ServiceNotification(this, profileName, "service-vpn")
 
@@ -92,7 +92,7 @@ class VpnService : BaseVpnService(),
 //        val tunOptions = JSONObject(tunOptionsJson)
 
         // address & route & MTU ...... use NB4A GUI config
-        val builder = Builder().setConfigureIntent(SagerNet.configureIntent(this))
+        val builder = Builder().setConfigureIntent(FreedomCatApp.configureIntent(this))
             .setSession(getString(R.string.app_name))
             .setMtu(DataStore.mtu)
         val ipv6Mode = DataStore.ipv6Mode
@@ -201,9 +201,9 @@ class VpnService : BaseVpnService(),
 
     fun updateUnderlyingNetwork(builder: Builder? = null) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            SagerNet.underlyingNetwork?.let {
-                builder?.setUnderlyingNetworks(arrayOf(SagerNet.underlyingNetwork))
-                    ?: setUnderlyingNetworks(arrayOf(SagerNet.underlyingNetwork))
+            FreedomCatApp.underlyingNetwork?.let {
+                builder?.setUnderlyingNetworks(arrayOf(FreedomCatApp.underlyingNetwork))
+                    ?: setUnderlyingNetworks(arrayOf(FreedomCatApp.underlyingNetwork))
             }
         }
     }

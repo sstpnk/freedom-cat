@@ -15,7 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.getSystemService
 import tech.stpnk.freedomcat.Key
 import tech.stpnk.freedomcat.R
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.database.DataStore
 import tech.stpnk.freedomcat.ktx.Logs
 import tech.stpnk.freedomcat.ktx.broadcastReceiver
@@ -60,7 +60,7 @@ class VpnRequestActivity : AppCompatActivity() {
                 cachedIntent = intent
                 return null
             }
-            SagerNet.startService()
+            FreedomCatApp.startService()
             return SynchronousResult(false)
         }
 
@@ -69,7 +69,7 @@ class VpnRequestActivity : AppCompatActivity() {
 
         override fun parseResult(resultCode: Int, intent: Intent?) =
             if (resultCode == Activity.RESULT_OK) {
-                SagerNet.startService()
+                FreedomCatApp.startService()
                 false
             } else {
                 Logs.e("Failed to start VpnService: $intent")

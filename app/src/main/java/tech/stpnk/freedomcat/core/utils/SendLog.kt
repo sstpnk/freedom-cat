@@ -5,7 +5,7 @@ import android.content.Intent
 import androidx.core.content.FileProvider
 import tech.stpnk.freedomcat.BuildConfig
 import tech.stpnk.freedomcat.R
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.ktx.Logs
 import tech.stpnk.freedomcat.ktx.app
 import tech.stpnk.freedomcat.ktx.use
@@ -61,7 +61,7 @@ object SendLog {
     fun getNekoLog(max: Long): ByteArray {
         return try {
             val file = File(
-                SagerNet.application.cacheDir,
+                FreedomCatApp.application.cacheDir,
                 "neko.log"
             )
             val len = file.length()

@@ -47,7 +47,7 @@ public class NaiveBean extends AbstractBean {
         output.writeString(proto);
         output.writeString(username);
         output.writeString(password);
-        // note: sequence is different from SagerNet,,,
+        // note: sequence is different from FreedomCatApp,,,
         output.writeString(extraHeaders);
         output.writeString(certificates);
         output.writeString(sni);

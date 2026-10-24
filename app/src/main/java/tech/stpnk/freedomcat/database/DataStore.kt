@@ -46,16 +46,16 @@ object DataStore : OnPreferenceDataStoreChangeListener {
 
     fun currentGroupId(): Long {
         val currentSelected = configurationStore.getLong(Key.PROFILE_GROUP, -1)
-        if (currentSelected > 0L && SagerDatabase.groupDao.getById(currentSelected) != null) {
+        if (currentSelected > 0L && AppDatabase.groupDao.getById(currentSelected) != null) {
             return currentSelected
         }
-        val groups = SagerDatabase.groupDao.allGroups()
+        val groups = AppDatabase.groupDao.allGroups()
         if (groups.isNotEmpty()) {
             val groupId = groups[0].id
             selectedGroup = groupId
             return groupId
         }
-        val groupId = SagerDatabase.groupDao.createGroup(ProxyGroup(ungrouped = true))
+        val groupId = AppDatabase.groupDao.createGroup(ProxyGroup(ungrouped = true))
         selectedGroup = groupId
         return groupId
     }
@@ -64,13 +64,13 @@ object DataStore : OnPreferenceDataStoreChangeListener {
         var group: ProxyGroup? = null
         val currentSelected = configurationStore.getLong(Key.PROFILE_GROUP, -1)
         if (currentSelected > 0L) {
-            group = SagerDatabase.groupDao.getById(currentSelected)
+            group = AppDatabase.groupDao.getById(currentSelected)
         }
         if (group != null) return group
-        val groups = SagerDatabase.groupDao.allGroups()
+        val groups = AppDatabase.groupDao.allGroups()
         if (groups.isEmpty()) {
             group = ProxyGroup(ungrouped = true).apply {
-                id = SagerDatabase.groupDao.createGroup(this)
+                id = AppDatabase.groupDao.createGroup(this)
             }
         } else {
             group = groups[0]
@@ -82,7 +82,7 @@ object DataStore : OnPreferenceDataStoreChangeListener {
     fun selectedGroupForImport(): Long {
         val current = currentGroup()
         if (current.type == GroupType.BASIC) return current.id
-        val groups = SagerDatabase.groupDao.allGroups()
+        val groups = AppDatabase.groupDao.allGroups()
         return groups.find { it.type == GroupType.BASIC }!!.id
     }
 

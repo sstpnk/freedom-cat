@@ -34,9 +34,9 @@ class BootReceiver : BroadcastReceiver() {
 
         val doStart = when (intent.action) {
             Intent.ACTION_LOCKED_BOOT_COMPLETED -> false // DataStore.directBootAware
-            else -> Build.VERSION.SDK_INT < 24 || SagerNet.user.isUserUnlocked
+            else -> Build.VERSION.SDK_INT < 24 || FreedomCatApp.user.isUserUnlocked
         } && DataStore.selectedProxy > 0
 
-        if (doStart) SagerNet.startService()
+        if (doStart) FreedomCatApp.startService()
     }
 }

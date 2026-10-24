@@ -3,7 +3,7 @@ package tech.stpnk.freedomcat.core
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.database.preference.KeyValuePair
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -14,7 +14,7 @@ abstract class TempDatabase : RoomDatabase() {
     companion object {
         @Suppress("EXPERIMENTAL_API_USAGE")
         private val instance by lazy {
-            Room.inMemoryDatabaseBuilder(SagerNet.application, TempDatabase::class.java)
+            Room.inMemoryDatabaseBuilder(FreedomCatApp.application, TempDatabase::class.java)
                 .allowMainThreadQueries()
                 .fallbackToDestructiveMigration()
                 .setQueryExecutor { GlobalScope.launch { it.run() } }

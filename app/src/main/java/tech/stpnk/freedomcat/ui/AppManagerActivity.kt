@@ -33,7 +33,7 @@ import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
 import androidx.appcompat.content.res.AppCompatResources
 import tech.stpnk.freedomcat.BuildConfig
 import tech.stpnk.freedomcat.R
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.database.DataStore
 import tech.stpnk.freedomcat.databinding.LayoutAppsBinding
 import tech.stpnk.freedomcat.databinding.LayoutAppsItemBinding
@@ -240,7 +240,7 @@ class AppManagerActivity : ThemedActivity() {
             setHomeAsUpIndicator(R.drawable.ic_navigation_menu)
         }
 
-        val navigation: NavigationView = if (themeResId == R.style.Theme_SagerNet_Black) {
+        val navigation: NavigationView = if (themeResId == R.style.Theme_FreedomCat_Black) {
             binding.root.removeView(binding.appsNavView)
             binding.appsNavViewBlack
         } else {
@@ -358,7 +358,7 @@ class AppManagerActivity : ThemedActivity() {
 
             R.id.action_export_clipboard -> {
                 val success =
-                    SagerNet.trySetPrimaryClip("${DataStore.bypass}\n${DataStore.individual}")
+                    FreedomCatApp.trySetPrimaryClip("${DataStore.bypass}\n${DataStore.individual}")
                 Snackbar.make(
                     binding.list,
                     if (success) R.string.action_export_msg else R.string.action_export_err,
@@ -369,7 +369,7 @@ class AppManagerActivity : ThemedActivity() {
 
             R.id.action_import_clipboard -> {
                 val proxiedAppString =
-                    SagerNet.clipboard.primaryClip?.getItemAt(0)?.text?.toString()
+                    FreedomCatApp.clipboard.primaryClip?.getItemAt(0)?.text?.toString()
                 if (!proxiedAppString.isNullOrEmpty()) {
                     val i = proxiedAppString.indexOf('\n')
                     try {

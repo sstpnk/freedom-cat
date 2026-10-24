@@ -10,7 +10,7 @@ import androidx.work.WorkerParameters
 import androidx.work.multiprocess.RemoteWorkManager
 import tech.stpnk.freedomcat.R
 import tech.stpnk.freedomcat.database.DataStore
-import tech.stpnk.freedomcat.database.SagerDatabase
+import tech.stpnk.freedomcat.database.AppDatabase
 import tech.stpnk.freedomcat.group.GroupUpdater
 import tech.stpnk.freedomcat.ktx.Logs
 import tech.stpnk.freedomcat.ktx.app
@@ -23,7 +23,7 @@ object SubscriptionUpdater {
     suspend fun reconfigureUpdater() {
         RemoteWorkManager.getInstance(app).cancelUniqueWork(WORK_NAME)
 
-        val subscriptions = SagerDatabase.groupDao.subscriptions()
+        val subscriptions = AppDatabase.groupDao.subscriptions()
             .filter { it.subscription!!.autoUpdate }
         if (subscriptions.isEmpty()) return
 
@@ -63,7 +63,7 @@ object SubscriptionUpdater {
 
         override suspend fun doWork(): Result {
             var subscriptions =
-                SagerDatabase.groupDao.subscriptions().filter { it.subscription!!.autoUpdate }
+                AppDatabase.groupDao.subscriptions().filter { it.subscription!!.autoUpdate }
             if (!DataStore.serviceState.connected) {
                 Logs.d("work: not connected")
                 subscriptions = subscriptions.filter { !it.subscription!!.updateWhenConnectedOnly }

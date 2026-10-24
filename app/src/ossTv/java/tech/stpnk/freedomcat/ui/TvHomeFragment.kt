@@ -14,7 +14,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import tech.stpnk.freedomcat.GroupType
 import tech.stpnk.freedomcat.R
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.aidl.SpeedDisplayData
 import tech.stpnk.freedomcat.aidl.TrafficData
 import tech.stpnk.freedomcat.bg.BaseService
@@ -23,7 +23,7 @@ import tech.stpnk.freedomcat.database.GroupManager
 import tech.stpnk.freedomcat.database.ProfileManager
 import tech.stpnk.freedomcat.database.ProxyEntity
 import tech.stpnk.freedomcat.database.ProxyGroup
-import tech.stpnk.freedomcat.database.SagerDatabase
+import tech.stpnk.freedomcat.database.AppDatabase
 import tech.stpnk.freedomcat.group.GroupUpdater
 import tech.stpnk.freedomcat.ktx.Logs
 import tech.stpnk.freedomcat.ktx.onMainDispatcher
@@ -160,9 +160,9 @@ class TvHomeFragment : Fragment(R.layout.layout_tv_home),
 
     private fun reloadProfiles() {
         runOnLifecycleDispatcher {
-            val groups = SagerDatabase.groupDao.allGroups()
+            val groups = AppDatabase.groupDao.allGroups()
             val profiles = groups.flatMap { group ->
-                SagerDatabase.proxyDao.getByGroup(group.id).map { TvProfile(it, group) }
+                AppDatabase.proxyDao.getByGroup(group.id).map { TvProfile(it, group) }
             }
 
             onMainDispatcher {
@@ -203,14 +203,14 @@ class TvHomeFragment : Fragment(R.layout.layout_tv_home),
             ProfileManager.postUpdate(previous)
             ProfileManager.postUpdate(item.profile.id)
             if (DataStore.serviceState.canStop) {
-                SagerNet.reloadService()
+                FreedomCatApp.reloadService()
             }
         }
     }
 
     private fun updateSubscriptions() {
         runOnDefaultDispatcher {
-            val subscriptions = SagerDatabase.groupDao.allGroups()
+            val subscriptions = AppDatabase.groupDao.allGroups()
                 .filter { it.type == GroupType.SUBSCRIPTION }
 
             onMainDispatcher {

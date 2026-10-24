@@ -5,7 +5,7 @@ import android.os.Build
 import android.os.CancellationSignal
 import android.system.ErrnoException
 import androidx.annotation.RequiresApi
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.ktx.Logs
 import tech.stpnk.freedomcat.ktx.runOnIoDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -27,7 +27,7 @@ object LocalResolverImpl : LocalDNSTransport {
 
     override fun networkHandle(): Long {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            return SagerNet.underlyingNetwork?.networkHandle ?: 0
+            return FreedomCatApp.underlyingNetwork?.networkHandle ?: 0
         }
         return 0
     }
@@ -54,7 +54,7 @@ object LocalResolverImpl : LocalDNSTransport {
         }
 
         DnsResolver.getInstance().rawQuery(
-            SagerNet.underlyingNetwork,
+            FreedomCatApp.underlyingNetwork,
             message,
             DnsResolver.FLAG_NO_RETRY,
             Dispatchers.IO.asExecutor(),
@@ -105,7 +105,7 @@ object LocalResolverImpl : LocalDNSTransport {
             }
             if (type != null) {
                 DnsResolver.getInstance().query(
-                    SagerNet.underlyingNetwork,
+                    FreedomCatApp.underlyingNetwork,
                     domain,
                     type,
                     DnsResolver.FLAG_NO_RETRY,
@@ -115,7 +115,7 @@ object LocalResolverImpl : LocalDNSTransport {
                 )
             } else {
                 DnsResolver.getInstance().query(
-                    SagerNet.underlyingNetwork,
+                    FreedomCatApp.underlyingNetwork,
                     domain,
                     DnsResolver.FLAG_NO_RETRY,
                     Dispatchers.IO.asExecutor(),
@@ -127,7 +127,7 @@ object LocalResolverImpl : LocalDNSTransport {
             runOnIoDispatcher {
                 // 老版本系统，继续用阻塞的 InetAddress
                 try {
-                    val u = SagerNet.underlyingNetwork
+                    val u = FreedomCatApp.underlyingNetwork
                     val answer = try {
                         u?.getAllByName(domain)
                     } catch (e: UnknownHostException) {

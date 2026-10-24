@@ -47,7 +47,7 @@
     </queries>
 
     <application
-        android:name="tech.stpnk.freedomcat.SagerNet"
+        android:name="tech.stpnk.freedomcat.FreedomCat"
         android:allowBackup="true"
         android:autoRevokePermissions="allowed"
         android:banner="@mipmap/ic_launcher"
@@ -274,7 +274,7 @@
             android:configChanges="uiMode"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance"
-            android:theme="@style/Theme.SagerNet.Dialog" />
+            android:theme="@style/Theme.FreedomCat.Dialog" />
 
         <service
             android:name="tech.stpnk.freedomcat.bg.ProxyService"

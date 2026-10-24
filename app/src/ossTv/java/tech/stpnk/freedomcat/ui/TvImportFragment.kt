@@ -8,7 +8,7 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import tech.stpnk.freedomcat.GroupType
 import tech.stpnk.freedomcat.R
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.database.DataStore
 import tech.stpnk.freedomcat.database.GroupManager
 import tech.stpnk.freedomcat.database.ProfileManager
@@ -40,7 +40,7 @@ class TvImportFragment : androidx.fragment.app.Fragment(R.layout.layout_tv_impor
             importText(linkInput.text?.toString().orEmpty())
         }
         view.findViewById<MaterialButton>(R.id.clipboard_button).setOnClickListener {
-            val text = SagerNet.getClipboardText()
+            val text = FreedomCatApp.getClipboardText()
             if (text.isBlank()) {
                 mainActivity().snackbar(R.string.clipboard_empty).show()
             } else {

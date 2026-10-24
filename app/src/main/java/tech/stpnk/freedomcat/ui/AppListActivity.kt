@@ -26,7 +26,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
 import tech.stpnk.freedomcat.BuildConfig
 import tech.stpnk.freedomcat.R
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.database.DataStore
 import tech.stpnk.freedomcat.databinding.LayoutAppListBinding
 import tech.stpnk.freedomcat.databinding.LayoutAppsItemBinding
@@ -270,7 +270,7 @@ class AppListActivity : ThemedActivity() {
             }
 
             R.id.action_export_clipboard -> {
-                val success = SagerNet.trySetPrimaryClip("false\n${DataStore.routePackages}")
+                val success = FreedomCatApp.trySetPrimaryClip("false\n${DataStore.routePackages}")
                 Snackbar.make(
                     binding.list,
                     if (success) R.string.action_export_msg else R.string.action_export_err,
@@ -281,7 +281,7 @@ class AppListActivity : ThemedActivity() {
 
             R.id.action_import_clipboard -> {
                 val proxiedAppString =
-                    SagerNet.clipboard.primaryClip?.getItemAt(0)?.text?.toString()
+                    FreedomCatApp.clipboard.primaryClip?.getItemAt(0)?.text?.toString()
                 if (!proxiedAppString.isNullOrEmpty()) {
                     val i = proxiedAppString.indexOf('\n')
                     try {

@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import dev.matrix.roomigrant.GenerateRoomMigrations
 import tech.stpnk.freedomcat.Key
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.fmt.KryoConverters
 import tech.stpnk.freedomcat.fmt.gson.GsonConverters
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -25,15 +25,15 @@ import kotlinx.coroutines.launch
 )
 @TypeConverters(value = [KryoConverters::class, GsonConverters::class])
 @GenerateRoomMigrations
-abstract class SagerDatabase : RoomDatabase() {
+abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         @OptIn(DelicateCoroutinesApi::class)
         @Suppress("EXPERIMENTAL_API_USAGE")
         val instance by lazy {
-            SagerNet.application.getDatabasePath(Key.DB_PROFILE).parentFile?.mkdirs()
-            Room.databaseBuilder(SagerNet.application, SagerDatabase::class.java, Key.DB_PROFILE)
-//                .addMigrations(*SagerDatabase_Migrations.build())
+            FreedomCatApp.application.getDatabasePath(Key.DB_PROFILE).parentFile?.mkdirs()
+            Room.databaseBuilder(FreedomCatApp.application, AppDatabase::class.java, Key.DB_PROFILE)
+//                .addMigrations(*AppDatabase_Migrations.build())
                 .setJournalMode(JournalMode.TRUNCATE)
                 .allowMainThreadQueries()
                 .enableMultiInstanceInvalidation()

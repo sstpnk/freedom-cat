@@ -3,7 +3,7 @@ package tech.stpnk.freedomcat.widget
 import android.content.Context
 import android.util.AttributeSet
 import tech.stpnk.freedomcat.R
-import tech.stpnk.freedomcat.database.SagerDatabase
+import tech.stpnk.freedomcat.database.AppDatabase
 import tech.stpnk.freedomcat.core.ui.SimpleMenuPreference
 
 class GroupPreference
@@ -12,7 +12,7 @@ class GroupPreference
 ) : SimpleMenuPreference(context, attrs, defStyle, 0) {
 
     init {
-        val groups = SagerDatabase.groupDao.allGroups()
+        val groups = AppDatabase.groupDao.allGroups()
 
         entries = groups.map { it.displayName() }.toTypedArray()
         entryValues = groups.map { "${it.id}" }.toTypedArray()
@@ -20,7 +20,7 @@ class GroupPreference
 
     override fun getSummary(): CharSequence? {
         if (!value.isNullOrBlank() && value != "0") {
-            return SagerDatabase.groupDao.getById(value.toLong())?.displayName()
+            return AppDatabase.groupDao.getById(value.toLong())?.displayName()
                 ?: super.getSummary()
         }
         return super.getSummary()

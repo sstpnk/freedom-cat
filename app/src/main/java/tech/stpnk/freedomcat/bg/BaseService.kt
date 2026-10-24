@@ -9,12 +9,12 @@ import android.widget.Toast
 import tech.stpnk.freedomcat.Action
 import tech.stpnk.freedomcat.BootReceiver
 import tech.stpnk.freedomcat.R
-import tech.stpnk.freedomcat.SagerNet
-import tech.stpnk.freedomcat.aidl.ISagerNetService
-import tech.stpnk.freedomcat.aidl.ISagerNetServiceCallback
+import tech.stpnk.freedomcat.FreedomCatApp
+import tech.stpnk.freedomcat.aidl.IServiceBridge
+import tech.stpnk.freedomcat.aidl.IServiceBridgeCallback
 import tech.stpnk.freedomcat.bg.proto.ProxyInstance
 import tech.stpnk.freedomcat.database.DataStore
-import tech.stpnk.freedomcat.database.SagerDatabase
+import tech.stpnk.freedomcat.database.AppDatabase
 import tech.stpnk.freedomcat.ktx.*
 import tech.stpnk.freedomcat.plugin.PluginManager
 import tech.stpnk.freedomcat.utils.DefaultNetworkListener
@@ -53,7 +53,7 @@ class BaseService {
                 // Action.SWITCH_WAKE_LOCK -> runOnDefaultDispatcher { service.switchWakeLock() }
                 PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED -> {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        if (SagerNet.power.isDeviceIdleMode) {
+                        if (FreedomCatApp.power.isDeviceIdleMode) {
                             proxy?.box?.sleep()
                         } else {
                             proxy?.box?.wake()
@@ -89,23 +89,23 @@ class BaseService {
         }
     }
 
-    class Binder(private var data: Data? = null) : ISagerNetService.Stub(), CoroutineScope,
+    class Binder(private var data: Data? = null) : IServiceBridge.Stub(), CoroutineScope,
         AutoCloseable {
-        private val callbacks = object : RemoteCallbackList<ISagerNetServiceCallback>() {
-            override fun onCallbackDied(callback: ISagerNetServiceCallback?, cookie: Any?) {
+        private val callbacks = object : RemoteCallbackList<IServiceBridgeCallback>() {
+            override fun onCallbackDied(callback: IServiceBridgeCallback?, cookie: Any?) {
                 super.onCallbackDied(callback, cookie)
             }
         }
 
-        val callbackIdMap = mutableMapOf<ISagerNetServiceCallback, Int>()
+        val callbackIdMap = mutableMapOf<IServiceBridgeCallback, Int>()
 
         override val coroutineContext = Dispatchers.Main.immediate + Job()
 
         override fun getState(): Int = (data?.state ?: State.Idle).ordinal
         override fun getProfileName(): String = data?.proxy?.displayProfileName ?: "Idle"
 
-        override fun registerCallback(cb: ISagerNetServiceCallback, id: Int) {
-            if (id == SagerConnection.CONNECTION_ID_RESTART_BG) {
+        override fun registerCallback(cb: IServiceBridgeCallback, id: Int) {
+            if (id == ServiceBridge.CONNECTION_ID_RESTART_BG) {
                 Runtime.getRuntime().exit(0)
                 return
             }
@@ -117,7 +117,7 @@ class BaseService {
 
         private val broadcastMutex = Mutex()
 
-        suspend fun broadcast(work: (ISagerNetServiceCallback) -> Unit) {
+        suspend fun broadcast(work: (IServiceBridgeCallback) -> Unit) {
             broadcastMutex.withLock {
                 val count = callbacks.beginBroadcast()
                 try {
@@ -134,7 +134,7 @@ class BaseService {
             }
         }
 
-        override fun unregisterCallback(cb: ISagerNetServiceCallback) {
+        override fun unregisterCallback(cb: IServiceBridgeCallback) {
             callbackIdMap.remove(cb)
             callbacks.unregister(cb)
         }
@@ -182,7 +182,7 @@ class BaseService {
                 stopRunner(false, (this as Context).getString(R.string.profile_empty))
             }
             if (canReloadSelector()) {
-                val ent = SagerDatabase.proxyDao.getById(DataStore.selectedProxy)
+                val ent = AppDatabase.proxyDao.getById(DataStore.selectedProxy)
                 val tag = data.proxy!!.config.profileTagMap[ent?.id] ?: ""
                 if (tag.isNotBlank() && ent != null) {
                     // select from GUI
@@ -202,7 +202,7 @@ class BaseService {
 
         fun canReloadSelector(): Boolean {
             if ((data.proxy?.config?.selectorGroupId ?: -1L) < 0) return false
-            val ent = SagerDatabase.proxyDao.getById(DataStore.selectedProxy) ?: return false
+            val ent = AppDatabase.proxyDao.getById(DataStore.selectedProxy) ?: return false
             val tmpBox = ProxyInstance(ent)
             tmpBox.buildConfigTmp()
             if (tmpBox.lastSelectorGroupId == data.proxy?.lastSelectorGroupId) {
@@ -274,8 +274,8 @@ class BaseService {
 
         suspend fun preInit() {
             DefaultNetworkListener.start(this) {
-                SagerNet.connectivity.getLinkProperties(it)?.also { link ->
-                    SagerNet.underlyingNetwork = it
+                FreedomCatApp.connectivity.getLinkProperties(it)?.also { link ->
+                    FreedomCatApp.underlyingNetwork = it
                     DataStore.vpnService?.updateUnderlyingNetwork()
                     //
                     val oldName = upstreamInterfaceName
@@ -314,7 +314,7 @@ class BaseService {
 
             val data = data
             if (data.state != State.Stopped) return Service.START_NOT_STICKY
-            val profile = SagerDatabase.proxyDao.getById(DataStore.selectedProxy)
+            val profile = AppDatabase.proxyDao.getById(DataStore.selectedProxy)
             this as Context
             if (profile == null) { // gracefully shutdown: https://stackoverflow.com/q/47337857/2245107
                 data.notification = createNotification("")

@@ -4,13 +4,13 @@ import android.graphics.drawable.Icon
 import android.service.quicksettings.Tile
 import androidx.annotation.RequiresApi
 import tech.stpnk.freedomcat.R
-import tech.stpnk.freedomcat.SagerNet
-import tech.stpnk.freedomcat.aidl.ISagerNetService
-import tech.stpnk.freedomcat.database.SagerDatabase
+import tech.stpnk.freedomcat.FreedomCatApp
+import tech.stpnk.freedomcat.aidl.IServiceBridge
+import tech.stpnk.freedomcat.database.AppDatabase
 import android.service.quicksettings.TileService as BaseTileService
 
 @RequiresApi(24)
-class TileService : BaseTileService(), SagerConnection.Callback {
+class TileService : BaseTileService(), ServiceBridge.Callback {
     private val iconIdle by lazy { Icon.createWithResource(this, R.drawable.ic_service_idle) }
     private val iconBusy by lazy { Icon.createWithResource(this, R.drawable.ic_service_busy) }
     private val iconConnected by lazy {
@@ -18,11 +18,11 @@ class TileService : BaseTileService(), SagerConnection.Callback {
     }
     private var tapPending = false
 
-    private val connection = SagerConnection(SagerConnection.CONNECTION_ID_TILE)
+    private val connection = ServiceBridge(ServiceBridge.CONNECTION_ID_TILE)
     override fun stateChanged(state: BaseService.State, profileName: String?, msg: String?) =
         updateTile(state, profileName)
 
-    override fun onServiceConnected(service: ISagerNetService) {
+    override fun onServiceConnected(service: IServiceBridge) {
         updateTile(BaseService.State.values()[service.state], service.profileName)
         if (tapPending) {
             tapPending = false
@@ -31,7 +31,7 @@ class TileService : BaseTileService(), SagerConnection.Callback {
     }
 
     override fun cbSelectorUpdate(id: Long) {
-        val profile = SagerDatabase.proxyDao.getById(id) ?: return
+        val profile = AppDatabase.proxyDao.getById(id) ?: return
         updateTile(BaseService.State.Connected, profile.displayName())
     }
 
@@ -85,8 +85,8 @@ class TileService : BaseTileService(), SagerConnection.Callback {
         if (service == null) tapPending =
             true else BaseService.State.values()[service.state].let { state ->
             when {
-                state.canStop -> SagerNet.stopService()
-                state == BaseService.State.Stopped -> SagerNet.startService()
+                state.canStop -> FreedomCatApp.stopService()
+                state == BaseService.State.Stopped -> FreedomCatApp.startService()
             }
         }
     }

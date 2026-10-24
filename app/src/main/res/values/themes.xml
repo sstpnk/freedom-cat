@@ -1,6 +1,6 @@
 <resources>
     <!-- Base application theme. -->
-    <style name="Theme.SagerNet" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.FreedomCat" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="actionBarStyle">@style/Widget.MaterialComponents.ActionBar.Solid</item>
         <item name="actionModeCloseDrawable">@drawable/ic_navigation_close</item>
         <item name="colorButtonNormal">?colorAccent</item>
@@ -32,23 +32,23 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
 
-        <item name="chipStyle">@style/Widget.MaterialComponents.Chip.Choice.SagerNet</item>
+        <item name="chipStyle">@style/Widget.MaterialComponents.Chip.Choice.FreedomCat</item>
 
         <item name="itemShapeAppearance">
             @style/ShapeAppearance.MaterialComponents.MediumComponent
         </item>
 
         <item name="alertDialogTheme">
-            @style/ThemeOverlay.MaterialComponents.MaterialAlertDialog.SagerNet
+            @style/ThemeOverlay.MaterialComponents.MaterialAlertDialog.FreedomCat
         </item>
 
         <item name="materialAlertDialogTheme">
-            @style/ThemeOverlay.MaterialComponents.MaterialAlertDialog.SagerNet
+            @style/ThemeOverlay.MaterialComponents.MaterialAlertDialog.FreedomCat
         </item>
 
     </style>
 
-    <style name="Theme.SagerNet.Dialog" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
+    <style name="Theme.FreedomCat.Dialog" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
         <item name="actionBarStyle">@style/Widget.MaterialComponents.ActionBar.Solid</item>
         <item name="actionModeCloseDrawable">@drawable/ic_navigation_close</item>
         <item name="colorButtonNormal">?colorAccent</item>
@@ -80,18 +80,18 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
 
-        <item name="chipStyle">@style/Widget.MaterialComponents.Chip.Choice.SagerNet</item>
+        <item name="chipStyle">@style/Widget.MaterialComponents.Chip.Choice.FreedomCat</item>
 
         <item name="itemShapeAppearance">
             @style/ShapeAppearance.MaterialComponents.MediumComponent
         </item>
 
         <item name="alertDialogTheme">
-            @style/ThemeOverlay.MaterialComponents.MaterialAlertDialog.SagerNet
+            @style/ThemeOverlay.MaterialComponents.MaterialAlertDialog.FreedomCat
         </item>
 
         <item name="materialAlertDialogTheme">
-            @style/ThemeOverlay.MaterialComponents.MaterialAlertDialog.SagerNet
+            @style/ThemeOverlay.MaterialComponents.MaterialAlertDialog.FreedomCat
         </item>
 
         <item name="windowFixedHeightMajor" type="dimen">95%</item>
@@ -103,7 +103,7 @@
         <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="ThemeOverlay.MaterialComponents.MaterialAlertDialog.SagerNet">
+    <style name="ThemeOverlay.MaterialComponents.MaterialAlertDialog.FreedomCat">
         <item name="buttonBarPositiveButtonStyle">
             @style/Widget.MaterialComponents.Button.TextButton.Dialog.Primary
         </item>
@@ -123,7 +123,7 @@
         <item name="android:textColor">?primaryOrTextPrimary</item>
     </style>
 
-    <style name="Widget.MaterialComponents.Chip.Choice.SagerNet">
+    <style name="Widget.MaterialComponents.Chip.Choice.FreedomCat">
         <item name="textStartPadding">30dp</item>
         <item name="textEndPadding">30dp</item>
         <item name="chipBackgroundColor">@color/chip_background</item>
@@ -132,7 +132,7 @@
         <item name="rippleColor">@color/chip_ripple_color</item>
     </style>
 
-    <style name="Theme.SagerNet.Pink_SSR">
+    <style name="Theme.FreedomCat.Pink_SSR">
         <item name="colorPrimary">@color/color_pink_ssr</item>
         <item name="colorPrimaryDark">@color/color_pink_ssr</item>
         <item name="colorAccent">@color/material_pink_accent_200</item>
@@ -140,7 +140,7 @@
         <item name="colorMaterial300">@color/color_pink_ssr</item>
     </style>
 
-    <style name="Theme.SagerNet.Amber">
+    <style name="Theme.FreedomCat.Amber">
         <item name="colorPrimary">@color/material_amber_500</item>
         <item name="colorPrimaryDark">@color/material_amber_700</item>
         <item name="colorAccent">@color/material_amber_accent_200</item>
@@ -148,7 +148,7 @@
         <item name="colorMaterial300">@color/material_amber_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Blue">
+    <style name="Theme.FreedomCat.Blue">
         <item name="colorPrimary">@color/material_blue_500</item>
         <item name="colorPrimaryDark">@color/material_blue_700</item>
         <item name="colorAccent">@color/material_blue_accent_200</item>
@@ -156,7 +156,7 @@
         <item name="colorMaterial300">@color/material_blue_300</item>
     </style>
 
-    <style name="Theme.SagerNet.BlueGrey">
+    <style name="Theme.FreedomCat.BlueGrey">
         <item name="colorPrimary">@color/material_blue_grey_500</item>
         <item name="colorPrimaryDark">@color/material_blue_grey_700</item>
         <item name="colorAccent">@color/material_blue_grey_200</item>
@@ -164,7 +164,7 @@
         <item name="colorMaterial300">@color/material_blue_grey_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Brown">
+    <style name="Theme.FreedomCat.Brown">
         <item name="colorPrimary">@color/material_brown_500</item>
         <item name="colorPrimaryDark">@color/material_brown_700</item>
         <item name="colorAccent">@color/material_brown_200</item>
@@ -172,7 +172,7 @@
         <item name="colorMaterial300">@color/material_brown_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Cyan">
+    <style name="Theme.FreedomCat.Cyan">
         <item name="colorPrimary">@color/material_cyan_500</item>
         <item name="colorPrimaryDark">@color/material_cyan_700</item>
         <item name="colorAccent">@color/material_cyan_accent_200</item>
@@ -180,7 +180,7 @@
         <item name="colorMaterial300">@color/material_cyan_300</item>
     </style>
 
-    <style name="Theme.SagerNet.DeepOrange">
+    <style name="Theme.FreedomCat.DeepOrange">
         <item name="colorPrimary">@color/material_deep_orange_500</item>
         <item name="colorPrimaryDark">@color/material_deep_orange_700</item>
         <item name="colorAccent">@color/material_deep_orange_accent_200</item>
@@ -188,7 +188,7 @@
         <item name="colorMaterial300">@color/material_deep_orange_300</item>
     </style>
 
-    <style name="Theme.SagerNet.DeepPurple">
+    <style name="Theme.FreedomCat.DeepPurple">
         <item name="colorPrimary">@color/material_deep_purple_500</item>
         <item name="colorPrimaryDark">@color/material_deep_purple_700</item>
         <item name="colorAccent">@color/material_deep_purple_accent_200</item>
@@ -196,7 +196,7 @@
         <item name="colorMaterial300">@color/material_deep_purple_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Green">
+    <style name="Theme.FreedomCat.Green">
         <item name="colorPrimary">@color/material_green_500</item>
         <item name="colorPrimaryDark">@color/material_green_700</item>
         <item name="colorAccent">@color/material_green_accent_200</item>
@@ -204,7 +204,7 @@
         <item name="colorMaterial300">@color/material_green_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Grey">
+    <style name="Theme.FreedomCat.Grey">
         <item name="colorPrimary">@color/material_grey_500</item>
         <item name="colorPrimaryDark">@color/material_grey_700</item>
         <item name="colorAccent">@color/material_grey_200</item>
@@ -212,7 +212,7 @@
         <item name="colorMaterial300">@color/material_grey_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Indigo">
+    <style name="Theme.FreedomCat.Indigo">
         <item name="colorPrimary">@color/material_indigo_500</item>
         <item name="colorPrimaryDark">@color/material_indigo_700</item>
         <item name="colorAccent">@color/material_indigo_accent_200</item>
@@ -220,7 +220,7 @@
         <item name="colorMaterial300">@color/material_indigo_300</item>
     </style>
 
-    <style name="Theme.SagerNet.LightBlue">
+    <style name="Theme.FreedomCat.LightBlue">
         <item name="colorPrimary">@color/material_light_blue_500</item>
         <item name="colorPrimaryDark">@color/material_light_blue_700</item>
         <item name="colorAccent">@color/material_light_blue_accent_200</item>
@@ -228,7 +228,7 @@
         <item name="colorMaterial300">@color/material_light_blue_300</item>
     </style>
 
-    <style name="Theme.SagerNet.LightGreen">
+    <style name="Theme.FreedomCat.LightGreen">
         <item name="colorPrimary">@color/material_light_green_500</item>
         <item name="colorPrimaryDark">@color/material_light_green_700</item>
         <item name="colorAccent">@color/material_light_green_accent_200</item>
@@ -236,7 +236,7 @@
         <item name="colorMaterial300">@color/material_light_green_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Lime">
+    <style name="Theme.FreedomCat.Lime">
         <item name="colorPrimary">@color/material_lime_500</item>
         <item name="colorPrimaryDark">@color/material_lime_700</item>
         <item name="colorAccent">@color/material_lime_accent_200</item>
@@ -244,7 +244,7 @@
         <item name="colorMaterial300">@color/material_lime_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Orange">
+    <style name="Theme.FreedomCat.Orange">
         <item name="colorPrimary">@color/material_orange_500</item>
         <item name="colorPrimaryDark">@color/material_orange_700</item>
         <item name="colorAccent">@color/material_orange_accent_200</item>
@@ -252,7 +252,7 @@
         <item name="colorMaterial300">@color/material_orange_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Purple">
+    <style name="Theme.FreedomCat.Purple">
         <item name="colorPrimary">@color/material_purple_500</item>
         <item name="colorPrimaryDark">@color/material_purple_700</item>
         <item name="colorAccent">@color/material_purple_accent_200</item>
@@ -260,7 +260,7 @@
         <item name="colorMaterial300">@color/material_purple_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Red">
+    <style name="Theme.FreedomCat.Red">
         <item name="colorPrimary">@color/material_red_500</item>
         <item name="colorPrimaryDark">@color/material_red_700</item>
         <item name="colorAccent">@color/material_red_accent_200</item>
@@ -268,7 +268,7 @@
         <item name="colorMaterial300">@color/material_red_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Teal">
+    <style name="Theme.FreedomCat.Teal">
         <item name="colorPrimary">@color/material_teal_500</item>
         <item name="colorPrimaryDark">@color/material_teal_700</item>
         <item name="colorAccent">@color/material_teal_accent_200</item>
@@ -276,7 +276,7 @@
         <item name="colorMaterial300">@color/material_teal_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Yellow">
+    <style name="Theme.FreedomCat.Yellow">
         <item name="colorPrimary">@color/material_yellow_500</item>
         <item name="colorPrimaryDark">@color/material_yellow_700</item>
         <item name="colorAccent">@color/material_yellow_accent_200</item>
@@ -285,7 +285,7 @@
         <item name="colorOnPrimarySurface">@color/black</item>
     </style>
 
-    <style name="Theme.SagerNet.Dialog.Amber">
+    <style name="Theme.FreedomCat.Dialog.Amber">
         <item name="colorPrimary">@color/material_amber_500</item>
         <item name="colorPrimaryDark">@color/material_amber_700</item>
         <item name="colorAccent">@color/material_amber_accent_200</item>
@@ -293,7 +293,7 @@
         <item name="colorMaterial300">@color/material_amber_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Dialog.Blue">
+    <style name="Theme.FreedomCat.Dialog.Blue">
         <item name="colorPrimary">@color/material_blue_500</item>
         <item name="colorPrimaryDark">@color/material_blue_700</item>
         <item name="colorAccent">@color/material_blue_accent_200</item>
@@ -301,7 +301,7 @@
         <item name="colorMaterial300">@color/material_blue_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Dialog.BlueGrey">
+    <style name="Theme.FreedomCat.Dialog.BlueGrey">
         <item name="colorPrimary">@color/material_blue_grey_500</item>
         <item name="colorPrimaryDark">@color/material_blue_grey_700</item>
         <item name="colorAccent">@color/material_blue_grey_200</item>
@@ -309,7 +309,7 @@
         <item name="colorMaterial300">@color/material_blue_grey_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Dialog.Brown">
+    <style name="Theme.FreedomCat.Dialog.Brown">
         <item name="colorPrimary">@color/material_brown_500</item>
         <item name="colorPrimaryDark">@color/material_brown_700</item>
         <item name="colorAccent">@color/material_brown_200</item>
@@ -317,7 +317,7 @@
         <item name="colorMaterial300">@color/material_brown_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Dialog.Cyan">
+    <style name="Theme.FreedomCat.Dialog.Cyan">
         <item name="colorPrimary">@color/material_cyan_500</item>
         <item name="colorPrimaryDark">@color/material_cyan_700</item>
         <item name="colorAccent">@color/material_cyan_accent_200</item>
@@ -325,7 +325,7 @@
         <item name="colorMaterial300">@color/material_cyan_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Dialog.DeepOrange">
+    <style name="Theme.FreedomCat.Dialog.DeepOrange">
         <item name="colorPrimary">@color/material_deep_orange_500</item>
         <item name="colorPrimaryDark">@color/material_deep_orange_700</item>
         <item name="colorAccent">@color/material_deep_orange_accent_200</item>
@@ -333,7 +333,7 @@
         <item name="colorMaterial300">@color/material_deep_orange_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Dialog.DeepPurple">
+    <style name="Theme.FreedomCat.Dialog.DeepPurple">
         <item name="colorPrimary">@color/material_deep_purple_500</item>
         <item name="colorPrimaryDark">@color/material_deep_purple_700</item>
         <item name="colorAccent">@color/material_deep_purple_accent_200</item>
@@ -341,7 +341,7 @@
         <item name="colorMaterial300">@color/material_deep_purple_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Dialog.Green">
+    <style name="Theme.FreedomCat.Dialog.Green">
         <item name="colorPrimary">@color/material_green_500</item>
         <item name="colorPrimaryDark">@color/material_green_700</item>
         <item name="colorAccent">@color/material_green_accent_200</item>
@@ -349,7 +349,7 @@
         <item name="colorMaterial300">@color/material_green_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Dialog.Grey">
+    <style name="Theme.FreedomCat.Dialog.Grey">
         <item name="colorPrimary">@color/material_grey_500</item>
         <item name="colorPrimaryDark">@color/material_grey_700</item>
         <item name="colorAccent">@color/material_grey_200</item>
@@ -357,7 +357,7 @@
         <item name="colorMaterial300">@color/material_grey_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Dialog.Indigo">
+    <style name="Theme.FreedomCat.Dialog.Indigo">
         <item name="colorPrimary">@color/material_indigo_500</item>
         <item name="colorPrimaryDark">@color/material_indigo_700</item>
         <item name="colorAccent">@color/material_indigo_accent_200</item>
@@ -365,7 +365,7 @@
         <item name="colorMaterial300">@color/material_indigo_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Dialog.LightBlue">
+    <style name="Theme.FreedomCat.Dialog.LightBlue">
         <item name="colorPrimary">@color/material_light_blue_500</item>
         <item name="colorPrimaryDark">@color/material_light_blue_700</item>
         <item name="colorAccent">@color/material_light_blue_accent_200</item>
@@ -373,7 +373,7 @@
         <item name="colorMaterial300">@color/material_light_blue_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Dialog.LightGreen">
+    <style name="Theme.FreedomCat.Dialog.LightGreen">
         <item name="colorPrimary">@color/material_light_green_500</item>
         <item name="colorPrimaryDark">@color/material_light_green_700</item>
         <item name="colorAccent">@color/material_light_green_accent_200</item>
@@ -381,7 +381,7 @@
         <item name="colorMaterial300">@color/material_light_green_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Dialog.Lime">
+    <style name="Theme.FreedomCat.Dialog.Lime">
         <item name="colorPrimary">@color/material_lime_500</item>
         <item name="colorPrimaryDark">@color/material_lime_700</item>
         <item name="colorAccent">@color/material_lime_accent_200</item>
@@ -389,7 +389,7 @@
         <item name="colorMaterial300">@color/material_lime_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Dialog.Orange">
+    <style name="Theme.FreedomCat.Dialog.Orange">
         <item name="colorPrimary">@color/material_orange_500</item>
         <item name="colorPrimaryDark">@color/material_orange_700</item>
         <item name="colorAccent">@color/material_orange_accent_200</item>
@@ -397,7 +397,7 @@
         <item name="colorMaterial300">@color/material_orange_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Dialog.Purple">
+    <style name="Theme.FreedomCat.Dialog.Purple">
         <item name="colorPrimary">@color/material_purple_500</item>
         <item name="colorPrimaryDark">@color/material_purple_700</item>
         <item name="colorAccent">@color/material_purple_accent_200</item>
@@ -405,7 +405,7 @@
         <item name="colorMaterial300">@color/material_purple_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Dialog.Red">
+    <style name="Theme.FreedomCat.Dialog.Red">
         <item name="colorPrimary">@color/material_red_500</item>
         <item name="colorPrimaryDark">@color/material_red_700</item>
         <item name="colorAccent">@color/material_red_accent_200</item>
@@ -413,7 +413,7 @@
         <item name="colorMaterial300">@color/material_red_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Dialog.Pink_SSR">
+    <style name="Theme.FreedomCat.Dialog.Pink_SSR">
         <item name="colorPrimary">@color/color_pink_ssr</item>
         <item name="colorPrimaryDark">@color/color_pink_ssr</item>
         <item name="colorAccent">@color/material_pink_accent_200</item>
@@ -421,7 +421,7 @@
         <item name="colorMaterial300">@color/color_pink_ssr</item>
     </style>
 
-    <style name="Theme.SagerNet.Dialog.Teal">
+    <style name="Theme.FreedomCat.Dialog.Teal">
         <item name="colorPrimary">@color/material_teal_500</item>
         <item name="colorPrimaryDark">@color/material_teal_700</item>
         <item name="colorAccent">@color/material_teal_accent_200</item>
@@ -429,7 +429,7 @@
         <item name="colorMaterial300">@color/material_teal_300</item>
     </style>
 
-    <style name="Theme.SagerNet.Dialog.Yellow">
+    <style name="Theme.FreedomCat.Dialog.Yellow">
         <item name="colorPrimary">@color/material_yellow_500</item>
         <item name="colorPrimaryDark">@color/material_yellow_700</item>
         <item name="colorAccent">@color/material_yellow_accent_200</item>
@@ -438,7 +438,7 @@
         <item name="colorOnPrimarySurface">@color/black</item>
     </style>
 
-    <style name="Theme.SagerNet.Black">
+    <style name="Theme.FreedomCat.Black">
         <item name="colorPrimary">@color/color_ng_black_primary</item>
         <item name="colorPrimaryDark">@color/color_ng_black_primary</item>
         <item name="colorAccent">@color/color_ng_black_accent</item>
@@ -455,7 +455,7 @@
         <item name="primaryOrTextPrimary">?android:textColorPrimary</item>
     </style>
 
-    <style name="Theme.SagerNet.Dialog.Black">
+    <style name="Theme.FreedomCat.Dialog.Black">
         <item name="colorPrimary">@color/color_ng_black_primary</item>
         <item name="colorPrimaryDark">@color/color_ng_black_primary</item>
         <item name="colorAccent">@color/color_ng_black_accent</item>

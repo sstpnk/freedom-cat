@@ -7,7 +7,7 @@ import androidx.core.app.ActivityCompat
 import androidx.preference.*
 import tech.stpnk.freedomcat.Key
 import tech.stpnk.freedomcat.R
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.database.DataStore
 import tech.stpnk.freedomcat.database.preference.EditTextPreferenceModifiers
 import tech.stpnk.freedomcat.ktx.*
@@ -36,7 +36,7 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         val appTheme = findPreference<ColorPickerPreference>(Key.APP_THEME)!!
         appTheme.setOnPreferenceChangeListener { _, newTheme ->
             if (DataStore.serviceState.started) {
-                SagerNet.reloadService()
+                FreedomCatApp.reloadService()
             }
             val theme = Theme.getTheme(newTheme as Int)
             app.setTheme(theme)
@@ -89,7 +89,7 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         }
 
         serviceMode.setOnPreferenceChangeListener { _, _ ->
-            if (DataStore.serviceState.started) SagerNet.stopService()
+            if (DataStore.serviceState.started) FreedomCatApp.stopService()
             true
         }
 

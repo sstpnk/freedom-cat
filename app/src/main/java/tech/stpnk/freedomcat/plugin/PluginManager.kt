@@ -3,7 +3,7 @@ package tech.stpnk.freedomcat.plugin
 import android.content.pm.ComponentInfo
 import android.content.pm.ProviderInfo
 import tech.stpnk.freedomcat.R
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.bg.BaseService
 import tech.stpnk.freedomcat.ktx.Logs
 import tech.stpnk.freedomcat.core.plugin.Plugins
@@ -15,7 +15,7 @@ object PluginManager {
     class PluginNotFoundException(val plugin: String) : FileNotFoundException(plugin),
         BaseService.ExpectedException {
         override fun getLocalizedMessage() =
-            SagerNet.application.getString(R.string.plugin_unknown, plugin)
+            FreedomCatApp.application.getString(R.string.plugin_unknown, plugin)
     }
 
     data class InitResult(
@@ -64,7 +64,7 @@ object PluginManager {
 
     private fun initNativeInternal(pluginId: String): String? {
         fun soIfExist(soName: String): String? {
-            val f = File(SagerNet.application.applicationInfo.nativeLibraryDir, soName)
+            val f = File(FreedomCatApp.application.applicationInfo.nativeLibraryDir, soName)
             if (f.canExecute()) {
                 return f.absolutePath
             }
@@ -88,7 +88,7 @@ object PluginManager {
 
     fun ComponentInfo.loadString(key: String) = when (val value = metaData.get(key)) {
         is String -> value
-        is Int -> SagerNet.application.packageManager.getResourcesForApplication(applicationInfo)
+        is Int -> FreedomCatApp.application.packageManager.getResourcesForApplication(applicationInfo)
             .getString(value)
 
         null -> null

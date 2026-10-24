@@ -25,12 +25,12 @@ import tech.stpnk.freedomcat.BuildConfig
 import tech.stpnk.freedomcat.GroupType
 import tech.stpnk.freedomcat.Key
 import tech.stpnk.freedomcat.R
-import tech.stpnk.freedomcat.SagerNet
-import tech.stpnk.freedomcat.aidl.ISagerNetService
+import tech.stpnk.freedomcat.FreedomCatApp
+import tech.stpnk.freedomcat.aidl.IServiceBridge
 import tech.stpnk.freedomcat.aidl.SpeedDisplayData
 import tech.stpnk.freedomcat.aidl.TrafficData
 import tech.stpnk.freedomcat.bg.BaseService
-import tech.stpnk.freedomcat.bg.SagerConnection
+import tech.stpnk.freedomcat.bg.ServiceBridge
 import tech.stpnk.freedomcat.database.DataStore
 import tech.stpnk.freedomcat.database.GroupManager
 import tech.stpnk.freedomcat.database.ProfileManager
@@ -53,7 +53,7 @@ import tech.stpnk.freedomcat.ktx.runOnDefaultDispatcher
 import tech.stpnk.freedomcat.core.utils.Util
 
 class MainActivity : ThemedActivity(),
-    SagerConnection.Callback,
+    ServiceBridge.Callback,
     OnPreferenceDataStoreChangeListener,
     NavigationView.OnNavigationItemSelectedListener {
 
@@ -86,7 +86,7 @@ class MainActivity : ThemedActivity(),
         binding = LayoutMainBinding.inflate(layoutInflater)
         binding.fab.initProgress(binding.fabProgress)
         if (themeResId !in intArrayOf(
-                R.style.Theme_SagerNet_Black
+                R.style.Theme_FreedomCat_Black
             )
         ) {
             navigation = binding.navView
@@ -211,7 +211,7 @@ class MainActivity : ThemedActivity(),
 
     fun toggleServiceFromUi() {
         if (DataStore.serviceState.canStop) {
-            SagerNet.stopService()
+            FreedomCatApp.stopService()
         } else {
             connect.launch(null)
         }
@@ -428,7 +428,7 @@ class MainActivity : ThemedActivity(),
     }
 
     private fun createConfigurationFragment(): Fragment {
-        if (SagerNet.isTv) {
+        if (FreedomCatApp.isTv) {
             try {
                 val fragment = Class.forName(TV_HOME_FRAGMENT_CLASS)
                     .getDeclaredConstructor()
@@ -476,8 +476,8 @@ class MainActivity : ThemedActivity(),
         changeState(state, msg, true)
     }
 
-    val connection = SagerConnection(SagerConnection.CONNECTION_ID_MAIN_ACTIVITY_FOREGROUND, true)
-    override fun onServiceConnected(service: ISagerNetService) = changeState(
+    val connection = ServiceBridge(ServiceBridge.CONNECTION_ID_MAIN_ACTIVITY_FOREGROUND, true)
+    override fun onServiceConnected(service: IServiceBridge) = changeState(
         try {
             BaseService.State.values()[service.state]
         } catch (_: RemoteException) {
@@ -525,7 +525,7 @@ class MainActivity : ThemedActivity(),
             Key.PROXY_APPS, Key.BYPASS_MODE, Key.INDIVIDUAL -> {
                 if (DataStore.serviceState.canStop) {
                     snackbar(getString(R.string.need_reload)).setAction(R.string.apply) {
-                        SagerNet.reloadService()
+                        FreedomCatApp.reloadService()
                     }.show()
                 }
             }
@@ -533,12 +533,12 @@ class MainActivity : ThemedActivity(),
     }
 
     override fun onStart() {
-        connection.updateConnectionId(SagerConnection.CONNECTION_ID_MAIN_ACTIVITY_FOREGROUND)
+        connection.updateConnectionId(ServiceBridge.CONNECTION_ID_MAIN_ACTIVITY_FOREGROUND)
         super.onStart()
     }
 
     override fun onStop() {
-        connection.updateConnectionId(SagerConnection.CONNECTION_ID_MAIN_ACTIVITY_BACKGROUND)
+        connection.updateConnectionId(ServiceBridge.CONNECTION_ID_MAIN_ACTIVITY_BACKGROUND)
         super.onStop()
     }
 

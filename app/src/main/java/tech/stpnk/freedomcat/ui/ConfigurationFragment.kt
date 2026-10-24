@@ -35,7 +35,7 @@ import tech.stpnk.freedomcat.GroupOrder
 import tech.stpnk.freedomcat.GroupType
 import tech.stpnk.freedomcat.Key
 import tech.stpnk.freedomcat.R
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.aidl.TrafficData
 import tech.stpnk.freedomcat.bg.BaseService
 import tech.stpnk.freedomcat.bg.proto.UrlTest
@@ -44,7 +44,7 @@ import tech.stpnk.freedomcat.database.GroupManager
 import tech.stpnk.freedomcat.database.ProfileManager
 import tech.stpnk.freedomcat.database.ProxyEntity
 import tech.stpnk.freedomcat.database.ProxyGroup
-import tech.stpnk.freedomcat.database.SagerDatabase
+import tech.stpnk.freedomcat.database.AppDatabase
 import tech.stpnk.freedomcat.database.preference.OnPreferenceDataStoreChangeListener
 import tech.stpnk.freedomcat.databinding.LayoutGroupItemBinding
 import tech.stpnk.freedomcat.databinding.LayoutProgressListBinding
@@ -339,7 +339,7 @@ class ConfigurationFragment @JvmOverloads constructor(
     }
 
     override fun onKeyDown(ketCode: Int, event: KeyEvent): Boolean {
-        if (SagerNet.isTv && ketCode == KeyEvent.KEYCODE_MENU && openFocusedItemMenu()) {
+        if (FreedomCatApp.isTv && ketCode == KeyEvent.KEYCODE_MENU && openFocusedItemMenu()) {
             return true
         }
 
@@ -452,7 +452,7 @@ class ConfigurationFragment @JvmOverloads constructor(
             }
 
             R.id.action_import_clipboard -> {
-                val text = SagerNet.getClipboardText()
+                val text = FreedomCatApp.getClipboardText()
                 if (text.isBlank()) {
                     snackbar(getString(R.string.clipboard_empty)).show()
                 } else runOnDefaultDispatcher {
@@ -572,7 +572,7 @@ class ConfigurationFragment @JvmOverloads constructor(
 
             R.id.action_clear_traffic_statistics -> {
                 runOnDefaultDispatcher {
-                    val profiles = SagerDatabase.proxyDao.getByGroup(DataStore.currentGroupId())
+                    val profiles = AppDatabase.proxyDao.getByGroup(DataStore.currentGroupId())
                     val toClear = mutableListOf<ProxyEntity>()
                     if (profiles.isNotEmpty()) for (profile in profiles) {
                         if (profile.tx != 0L || profile.rx != 0L) {
@@ -589,7 +589,7 @@ class ConfigurationFragment @JvmOverloads constructor(
 
             R.id.action_connection_test_clear_results -> {
                 runOnDefaultDispatcher {
-                    val profiles = SagerDatabase.proxyDao.getByGroup(DataStore.currentGroupId())
+                    val profiles = AppDatabase.proxyDao.getByGroup(DataStore.currentGroupId())
                     val toClear = mutableListOf<ProxyEntity>()
                     if (profiles.isNotEmpty()) for (profile in profiles) {
                         if (profile.status != 0) {
@@ -607,7 +607,7 @@ class ConfigurationFragment @JvmOverloads constructor(
 
             R.id.action_connection_test_delete_unavailable -> {
                 runOnDefaultDispatcher {
-                    val profiles = SagerDatabase.proxyDao.getByGroup(DataStore.currentGroupId())
+                    val profiles = AppDatabase.proxyDao.getByGroup(DataStore.currentGroupId())
                     val toClear = mutableListOf<ProxyEntity>()
                     if (profiles.isNotEmpty()) for (profile in profiles) {
                         if (profile.status != 0 && profile.status != 1) {
@@ -639,7 +639,7 @@ class ConfigurationFragment @JvmOverloads constructor(
 
             R.id.action_remove_duplicate -> {
                 runOnDefaultDispatcher {
-                    val profiles = SagerDatabase.proxyDao.getByGroup(DataStore.currentGroupId())
+                    val profiles = AppDatabase.proxyDao.getByGroup(DataStore.currentGroupId())
                     val toClear = mutableListOf<ProxyEntity>()
                     val uniqueProxies = LinkedHashSet<Protocols.Deduplication>()
                     for (pf in profiles) {
@@ -798,7 +798,7 @@ class ConfigurationFragment @JvmOverloads constructor(
         val group = DataStore.currentGroup()
 
         val mainJob = runOnDefaultDispatcher {
-            val profilesList = SagerDatabase.proxyDao.getByGroup(group.id).filter {
+            val profilesList = AppDatabase.proxyDao.getByGroup(group.id).filter {
                 if (icmpPing) {
                     if (it.requireBean().canICMPing()) {
                         return@filter true
@@ -821,7 +821,7 @@ class ConfigurationFragment @JvmOverloads constructor(
                         var address = profile.requireBean().serverAddress
                         if (!address.isIpAddress()) {
                             try {
-                                SagerNet.underlyingNetwork!!.getAllByName(address).apply {
+                                FreedomCatApp.underlyingNetwork!!.getAllByName(address).apply {
                                     if (isNotEmpty()) {
                                         address = this[0].hostAddress
                                     }
@@ -841,7 +841,7 @@ class ConfigurationFragment @JvmOverloads constructor(
                                 // removed
                             } else {
                                 val socket =
-                                    SagerNet.underlyingNetwork?.socketFactory?.createSocket()
+                                    FreedomCatApp.underlyingNetwork?.socketFactory?.createSocket()
                                         ?: Socket()
                                 try {
                                     socket.soTimeout = 3000
@@ -939,7 +939,7 @@ class ConfigurationFragment @JvmOverloads constructor(
         val group = DataStore.currentGroup()
 
         val mainJob = runOnDefaultDispatcher {
-            val profilesList = SagerDatabase.proxyDao.getByGroup(group.id)
+            val profilesList = AppDatabase.proxyDao.getByGroup(group.id)
             test.proxyN = profilesList.size
             val profiles = ConcurrentLinkedQueue(profilesList)
             repeat(DataStore.connectionTestConcurrent) {
@@ -1002,7 +1002,7 @@ class ConfigurationFragment @JvmOverloads constructor(
     private val undoManager by lazy { UndoSnackbarManager<Any>(activity as MainActivity, adapter) }
 
     private fun sortedProfiles(group: ProxyGroup): MutableList<ProxyEntity> {
-        var newProfiles = SagerDatabase.proxyDao.getByGroup(group.id).toMutableList()
+        var newProfiles = AppDatabase.proxyDao.getByGroup(group.id).toMutableList()
         when (group.order) {
             GroupOrder.BY_NAME -> {
                 newProfiles = newProfiles.sortedBy { it.displayName() }.toMutableList()
@@ -1095,10 +1095,10 @@ class ConfigurationFragment @JvmOverloads constructor(
         }
 
         private suspend fun reload() {
-            var newGroupList = ArrayList(SagerDatabase.groupDao.allGroups())
+            var newGroupList = ArrayList(AppDatabase.groupDao.allGroups())
             if (newGroupList.isEmpty()) {
-                SagerDatabase.groupDao.createGroup(ProxyGroup(ungrouped = true))
-                newGroupList = ArrayList(SagerDatabase.groupDao.allGroups())
+                AppDatabase.groupDao.createGroup(ProxyGroup(ungrouped = true))
+                newGroupList = ArrayList(AppDatabase.groupDao.allGroups())
             }
             if (select) {
                 forceExpanded = true
@@ -1254,7 +1254,7 @@ class ConfigurationFragment @JvmOverloads constructor(
         }
 
         fun commitMoveGroup() = runOnDefaultDispatcher {
-            updatedGroups.forEach { SagerDatabase.groupDao.updateGroup(it) }
+            updatedGroups.forEach { AppDatabase.groupDao.updateGroup(it) }
             updatedGroups.clear()
         }
 
@@ -1354,7 +1354,7 @@ class ConfigurationFragment @JvmOverloads constructor(
         override fun onMenuItemClick(item: MenuItem): Boolean {
 
             fun export(link: String) {
-                val success = SagerNet.trySetPrimaryClip(link)
+                val success = FreedomCatApp.trySetPrimaryClip(link)
                 (activity as MainActivity).snackbar(
                     if (success) R.string.action_export_msg else R.string.action_export_err
                 ).show()
@@ -1391,10 +1391,10 @@ class ConfigurationFragment @JvmOverloads constructor(
 
                 R.id.action_export_clipboard -> {
                     runOnDefaultDispatcher {
-                        val profiles = SagerDatabase.proxyDao.getByGroup(proxyGroup.id)
+                        val profiles = AppDatabase.proxyDao.getByGroup(proxyGroup.id)
                         val links = profiles.joinToString("\n") { it.toStdLink(compact = true) }
                         onMainDispatcher {
-                            SagerNet.trySetPrimaryClip(links)
+                            FreedomCatApp.trySetPrimaryClip(links)
                             snackbar(getString(R.string.copy_toast_msg)).show()
                         }
                     }
@@ -1565,7 +1565,7 @@ class ConfigurationFragment @JvmOverloads constructor(
             groupUser.text = subscription?.username ?: ""
 
             runOnDefaultDispatcher {
-                val size = SagerDatabase.proxyDao.countByGroup(group.id)
+                val size = AppDatabase.proxyDao.countByGroup(group.id)
                 onMainDispatcher {
                     @Suppress("DEPRECATION") when (group.type) {
                         GroupType.BASIC -> {
@@ -1603,7 +1603,7 @@ class ConfigurationFragment @JvmOverloads constructor(
         registerForActivityResult(ActivityResultContracts.CreateDocument()) { data ->
             if (data != null) {
                 runOnDefaultDispatcher {
-                    val profiles = SagerDatabase.proxyDao.getByGroup(selectedGroup.id)
+                    val profiles = AppDatabase.proxyDao.getByGroup(selectedGroup.id)
                     val links = profiles.joinToString("\n") { it.toStdLink(compact = true) }
                     try {
                         (requireActivity() as MainActivity).contentResolver.openOutputStream(
@@ -1671,14 +1671,14 @@ class ConfigurationFragment @JvmOverloads constructor(
                         if (update) {
                             ProfileManager.postUpdate(lastSelected)
                             if (DataStore.serviceState.canStop && reloadAccess.tryLock()) {
-                                SagerNet.reloadService()
+                                FreedomCatApp.reloadService()
                                 reloadAccess.unlock()
                             }
-                        } else if (SagerNet.isTv) {
+                        } else if (FreedomCatApp.isTv) {
                             if (DataStore.serviceState.started) {
-                                SagerNet.stopService()
+                                FreedomCatApp.stopService()
                             } else {
-                                SagerNet.startService()
+                                FreedomCatApp.startService()
                             }
                         }
                     }
@@ -1819,8 +1819,8 @@ class ConfigurationFragment @JvmOverloads constructor(
                 }
 
                 if (!(select || proxyEntity.type == ProxyEntity.TYPE_CHAIN)) {
-                    val canMove = SagerDatabase.groupDao.getById(proxyEntity.groupId)?.type == GroupType.BASIC &&
-                            SagerDatabase.groupDao.allGroups().any {
+                    val canMove = AppDatabase.groupDao.getById(proxyEntity.groupId)?.type == GroupType.BASIC &&
+                            AppDatabase.groupDao.allGroups().any {
                                 it.type == GroupType.BASIC && it.id != proxyEntity.groupId
                             }
                     onMainDispatcher {
@@ -1841,8 +1841,8 @@ class ConfigurationFragment @JvmOverloads constructor(
 
         private fun showMoveDialog(profile: ProxyEntity) {
             runOnDefaultDispatcher {
-                val sourceGroup = SagerDatabase.groupDao.getById(profile.groupId)
-                val targetGroups = SagerDatabase.groupDao.allGroups().filter {
+                val sourceGroup = AppDatabase.groupDao.getById(profile.groupId)
+                val targetGroups = AppDatabase.groupDao.allGroups().filter {
                     it.type == GroupType.BASIC && it.id != profile.groupId
                 }
                 onMainDispatcher {
@@ -1879,7 +1879,7 @@ class ConfigurationFragment @JvmOverloads constructor(
         }
 
         fun proxyGroupType(): Int {
-            return SagerDatabase.groupDao.getById(entity.groupId)?.type ?: GroupType.BASIC
+            return AppDatabase.groupDao.getById(entity.groupId)?.type ?: GroupType.BASIC
         }
 
         var currentName = ""
@@ -1888,7 +1888,7 @@ class ConfigurationFragment @JvmOverloads constructor(
         }
 
         fun export(link: String) {
-            val success = SagerNet.trySetPrimaryClip(link)
+            val success = FreedomCatApp.trySetPrimaryClip(link)
             (activity as MainActivity).snackbar(if (success) R.string.action_export_msg else R.string.action_export_err)
                 .show()
         }

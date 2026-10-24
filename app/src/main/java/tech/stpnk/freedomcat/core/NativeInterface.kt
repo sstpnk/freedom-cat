@@ -6,10 +6,10 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Build.VERSION_CODES
 import androidx.annotation.RequiresApi
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.bg.ServiceNotification
 import tech.stpnk.freedomcat.database.DataStore
-import tech.stpnk.freedomcat.database.SagerDatabase
+import tech.stpnk.freedomcat.database.AppDatabase
 import tech.stpnk.freedomcat.ktx.Logs
 import tech.stpnk.freedomcat.ktx.app
 import tech.stpnk.freedomcat.ktx.runOnDefaultDispatcher
@@ -42,7 +42,7 @@ class NativeInterface : BoxPlatformInterface, NB4AInterface {
     override fun findConnectionOwner(
         ipProto: Int, srcIp: String, srcPort: Int, destIp: String, destPort: Int
     ): Int {
-        return SagerNet.connectivity.getConnectionOwnerUid(
+        return FreedomCatApp.connectivity.getConnectionOwnerUid(
             ipProto, InetSocketAddress(srcIp, srcPort), InetSocketAddress(destIp, destPort)
         )
     }
@@ -91,7 +91,7 @@ class NativeInterface : BoxPlatformInterface, NB4AInterface {
             runOnDefaultDispatcher {
                 val id = data.proxy!!.config.profileTagMap
                     .filterValues { it == tag }.keys.firstOrNull() ?: -1
-                val ent = SagerDatabase.proxyDao.getById(id) ?: return@runOnDefaultDispatcher
+                val ent = AppDatabase.proxyDao.getById(id) ?: return@runOnDefaultDispatcher
                 // traffic & title
                 data.proxy?.apply {
                     looper?.selectMain(id)

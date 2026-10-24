@@ -14,7 +14,7 @@ import tech.stpnk.freedomcat.R
 import tech.stpnk.freedomcat.database.DataStore
 import tech.stpnk.freedomcat.database.ProfileManager
 import tech.stpnk.freedomcat.database.RuleEntity
-import tech.stpnk.freedomcat.database.SagerDatabase
+import tech.stpnk.freedomcat.database.AppDatabase
 import tech.stpnk.freedomcat.databinding.LayoutEmptyRouteBinding
 import tech.stpnk.freedomcat.databinding.LayoutRouteItemBinding
 import tech.stpnk.freedomcat.ktx.*
@@ -110,7 +110,7 @@ class RouteFragment : ToolbarFragment(R.layout.layout_route), Toolbar.OnMenuItem
                     .setMessage(R.string.clear_profiles_message)
                     .setPositiveButton(R.string.yes) { _, _ ->
                         runOnDefaultDispatcher {
-                            SagerDatabase.rulesDao.reset()
+                            AppDatabase.rulesDao.reset()
                             DataStore.rulesFirstCreate = false
                             ruleAdapter.reload()
                         }
@@ -197,7 +197,7 @@ class RouteFragment : ToolbarFragment(R.layout.layout_route), Toolbar.OnMenuItem
 
         fun commitMove() = runOnDefaultDispatcher {
             if (updated.isNotEmpty()) {
-                SagerDatabase.rulesDao.updateRules(updated.toList())
+                AppDatabase.rulesDao.updateRules(updated.toList())
                 updated.clear()
                 needReload()
             }
@@ -291,7 +291,7 @@ class RouteFragment : ToolbarFragment(R.layout.layout_route), Toolbar.OnMenuItem
                 enableSwitch.setOnCheckedChangeListener { _, isChecked ->
                     runOnDefaultDispatcher {
                         rule.enabled = isChecked
-                        SagerDatabase.rulesDao.updateRule(rule)
+                        AppDatabase.rulesDao.updateRule(rule)
                         onMainDispatcher {
                             needReload()
                         }

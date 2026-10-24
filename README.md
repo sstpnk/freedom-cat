@@ -16,15 +16,18 @@
 
 ### Что это такое
 
-**FreedomCat** — это форк [NekoBox for Android](https://github.com/MatsuriDayo/NekoBoxForAndroid)
-(в свою очередь форка [SagerNet](https://github.com/SagerNet/SagerNet)) — универсального
-прокси-клиента для Android на базе [sing-box](https://github.com/SagerNet/sing-box).
+**FreedomCat** — самостоятельный прокси-клиент для Android и Android TV на базе
+[sing-box](https://github.com/SagerNet/sing-box). Проект вырос из
+[NekoBox for Android](https://github.com/MatsuriDayo/NekoBoxForAndroid) (который, в свою очередь,
+вырос из SagerNet), но с версии 0.2 это отдельная кодовая база: свои пакеты 	ech.stpnk.freedomcat,
+свой интерфейс, свои подписки.
 
-Я просто взял проверенную годами кодовую базу NB4A и сделал из нее приложение под свои собственные потребности и ожидания:
+Что переделано по сравнению с исходной базой:
 
-- упростил интерфейс (группы и конфигурации подключений теперь на одном экране);
-- добавил поддержку **AmneziaWG**, включая legacy-конфигурации и AmneziaWG 3.1 (см. ниже);
-- удалил все, чем не пользуюсь.
+- упрощён интерфейс: группы и конфигурации подключений на одном экране;
+- поддержка **AmneziaWG**, включая legacy-конфигурации и AmneziaWG 3.1 (см. ниже);
+- свой слой подписок: HWID для панелей с привязкой к устройству, понятные ошибки вместо заглушек;
+- выкинуто всё, чем я не пользуюсь.
 
 ### Возможности
 
@@ -152,15 +155,17 @@ FreedomCat — это форк, поэтому в первую очередь м
 
 ### What is this
 
-**FreedomCat** is a fork of [NekoBox for Android](https://github.com/MatsuriDayo/NekoBoxForAndroid)
-(which is itself a fork of [SagerNet](https://github.com/SagerNet/SagerNet)) — a universal
-proxy client for Android built on top of [sing-box](https://github.com/SagerNet/sing-box).
+**FreedomCat** is a standalone proxy client for Android and Android TV built on
+[sing-box](https://github.com/SagerNet/sing-box). It grew out of
+[NekoBox for Android](https://github.com/MatsuriDayo/NekoBoxForAndroid), which itself grew out of
+SagerNet, but since 0.2 it is a separate codebase: its own 	ech.stpnk.freedomcat packages,
+its own UI and its own subscription stack.
 
-I simply took the battle-tested NB4A codebase and made it an app tailored to my own
-needs and expectations:
+What is different from the source base:
 
 - simplified the UI (groups and connection configurations are now on a single screen);
-- added **AmneziaWG** support, including legacy configs and AmneziaWG 3.1 (see below);
+- **AmneziaWG** support, including legacy configs and AmneziaWG 3.1 (see below);
+- own subscription layer: HWID for device-bound panels, readable errors instead of placeholder profiles;
 - removed everything I don't use.
 
 ### Features

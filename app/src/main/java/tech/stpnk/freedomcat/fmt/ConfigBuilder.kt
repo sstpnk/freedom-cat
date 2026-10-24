@@ -6,7 +6,7 @@ import tech.stpnk.freedomcat.bg.VpnService
 import tech.stpnk.freedomcat.database.DataStore
 import tech.stpnk.freedomcat.database.ProxyEntity
 import tech.stpnk.freedomcat.database.ProxyEntity.Companion.TYPE_CONFIG
-import tech.stpnk.freedomcat.database.SagerDatabase
+import tech.stpnk.freedomcat.database.AppDatabase
 import tech.stpnk.freedomcat.fmt.ConfigBuildResult.IndexEntity
 import tech.stpnk.freedomcat.fmt.hysteria.HysteriaBean
 import tech.stpnk.freedomcat.fmt.hysteria.buildSingBoxOutboundHysteriaBean
@@ -83,12 +83,12 @@ fun buildConfig(
     val tagMap = HashMap<Long, String>()
     val globalOutbounds = HashMap<Long, String>()
     val selectorNames = ArrayList<String>()
-    val group = SagerDatabase.groupDao.getById(proxy.groupId)
+    val group = AppDatabase.groupDao.getById(proxy.groupId)
 
     fun ProxyEntity.resolveChainInternal(): MutableList<ProxyEntity> {
         val bean = requireBean()
         if (bean is ChainBean) {
-            val beans = SagerDatabase.proxyDao.getEntities(bean.proxies)
+            val beans = AppDatabase.proxyDao.getEntities(bean.proxies)
             val beansMap = beans.associateBy { it.id }
             val beanList = ArrayList<ProxyEntity>()
             for (proxyId in bean.proxies) {
@@ -112,9 +112,9 @@ fun buildConfig(
     }
 
     fun ProxyEntity.resolveChain(): MutableList<ProxyEntity> {
-        val thisGroup = SagerDatabase.groupDao.getById(groupId)
-        val frontProxy = thisGroup?.frontProxy?.let { SagerDatabase.proxyDao.getById(it) }
-        val landingProxy = thisGroup?.landingProxy?.let { SagerDatabase.proxyDao.getById(it) }
+        val thisGroup = AppDatabase.groupDao.getById(groupId)
+        val frontProxy = thisGroup?.frontProxy?.let { AppDatabase.proxyDao.getById(it) }
+        val landingProxy = thisGroup?.landingProxy?.let { AppDatabase.proxyDao.getById(it) }
         val list = resolveChainInternal()
         if (frontProxy != null) {
             list.add(frontProxy)
@@ -125,9 +125,9 @@ fun buildConfig(
         return list
     }
 
-    val extraRules = if (forTest) listOf() else SagerDatabase.rulesDao.enabledRules()
+    val extraRules = if (forTest) listOf() else AppDatabase.rulesDao.enabledRules()
     val extraProxies =
-        if (forTest) mapOf() else SagerDatabase.proxyDao.getEntities(extraRules.mapNotNull { rule ->
+        if (forTest) mapOf() else AppDatabase.proxyDao.getEntities(extraRules.mapNotNull { rule ->
             rule.outbound.takeIf { it > 0 && it != proxy.id }
         }.toHashSet().toList()).associateBy { it.id }
     val buildSelector = !forTest && group?.isSelector == true && !forExport
@@ -472,7 +472,7 @@ fun buildConfig(
 
         // build outbounds
         if (buildSelector) {
-            val list = group.id.let { SagerDatabase.proxyDao.getByGroup(it) }
+            val list = group.id.let { AppDatabase.proxyDao.getByGroup(it) }
             list.forEach {
                 tagMap[it.id] = buildChain(it.id, it)
             }
@@ -506,8 +506,8 @@ fun buildConfig(
             val uidList = rule.packages.map {
                 if (!isVPN) {
                     Toast.makeText(
-                        SagerNet.application,
-                        SagerNet.application.getString(R.string.route_need_vpn, rule.displayName()),
+                        FreedomCatApp.application,
+                        FreedomCatApp.application.getString(R.string.route_need_vpn, rule.displayName()),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -606,7 +606,7 @@ fun buildConfig(
             if (!ruleObj.checkEmpty()) {
                 if (ruleObj.outbound.isNullOrBlank()) {
                     Toast.makeText(
-                        SagerNet.application,
+                        FreedomCatApp.application,
                         "Warning: " + rule.displayName() + ": A non-existent outbound was specified.",
                         Toast.LENGTH_LONG
                     ).show()

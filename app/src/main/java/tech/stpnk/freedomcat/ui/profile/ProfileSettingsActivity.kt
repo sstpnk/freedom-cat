@@ -33,7 +33,7 @@ import tech.stpnk.freedomcat.*
 import tech.stpnk.freedomcat.database.DataStore
 import tech.stpnk.freedomcat.database.GroupManager
 import tech.stpnk.freedomcat.database.ProfileManager
-import tech.stpnk.freedomcat.database.SagerDatabase
+import tech.stpnk.freedomcat.database.AppDatabase
 import tech.stpnk.freedomcat.database.preference.OnPreferenceDataStoreChangeListener
 import tech.stpnk.freedomcat.databinding.LayoutGroupItemBinding
 import tech.stpnk.freedomcat.fmt.AbstractBean
@@ -87,7 +87,7 @@ abstract class ProfileSettingsActivity<T : AbstractBean>(
     abstract fun T.init()
     abstract fun T.serialize()
 
-    val proxyEntity by lazy { SagerDatabase.proxyDao.getById(DataStore.editingId) }
+    val proxyEntity by lazy { AppDatabase.proxyDao.getById(DataStore.editingId) }
     protected var isSubscription by Delegates.notNull<Boolean>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -142,7 +142,7 @@ abstract class ProfileSettingsActivity<T : AbstractBean>(
                 return
             }
             if (proxyEntity!!.id == DataStore.selectedProxy) {
-                SagerNet.stopService()
+                FreedomCatApp.stopService()
             }
             ProfileManager.updateProfile(proxyEntity!!.apply { (requireBean() as T).serialize() })
         }
@@ -156,8 +156,8 @@ abstract class ProfileSettingsActivity<T : AbstractBean>(
         menuInflater.inflate(R.menu.profile_config_menu, menu)
         menu.findItem(R.id.action_move)?.apply {
             if (DataStore.editingId != 0L // not new profile
-                && SagerDatabase.groupDao.getById(DataStore.editingGroup)?.type == GroupType.BASIC // not in subscription group
-                && SagerDatabase.groupDao.allGroups()
+                && AppDatabase.groupDao.getById(DataStore.editingGroup)?.type == GroupType.BASIC // not in subscription group
+                && AppDatabase.groupDao.allGroups()
                     .filter { it.type == GroupType.BASIC }.size > 1 // have other basic group
             ) isVisible = true
         }
@@ -219,7 +219,7 @@ abstract class ProfileSettingsActivity<T : AbstractBean>(
                 }
             } catch (e: Exception) {
                 Toast.makeText(
-                    SagerNet.application,
+                    FreedomCatApp.application,
                     "Error on createPreferences, please try again.",
                     Toast.LENGTH_SHORT
                 ).show()
@@ -336,7 +336,7 @@ abstract class ProfileSettingsActivity<T : AbstractBean>(
                     val ent = activity.proxyEntity!!
                     orientation = LinearLayout.VERTICAL
 
-                    SagerDatabase.groupDao.allGroups()
+                    AppDatabase.groupDao.allGroups()
                         .filter { it.type == GroupType.BASIC && it.id != ent.groupId }
                         .forEach { group ->
                             LayoutGroupItemBinding.inflate(layoutInflater, this, true).apply {

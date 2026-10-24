@@ -3,7 +3,7 @@ package tech.stpnk.freedomcat.core.ui
 import android.content.Context
 import androidx.core.app.NotificationCompat
 import tech.stpnk.freedomcat.R
-import tech.stpnk.freedomcat.SagerNet
+import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.ktx.Logs
 
 class ConnectionTestNotification(val context: Context, val title: String) {
@@ -13,7 +13,7 @@ class ConnectionTestNotification(val context: Context, val title: String) {
     fun updateNotification(progress: Int, max: Int, finished: Boolean) {
         try {
             if (finished) {
-                SagerNet.notification.cancel(notificationId)
+                FreedomCatApp.notification.cancel(notificationId)
                 return
             }
             val builder = NotificationCompat.Builder(context, channelId)
@@ -21,7 +21,7 @@ class ConnectionTestNotification(val context: Context, val title: String) {
                 .setContentTitle(title)
                 .setOnlyAlertOnce(true)
                 .setContentText("$progress / $max").setProgress(max, progress, false)
-            SagerNet.notification.notify(notificationId, builder.build())
+            FreedomCatApp.notification.notify(notificationId, builder.build())
         } catch (e: Exception) {
             Logs.w(e)
         }

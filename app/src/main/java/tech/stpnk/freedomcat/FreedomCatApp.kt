@@ -17,7 +17,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import go.Seq
-import tech.stpnk.freedomcat.bg.SagerConnection
+import tech.stpnk.freedomcat.bg.ServiceBridge
 import tech.stpnk.freedomcat.database.DataStore
 import tech.stpnk.freedomcat.ktx.Logs
 import tech.stpnk.freedomcat.ktx.isOss
@@ -35,7 +35,7 @@ import tech.stpnk.freedomcat.core.utils.cleanWebview
 import java.io.File
 import androidx.work.Configuration as WorkConfiguration
 
-class SagerNet : Application(),
+class FreedomCatApp : Application(),
     WorkConfiguration.Provider {
 
     override fun attachBaseContext(base: Context) {
@@ -123,7 +123,7 @@ class SagerNet : Application(),
     @SuppressLint("InlinedApi")
     companion object {
 
-        lateinit var application: SagerNet
+        lateinit var application: FreedomCatApp
 
         val isTv by lazy {
             uiMode.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
@@ -191,7 +191,7 @@ class SagerNet : Application(),
         }
 
         fun startService() = ContextCompat.startForegroundService(
-            application, Intent(application, SagerConnection.serviceClass)
+            application, Intent(application, ServiceBridge.serviceClass)
         )
 
         fun reloadService() =

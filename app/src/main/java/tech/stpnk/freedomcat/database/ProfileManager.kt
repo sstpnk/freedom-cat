@@ -78,37 +78,37 @@ object ProfileManager {
         val profile = ProxyEntity(groupId = groupId).apply {
             id = 0
             putBean(bean)
-            userOrder = SagerDatabase.proxyDao.nextOrder(groupId) ?: 1
+            userOrder = AppDatabase.proxyDao.nextOrder(groupId) ?: 1
         }
-        profile.id = SagerDatabase.proxyDao.addProxy(profile)
+        profile.id = AppDatabase.proxyDao.addProxy(profile)
         iterator { onAdd(profile) }
         return profile
     }
 
     suspend fun updateProfile(profile: ProxyEntity) {
-        SagerDatabase.proxyDao.updateProxy(profile)
+        AppDatabase.proxyDao.updateProxy(profile)
         iterator { onUpdated(profile, false) }
     }
 
     suspend fun updateProfile(profiles: List<ProxyEntity>) {
-        SagerDatabase.proxyDao.updateProxy(profiles)
+        AppDatabase.proxyDao.updateProxy(profiles)
         profiles.forEach {
             iterator { onUpdated(it, false) }
         }
     }
 
     suspend fun moveProfile(profileId: Long, targetGroupId: Long): ProxyEntity? {
-        val profile = SagerDatabase.proxyDao.getById(profileId) ?: return null
+        val profile = AppDatabase.proxyDao.getById(profileId) ?: return null
         val sourceGroupId = profile.groupId
         if (sourceGroupId == targetGroupId) return profile
 
-        val sourceGroup = SagerDatabase.groupDao.getById(sourceGroupId) ?: return null
-        val targetGroup = SagerDatabase.groupDao.getById(targetGroupId) ?: return null
+        val sourceGroup = AppDatabase.groupDao.getById(sourceGroupId) ?: return null
+        val targetGroup = AppDatabase.groupDao.getById(targetGroupId) ?: return null
         if (sourceGroup.type != GroupType.BASIC || targetGroup.type != GroupType.BASIC) return null
 
         profile.groupId = targetGroupId
-        profile.userOrder = SagerDatabase.proxyDao.nextOrder(targetGroupId) ?: 1
-        SagerDatabase.proxyDao.updateProxy(profile)
+        profile.userOrder = AppDatabase.proxyDao.nextOrder(targetGroupId) ?: 1
+        AppDatabase.proxyDao.updateProxy(profile)
         GroupManager.rearrange(sourceGroupId)
 
         if (DataStore.selectedProxy == profileId) {
@@ -121,19 +121,19 @@ object ProfileManager {
     }
 
     suspend fun deleteProfile2(groupId: Long, profileId: Long) {
-        if (SagerDatabase.proxyDao.deleteById(profileId) == 0) return
+        if (AppDatabase.proxyDao.deleteById(profileId) == 0) return
         if (DataStore.selectedProxy == profileId) {
             DataStore.selectedProxy = 0L
         }
     }
 
     suspend fun deleteProfile(groupId: Long, profileId: Long) {
-        if (SagerDatabase.proxyDao.deleteById(profileId) == 0) return
+        if (AppDatabase.proxyDao.deleteById(profileId) == 0) return
         if (DataStore.selectedProxy == profileId) {
             DataStore.selectedProxy = 0L
         }
         iterator { onRemoved(groupId, profileId) }
-        if (SagerDatabase.proxyDao.countByGroup(groupId) > 1) {
+        if (AppDatabase.proxyDao.countByGroup(groupId) > 1) {
             GroupManager.rearrange(groupId)
         }
     }
@@ -141,7 +141,7 @@ object ProfileManager {
     fun getProfile(profileId: Long): ProxyEntity? {
         if (profileId == 0L) return null
         return try {
-            SagerDatabase.proxyDao.getById(profileId)
+            AppDatabase.proxyDao.getById(profileId)
         } catch (ex: SQLiteCantOpenDatabaseException) {
             throw IOException(ex)
         } catch (ex: SQLException) {
@@ -153,7 +153,7 @@ object ProfileManager {
     fun getProfiles(profileIds: List<Long>): List<ProxyEntity> {
         if (profileIds.isEmpty()) return listOf()
         return try {
-            SagerDatabase.proxyDao.getEntities(profileIds)
+            AppDatabase.proxyDao.getEntities(profileIds)
         } catch (ex: SQLiteCantOpenDatabaseException) {
             throw IOException(ex)
         } catch (ex: SQLException) {
@@ -177,8 +177,8 @@ object ProfileManager {
     }
 
     suspend fun createRule(rule: RuleEntity, post: Boolean = true): RuleEntity {
-        rule.userOrder = SagerDatabase.rulesDao.nextOrder() ?: 1
-        rule.id = SagerDatabase.rulesDao.createRule(rule)
+        rule.userOrder = AppDatabase.rulesDao.nextOrder() ?: 1
+        rule.id = AppDatabase.rulesDao.createRule(rule)
         if (post) {
             ruleIterator { onAdd(rule) }
         }
@@ -186,17 +186,17 @@ object ProfileManager {
     }
 
     suspend fun updateRule(rule: RuleEntity) {
-        SagerDatabase.rulesDao.updateRule(rule)
+        AppDatabase.rulesDao.updateRule(rule)
         ruleIterator { onUpdated(rule) }
     }
 
     suspend fun deleteRule(ruleId: Long) {
-        SagerDatabase.rulesDao.deleteById(ruleId)
+        AppDatabase.rulesDao.deleteById(ruleId)
         ruleIterator { onRemoved(ruleId) }
     }
 
     suspend fun deleteRules(rules: List<RuleEntity>) {
-        SagerDatabase.rulesDao.deleteRules(rules)
+        AppDatabase.rulesDao.deleteRules(rules)
         ruleIterator {
             rules.forEach {
                 onRemoved(it.id)
@@ -205,7 +205,7 @@ object ProfileManager {
     }
 
     suspend fun getRules(): List<RuleEntity> {
-        var rules = SagerDatabase.rulesDao.allRules()
+        var rules = AppDatabase.rulesDao.allRules()
         if (rules.isEmpty() && !DataStore.rulesFirstCreate) {
             DataStore.rulesFirstCreate = true
             createRule(
@@ -224,7 +224,7 @@ object ProfileManager {
                     enabled = true
                 )
             )
-            rules = SagerDatabase.rulesDao.allRules()
+            rules = AppDatabase.rulesDao.allRules()
         }
         return rules
     }
