@@ -69,7 +69,6 @@ dependencies {
     implementation("org.yaml:snakeyaml:1.30")
     implementation("com.jakewharton:process-phoenix:2.1.2")
     implementation("com.esotericsoftware:kryo:5.2.1")
-    implementation("com.google.guava:guava:31.0.1-android")
     implementation("org.ini4j:ini4j:0.5.4")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")

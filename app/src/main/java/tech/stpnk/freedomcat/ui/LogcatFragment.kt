@@ -66,7 +66,7 @@ class LogcatFragment : ToolbarFragment(R.layout.layout_logcat),
 
     private fun reloadSession() {
         val span = SpannableString(
-            String(SendLog.getNekoLog(50 * 1024))
+            String(SendLog.getLog(50 * 1024))
         )
         var offset = 0
         for (line in span.lines()) {
@@ -89,7 +89,7 @@ class LogcatFragment : ToolbarFragment(R.layout.layout_logcat),
             R.id.action_clear_logcat -> {
                 runOnDefaultDispatcher {
                     try {
-                        Libcore.nekoLogClear()
+                        Libcore.logClear()
                         Runtime.getRuntime().exec("/system/bin/logcat -c")
                     } catch (e: Exception) {
                         onMainDispatcher {

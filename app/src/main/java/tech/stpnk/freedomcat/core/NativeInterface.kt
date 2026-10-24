@@ -16,10 +16,10 @@ import tech.stpnk.freedomcat.ktx.runOnDefaultDispatcher
 import tech.stpnk.freedomcat.utils.PackageCache
 import libcore.BoxPlatformInterface
 import libcore.Libcore
-import libcore.NB4AInterface
+import libcore.AppInterface
 import java.net.InetSocketAddress
 
-class NativeInterface : BoxPlatformInterface, NB4AInterface {
+class NativeInterface : BoxPlatformInterface, AppInterface {
 
     //  libbox interface
 

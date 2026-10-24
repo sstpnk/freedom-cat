@@ -2,7 +2,7 @@
 set -e
 
 source "buildScript/init/env.sh"
-ENV_NB4A=1
+ENV_FREEDOMCAT=1
 source "buildScript/lib/core/get_source_env.sh"
 
 # Build dependencies are cloned inside the repository (and gitignored) so that

@@ -42,7 +42,7 @@ object SendLog {
         }
 
         logFile.appendText("\n")
-        logFile.appendBytes(getNekoLog(0))
+        logFile.appendBytes(getLog(0))
 
         context.startActivity(
             Intent.createChooser(
@@ -57,12 +57,12 @@ object SendLog {
         )
     }
 
-    // Get log bytes from neko.log
-    fun getNekoLog(max: Long): ByteArray {
+    // Get log bytes from the core log
+    fun getLog(max: Long): ByteArray {
         return try {
             val file = File(
                 FreedomCatApp.application.cacheDir,
-                "neko.log"
+                "freedomcat.log"
             )
             val len = file.length()
             val stream = FileInputStream(file)
