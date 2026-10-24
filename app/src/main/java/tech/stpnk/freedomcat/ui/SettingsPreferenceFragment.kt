@@ -105,7 +105,9 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         showDirectSpeed.onPreferenceChangeListener = reloadListener
         trafficSniffing.onPreferenceChangeListener = reloadListener
         adblock.setOnPreferenceChangeListener { _, newValue ->
-            if (newValue as Boolean) {
+            val enabled = newValue as Boolean
+            DataStore.adblockEnable = enabled
+            if (enabled) {
                 runOnDefaultDispatcher {
                     val ok = AdBlock.update()
                     runOnMainDispatcher {
@@ -116,6 +118,8 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
                         needReload()
                     }
                 }
+            } else {
+                needReload()
             }
             true
         }
