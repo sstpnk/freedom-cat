@@ -3,6 +3,7 @@
 .kotlin/
 .idea
 .vscode
+.ref/
 .DS_Store
 build/
 /captures
