@@ -104,6 +104,7 @@ object DataStore : OnPreferenceDataStoreChangeListener {
 
     var mtu by configurationStore.stringToInt(Key.MTU) { 9000 }
 
+    var adblockEnable by configurationStore.boolean(Key.ADBLOCK_ENABLE)
     var bypassLan by configurationStore.boolean(Key.BYPASS_LAN)
     var bypassLanInCore by configurationStore.boolean(Key.BYPASS_LAN_IN_CORE)
 

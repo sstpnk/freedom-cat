@@ -247,6 +247,8 @@
 <string name="about_feature_ui">• split tunneling для приложений: можно пустить через VPN только нужные программы или, наоборот, исключить выбранные;</string>
 <string name="about_feature_awg">• WireGuard и AmneziaWG, включая новые конфигурации AmneziaWG 3.1;</string>
 <string name="about_feature_minimal">• отдельные сборки для телефона и Android TV, с управлением под сенсорный экран или пульт.</string>
+<string name="adblock">Блокировка рекламы</string>
+<string name="adblock_summary">Блокировать домены рекламы и трекеров по внешнему списку</string>
 <string name="about_protocols">Поддерживаемые протоколы: SOCKS, HTTP(S), SSH, Shadowsocks, VMess, Trojan, VLESS, AnyTLS, ShadowTLS, TUIC, Hysteria 1/2, WireGuard, AmneziaWG и другие.</string>
 <string name="github_releases_hint">Новые версии доступны на GitHub</string>
 <string name="project_url">https://github.com/sstpnk/freedom-cat</string>

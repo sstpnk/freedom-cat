@@ -117,6 +117,8 @@ public class SingBoxOptions {
 
         public RouteOptions route;
 
+        public ExperimentalOptions experimental;
+
     }
 
     // paste generate output here
@@ -1263,6 +1265,24 @@ public class SingBoxOptions {
         public String path;
 
         public String url;
+
+        public String download_detour;
+
+        public String update_interval;
+
+    }
+
+    public static class ExperimentalOptions extends SingBoxOption {
+
+        public CacheFileOptions cache_file;
+
+    }
+
+    public static class CacheFileOptions extends SingBoxOption {
+
+        public Boolean enabled;
+
+        public String path;
 
     }
 

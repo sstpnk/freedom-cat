@@ -85,6 +85,12 @@
 
     <PreferenceCategory app:title="@string/cag_route">
         <SwitchPreference
+            app:defaultValue="false"
+            app:icon="@drawable/ic_baseline_security_24"
+            app:key="adblockEnable"
+            app:summary="@string/adblock_summary"
+            app:title="@string/adblock" />
+        <SwitchPreference
             app:icon="@drawable/ic_baseline_legend_toggle_24"
             app:key="bypassLan"
             app:title="@string/route_opt_bypass_lan" />

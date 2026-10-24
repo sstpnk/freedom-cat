@@ -48,6 +48,10 @@ const val TAG_DIRECT = "direct"
 const val TAG_BYPASS = "bypass"
 const val TAG_BLOCK = "block"
 
+const val ADBLOCK_RULE_SET_TAG = "adblock"
+const val ADBLOCK_RULE_SET_URL =
+    "https://cdn.jsdelivr.net/gh/217heidai/adblockfilters@main/rules/adblocksingbox.srs"
+
 const val LOCALHOST = "127.0.0.1"
 
 class ConfigBuildResult(
@@ -158,6 +162,17 @@ fun buildConfig(
     }
 
     return MyOptions().apply {
+        // Keeps downloaded rule sets between starts; only needed when ad blocking
+        // is on, otherwise there is nothing to cache.
+        if (DataStore.adblockEnable) {
+            experimental = ExperimentalOptions().apply {
+                cache_file = CacheFileOptions().apply {
+                    enabled = true
+                    path = "cache.db"
+                }
+            }
+        }
+
         log = LogOptions().apply {
             level = when (DataStore.logLevel) {
                 0 -> "panic"
@@ -497,6 +512,23 @@ fun buildConfig(
         // TAG_PROXY is valid here for both modes: the selector tag (buildSelector)
         // and the single-chain outbound/endpoint tag (chainId == 0 && index == 0).
         route.final_ = TAG_PROXY
+
+        // Ad blocking: a reject rule over an external binary rule set. It goes
+        // before user rules so a "proxy everything" rule cannot re-enable ads.
+        if (DataStore.adblockEnable) {
+            route.rule_set.add(RuleSet().apply {
+                type = "remote"
+                tag = ADBLOCK_RULE_SET_TAG
+                format = "binary"
+                url = ADBLOCK_RULE_SET_URL
+                download_detour = TAG_DIRECT
+                update_interval = "1d"
+            })
+            route.rules.add(Rule_DefaultOptions().apply {
+                rule_set = mutableListOf(ADBLOCK_RULE_SET_TAG)
+                action = "reject"
+            })
+        }
 
         // apply user rules
         for (rule in extraRules) {
