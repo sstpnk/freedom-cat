@@ -75,7 +75,7 @@ class NativeInterface : BoxPlatformInterface, NB4AInterface {
         return "${connectionInfo.ssid},${connectionInfo.bssid}"
     }
 
-    // nb4a interface
+    // app interface
 
     override fun useOfficialAssets(): Boolean {
         return DataStore.rulesProvider == 0

@@ -82,7 +82,7 @@ public class TrojanGoBean extends AbstractBean {
      * 额外的插件选项。本字段保留。
      * 可省略，但不可以为空字符串。
      */
-    // not used in NB4A
+    // not used here
     public String plugin;
 
     // ---
