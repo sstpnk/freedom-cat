@@ -155,13 +155,26 @@ object RawUpdater : GroupUpdater() {
         Logs.d("Unique profiles: ${nameMap.size}")
 
         val toDelete = ArrayList<ProxyEntity>()
-        val toReplace = exists.mapNotNull { entity ->
+        val toReplace = LinkedHashMap<String, ProxyEntity>()
+        for (entity in exists) {
             val name = entity.displayName()
-            if (nameMap.contains(name)) name to entity else let {
+            if (!nameMap.contains(name)) {
                 toDelete.add(entity)
-                null
+                continue
             }
-        }.toMap()
+            // An earlier import can leave two rows with the same name. Keep the
+            // newest one and drop the rest: a stale duplicate would otherwise skip
+            // the update below and could be the profile the user connects with.
+            val kept = toReplace[name]
+            when {
+                kept == null -> toReplace[name] = entity
+                kept.id < entity.id -> {
+                    toDelete.add(kept)
+                    toReplace[name] = entity
+                }
+                else -> toDelete.add(entity)
+            }
+        }
 
         Logs.d("toDelete profiles: ${toDelete.size}")
         Logs.d("toReplace profiles: ${toReplace.size}")
@@ -183,6 +196,7 @@ object RawUpdater : GroupUpdater() {
                 when {
                     existsBean != bean -> {
                         changed++
+                        logRealityChange(existsBean, bean, name)
                         entity.putBean(bean)
                         toUpdate.add(entity)
                         updated[entity.displayName()] = name
@@ -239,7 +253,14 @@ object RawUpdater : GroupUpdater() {
         )
     }
 
-    private fun checkSubscriptionDenied(response: HTTPResponse) {
+    private fun logRealityChange(oldBean: AbstractBean, newBean: AbstractBean, name: String) {
+    if (oldBean !is StandardV2RayBean || newBean !is StandardV2RayBean) return
+    if (oldBean.realityShortId == newBean.realityShortId) return
+    Logs.d("Reality short id changed for " + name + ": " +
+            oldBean.realityShortId + " -> " + newBean.realityShortId)
+}
+
+private fun checkSubscriptionDenied(response: HTTPResponse) {
         if (Util.getStringBox(response.getHeader("x-hwid-not-supported")).isNotBlank()) {
             error(app.getString(R.string.subscription_hwid_unsupported))
         }
