@@ -32,3 +32,6 @@ keystore-credentials.txt
 # local gradle home and scratch files used on this machine
 /.gradle-user/
 /tmp/
+
+# local release artifacts
+/dist/
