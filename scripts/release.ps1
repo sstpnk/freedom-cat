@@ -40,6 +40,50 @@ Get-ChildItem -Path 'app\build\outputs\apk' -Recurse -File -Filter *.apk |
 $apks = @(Get-ChildItem $dist -Filter *.apk)
 if ($apks.Count -eq 0) { throw "no release APKs found for $tag" }
 
+# A rebrand can leave the manifest pointing at a class that no longer exists;
+# the app then dies on start with ClassNotFoundException. Refuse to ship that.
+function Assert-ManifestClasses([string]$apkPath) {
+    $aapt2 = Join-Path $env:ANDROID_HOME 'build-tools\35.0.1\aapt2.exe'
+    if (-not (Test-Path $aapt2)) {
+        Write-Warning 'aapt2 not found, skipping manifest class check'
+        return
+    }
+    $dump = & $aapt2 dump xmltree --file AndroidManifest.xml $apkPath 2>$null
+
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $zip = [System.IO.Compression.ZipFile]::OpenRead($apkPath)
+    $stream = New-Object System.IO.MemoryStream
+    foreach ($entry in $zip.Entries) {
+        if ($entry.Name.EndsWith('.dex')) {
+            $src = $entry.Open()
+            $src.CopyTo($stream)
+            $src.Dispose()
+        }
+    }
+    $zip.Dispose()
+    $dex = [System.Text.Encoding]::GetEncoding(28591).GetString($stream.ToArray())
+
+    $missing = @()
+    foreach ($line in $dump) {
+        $m = [regex]::Match($line, 'android:(?:name|parentActivityName)\(0x[0-9a-f]+\)="([^"]+)"')
+        if (-not $m.Success) { continue }
+        $name = $m.Groups[1].Value
+        # Only our own classes: third-party manifest entries and generated
+        # actions/permissions are not what a rebrand breaks.
+        if (-not $name.StartsWith('tech.stpnk.freedomcat.')) { continue }
+        $parts = $name.Split('.')
+        $last = $parts[-1]
+        if ($last.Length -eq 0 -or -not [char]::IsUpper($last[0]) -or $last -cmatch '^[A-Z0-9_]+$') { continue }
+        $descriptor = 'L' + ($name -replace '\.', '/') + ';'
+        if (-not $dex.Contains($descriptor)) { $missing += $name }
+    }
+    if ($missing.Count -gt 0) {
+        throw "APK $apkPath references classes missing from dex: $($missing -join ', ')"
+    }
+}
+
+foreach ($apk in $apks) { Assert-ManifestClasses $apk.FullName }
+
 $sums = @(foreach ($f in $apks) {
     '{0}  {1}' -f (Get-FileHash $f.FullName -Algorithm SHA256).Hash.ToLower(), $f.Name
 })

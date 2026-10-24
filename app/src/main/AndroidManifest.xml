@@ -47,7 +47,7 @@
     </queries>
 
     <application
-        android:name="tech.stpnk.freedomcat.FreedomCat"
+        android:name="tech.stpnk.freedomcat.FreedomCatApp"
         android:allowBackup="true"
         android:autoRevokePermissions="allowed"
         android:banner="@mipmap/ic_launcher"
