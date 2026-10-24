@@ -84,6 +84,48 @@ function Assert-ManifestClasses([string]$apkPath) {
 
 foreach ($apk in $apks) { Assert-ManifestClasses $apk.FullName }
 
+# The Java bindings and libgojni.so must come from the same libcore.aar. When a
+# stale copy sits in app/src/main/jniLibs (or a transform cache), the APK mixes
+# new Java classes with an old native core and dies before the UI appears.
+function Assert-NativeMatchesAar([string]$apkPath, [string]$aarPath) {
+    if (-not (Test-Path $aarPath)) {
+        Write-Warning "no $aarPath, skipping native library check"
+        return
+    }
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    $apk = [System.IO.Compression.ZipFile]::OpenRead((Resolve-Path $apkPath))
+    $aar = [System.IO.Compression.ZipFile]::OpenRead((Resolve-Path $aarPath))
+    try {
+        $mismatched = @()
+        foreach ($entry in $apk.Entries) {
+            if ($entry.FullName -notmatch '^lib/([^/]+)/libgojni\.so$') { continue }
+            $abi = $Matches[1]
+            $aarEntry = $aar.Entries | Where-Object { $_.FullName -eq "jni/$abi/libgojni.so" }
+            if (-not $aarEntry) { continue }
+
+            $apkStream = $entry.Open()
+            $apkHash = [BitConverter]::ToString($sha.ComputeHash($apkStream)).Replace('-', '').ToLower()
+            $apkStream.Dispose()
+
+            $aarStream = $aarEntry.Open()
+            $aarHash = [BitConverter]::ToString($sha.ComputeHash($aarStream)).Replace('-', '').ToLower()
+            $aarStream.Dispose()
+
+            if ($apkHash -ne $aarHash) { $mismatched += $abi }
+        }
+    } finally {
+        $apk.Dispose()
+        $aar.Dispose()
+        $sha.Dispose()
+    }
+    if ($mismatched.Count -gt 0) {
+        throw "APK $apkPath ships a libgojni.so that differs from app/libs/libcore.aar ($($mismatched -join ', ')): stale app/src/main/jniLibs or a cached transform"
+    }
+}
+
+foreach ($apk in $apks) { Assert-NativeMatchesAar $apk.FullName 'app/libs/libcore.aar' }
+
 $sums = @(foreach ($f in $apks) {
     '{0}  {1}' -f (Get-FileHash $f.FullName -Algorithm SHA256).Hash.ToLower(), $f.Name
 })
