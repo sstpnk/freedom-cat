@@ -149,8 +149,13 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 $files = @(Get-ChildItem $dist -File | Select-Object -ExpandProperty FullName)
-& gh release view $tag *> $null
-if ($LASTEXITCODE -eq 0) {
+# gh exits non-zero while the release does not exist yet; keep that from turning into
+# a terminating error under $ErrorActionPreference = Stop.
+$ErrorActionPreference = 'Continue'
+& gh release view $tag 2> $null | Out-Null
+$releaseExists = $LASTEXITCODE -eq 0
+$ErrorActionPreference = 'Stop'
+if ($releaseExists) {
     & gh release upload $tag $files --clobber
 } elseif ($Notes) {
     & gh release create $tag $files --title "FreedomCat $version" --notes $Notes
