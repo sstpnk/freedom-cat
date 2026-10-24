@@ -1,6 +1,7 @@
 package tech.stpnk.freedomcat.ui
 
 import android.os.Build
+import android.widget.Toast
 import android.os.Bundle
 import android.view.View
 import androidx.core.app.ActivityCompat
@@ -11,6 +12,7 @@ import tech.stpnk.freedomcat.FreedomCatApp
 import tech.stpnk.freedomcat.database.DataStore
 import tech.stpnk.freedomcat.database.preference.EditTextPreferenceModifiers
 import tech.stpnk.freedomcat.ktx.*
+import tech.stpnk.freedomcat.utils.AdBlock
 import tech.stpnk.freedomcat.utils.Theme
 import tech.stpnk.freedomcat.core.ui.*
 
@@ -102,7 +104,21 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         appendHttpProxy.onPreferenceChangeListener = reloadListener
         showDirectSpeed.onPreferenceChangeListener = reloadListener
         trafficSniffing.onPreferenceChangeListener = reloadListener
-        adblock.onPreferenceChangeListener = reloadListener
+        adblock.setOnPreferenceChangeListener { _, newValue ->
+            if (newValue as Boolean) {
+                runOnDefaultDispatcher {
+                    val ok = AdBlock.update()
+                    runOnMainDispatcher {
+                        val ctx = context
+                        if (!ok && ctx != null) {
+                            Toast.makeText(ctx, R.string.adblock_download_failed, Toast.LENGTH_LONG).show()
+                        }
+                        needReload()
+                    }
+                }
+            }
+            true
+        }
         bypassLan.onPreferenceChangeListener = reloadListener
         bypassLanInCore.onPreferenceChangeListener = reloadListener
         mtu.onPreferenceChangeListener = reloadListener

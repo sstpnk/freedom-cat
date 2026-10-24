@@ -26,6 +26,7 @@
     <string name="about_feature_minimal">• separate phone and Android TV builds, with controls made for touchscreens or remotes.</string>
     <string name="about_protocols">Supported protocols: SOCKS, HTTP(S), SSH, Shadowsocks, VMess, Trojan, VLESS, AnyTLS, ShadowTLS, TUIC, Hysteria 1/2, WireGuard, AmneziaWG and more.</string>
     <string name="adblock">Ad blocking</string>
+    <string name="adblock_download_failed">Could not download the ad list. Check your connection and turn the switch on again.</string>
     <string name="adblock_summary">Block ad and tracker domains using an external rule set</string>
     <string name="github_releases_hint">New versions are available on GitHub</string>
     <string name="project_url">https://github.com/sstpnk/freedom-cat</string>

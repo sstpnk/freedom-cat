@@ -39,6 +39,7 @@ import tech.stpnk.freedomcat.core.proxy.shadowtls.buildSingBoxOutboundShadowTLSB
 import tech.stpnk.freedomcat.core.utils.JavaUtil.gson
 import tech.stpnk.freedomcat.core.utils.Util
 import tech.stpnk.freedomcat.core.utils.listByLineOrComma
+import tech.stpnk.freedomcat.utils.AdBlock
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 const val TAG_MIXED = "mixed-in"
@@ -49,8 +50,6 @@ const val TAG_BYPASS = "bypass"
 const val TAG_BLOCK = "block"
 
 const val ADBLOCK_RULE_SET_TAG = "adblock"
-const val ADBLOCK_RULE_SET_URL =
-    "https://cdn.jsdelivr.net/gh/217heidai/adblockfilters@main/rules/adblocksingbox.srs"
 
 const val LOCALHOST = "127.0.0.1"
 
@@ -162,17 +161,6 @@ fun buildConfig(
     }
 
     return MyOptions().apply {
-        // Keeps downloaded rule sets between starts; only needed when ad blocking
-        // is on, otherwise there is nothing to cache.
-        if (DataStore.adblockEnable) {
-            experimental = ExperimentalOptions().apply {
-                cache_file = CacheFileOptions().apply {
-                    enabled = true
-                    path = "cache.db"
-                }
-            }
-        }
-
         log = LogOptions().apply {
             level = when (DataStore.logLevel) {
                 0 -> "panic"
@@ -513,16 +501,16 @@ fun buildConfig(
         // and the single-chain outbound/endpoint tag (chainId == 0 && index == 0).
         route.final_ = TAG_PROXY
 
-        // Ad blocking: a reject rule over an external binary rule set. It goes
+        // Ad blocking: a reject rule over the downloaded binary rule set. It goes
         // before user rules so a "proxy everything" rule cannot re-enable ads.
-        if (DataStore.adblockEnable) {
+        // The list is a local file: a remote rule set that fails to download makes
+        // sing-box abort startup, and then the tunnel never comes up.
+        if (DataStore.adblockEnable && AdBlock.isReady()) {
             route.rule_set.add(RuleSet().apply {
-                type = "remote"
+                type = "local"
                 tag = ADBLOCK_RULE_SET_TAG
                 format = "binary"
-                url = ADBLOCK_RULE_SET_URL
-                download_detour = TAG_DIRECT
-                update_interval = "1d"
+                path = AdBlock.FILE_NAME
             })
             route.rules.add(Rule_DefaultOptions().apply {
                 rule_set = mutableListOf(ADBLOCK_RULE_SET_TAG)

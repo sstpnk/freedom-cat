@@ -78,6 +78,10 @@ class FreedomCatApp : Application(),
             }
         }
 
+        if (isMainProcess && DataStore.adblockEnable && AdBlock.isStale()) {
+            runOnDefaultDispatcher { AdBlock.update() }
+        }
+
         if (isMainProcess) {
             Theme.apply(this)
             Theme.applyNightTheme()

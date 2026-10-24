@@ -248,6 +248,7 @@
 <string name="about_feature_awg">• WireGuard и AmneziaWG, включая новые конфигурации AmneziaWG 3.1;</string>
 <string name="about_feature_minimal">• отдельные сборки для телефона и Android TV, с управлением под сенсорный экран или пульт.</string>
 <string name="adblock">Блокировка рекламы</string>
+<string name="adblock_download_failed">Не удалось скачать список рекламы. Проверьте соединение и включите переключатель ещё раз.</string>
 <string name="adblock_summary">Блокировать домены рекламы и трекеров по внешнему списку</string>
 <string name="about_protocols">Поддерживаемые протоколы: SOCKS, HTTP(S), SSH, Shadowsocks, VMess, Trojan, VLESS, AnyTLS, ShadowTLS, TUIC, Hysteria 1/2, WireGuard, AmneziaWG и другие.</string>
 <string name="github_releases_hint">Новые версии доступны на GitHub</string>
