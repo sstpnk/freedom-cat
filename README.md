@@ -19,8 +19,10 @@
 **FreedomCat** — самостоятельный прокси-клиент для Android и Android TV на базе
 [sing-box](https://github.com/SagerNet/sing-box). Проект вырос из
 [NekoBox for Android](https://github.com/MatsuriDayo/NekoBoxForAndroid) (который, в свою очередь,
-вырос из SagerNet), но с версии 0.2 это отдельная кодовая база: свои пакеты 	ech.stpnk.freedomcat,
-свой интерфейс, свои подписки.
+вырос из SagerNet), но с версии 0.2 это отдельная кодовая база: свои пакеты
+`tech.stpnk.freedomcat`, свой интерфейс, свои подписки. Другая архитектура соединения и
+обновлённое ядро: профили и подписки из 0.1.x этой версией не подхватываются, их нужно
+добавить заново.
 
 Что переделано по сравнению с исходной базой:
 
@@ -32,6 +34,8 @@
 ### Возможности
 
 - Работа через VPN-сервис (sing-box) с системным TUN;
+- **VLESS + REALITY** на серверах Xray 26+: клиент добавляет пост-квантовый key share
+  `X25519MLKEM768`, не подменяя при этом отпечаток браузера из профиля;
 - Сплит-туннелирование для приложений: можно гибко выбирать, какие приложения
   идут через VPN, а какие работают напрямую. Функция работает со всеми
   поддерживаемыми протоколами, включая WireGuard, legacy AmneziaWG и AmneziaWG 3.1;
@@ -43,6 +47,39 @@
 - Режим VPN для приложений доступен непосредственно из меню;
 - Статистика трафика, лог, тест задержек;
 - Быстрое переключение сервера и группы.
+
+### Как устроено соединение
+
+```
+приложения -> VpnService (TUN, сплит-туннель по приложениям)
+                   |
+              libcore (sing-box, gomobile)
+                   |
+     правила маршрутизации -> блокировка рекламы -> outbound
+     (VLESS+REALITY, AmneziaWG, Shadowsocks, Hysteria, ...)
+```
+
+- **TUN и сплит-туннель** живут в `VpnService`: приложение либо разрешено в туннель, либо
+  исключено из него на уровне системы, ядро об этом ничего не знает.
+- **Ядро** — `libcore.aar` из нашего форка sing-box
+  ([sstpnk/sing-box](https://github.com/sstpnk/sing-box), ветка `awg`), собранный через
+  `gomobile`. Коммит закреплён в `buildScript/lib/core/get_source_env.sh`, поэтому CI и
+  локальная сборка собирают одно и то же. Релизный скрипт дополнительно проверяет, что
+  `libgojni.so` в APK побайтово совпадает с библиотекой внутри `libcore.aar`.
+- **DNS**: удалённый DoH плюс fakeip; правила маршрутизации и блокировка рекламы
+  применяются до выбора outbound.
+- **VLESS + REALITY**: отпечаток браузера берётся из профиля и не подменяется, а к нему
+  добавляется пост-квантовый key share `X25519MLKEM768` — так клиент проходит и на старых
+  серверах, и на Xray 26+, которые без этого share отказывают. В `session_id` при этом
+  сообщается актуальная версия клиента: серверы умеют требовать минимальную. Детали и
+  история отладки — в [docs/dual-core-plan.md](docs/dual-core-plan.md).
+- **Блокировка рекламы**: список `adblock.srs` скачивается самим приложением (jsdelivr,
+  затем raw GitHub, при необходимости — через уже поднятый туннель) в рабочий каталог
+  sing-box. Если файла нет, правило просто пропускается: туннель поднимается в любом
+  случае.
+- **Подписки**: запросы уходят с HWID и заголовками клиента, профили при обновлении
+  сравниваются полностью, поэтому смена `short_id` на стороне панели подхватывается, а
+  заглушки «приложение не поддерживается» распознаются отдельной проверкой.
 
 ### Поддержка WireGuard и AmneziaWG
 
@@ -95,9 +132,11 @@
 
 Требуется: JDK 17+, Android SDK (platform 35), Android NDK.
 
-Ядро `libcore` собирается из исходников sing-box и libneko. Перед сборкой
-запустите `bash buildScript/lib/core/get_source.sh`: скрипт клонирует оба
-репозитория в `deps/` внутри проекта и переключает их на закреплённые коммиты.
+Ядро `libcore` собирается из нашего форка sing-box
+([sstpnk/sing-box](https://github.com/sstpnk/sing-box)): в нём живёт патч
+совместимости REALITY и порт AmneziaWG. Перед сборкой запустите
+`bash buildScript/lib/core/get_source.sh`: скрипт клонирует репозитории в `deps/` внутри
+проекта и переключает их на коммиты из `buildScript/lib/core/get_source_env.sh`.
 Каталог `deps/` локальный, перечислен в `.gitignore` и в репозиторий не попадает.
 
 ```bash
@@ -158,8 +197,9 @@ FreedomCat — это форк, поэтому в первую очередь м
 **FreedomCat** is a standalone proxy client for Android and Android TV built on
 [sing-box](https://github.com/SagerNet/sing-box). It grew out of
 [NekoBox for Android](https://github.com/MatsuriDayo/NekoBoxForAndroid), which itself grew out of
-SagerNet, but since 0.2 it is a separate codebase: its own 	ech.stpnk.freedomcat packages,
-its own UI and its own subscription stack.
+SagerNet, but since 0.2 it is a separate codebase: its own `tech.stpnk.freedomcat` packages,
+its own UI and its own subscription stack. 0.2.1 is the first release of that line, so
+profiles and subscriptions from 0.1.x are not carried over.
 
 What is different from the source base:
 
@@ -171,6 +211,8 @@ What is different from the source base:
 ### Features
 
 - VPN service (sing-box) with system TUN;
+- **VLESS + REALITY** against Xray 26+ servers: the client adds the post-quantum
+  `X25519MLKEM768` key share without replacing the browser fingerprint from the profile;
 - Per-app split tunneling: choose which apps go through VPN and which apps stay
   direct. This works with every supported protocol, including WireGuard, legacy
   AmneziaWG and AmneziaWG 3.1;
@@ -182,6 +224,39 @@ What is different from the source base:
 - Apps VPN mode is available directly from the menu;
 - Traffic statistics, log, latency testing;
 - Fast server and group switching.
+
+### How a connection is built
+
+```
+apps -> VpnService (TUN, per-app split tunnelling)
+             |
+         libcore (sing-box, gomobile)
+             |
+   routing rules -> ad blocking -> outbound
+   (VLESS+REALITY, AmneziaWG, Shadowsocks, Hysteria, ...)
+```
+
+- **TUN and per-app split tunnelling** live in `VpnService`: an app is either allowed into
+  the tunnel or excluded from it by the system, the core never sees that decision.
+- **The core** is `libcore.aar`, built with `gomobile` from our sing-box fork
+  ([sstpnk/sing-box](https://github.com/sstpnk/sing-box), branch `awg`). The commit is
+  pinned in `buildScript/lib/core/get_source_env.sh`, so CI and a local build compile the
+  same code, and the release script verifies that `libgojni.so` inside the APK matches the
+  library in `libcore.aar` byte for byte.
+- **DNS** is remote DoH plus fakeip; routing rules and ad blocking run before the outbound
+  is chosen.
+- **VLESS + REALITY**: the browser fingerprint from the profile is kept, and the
+  post-quantum `X25519MLKEM768` key share is added to it. That combination works with both
+  older servers and Xray 26+ servers, which reject a hello without the share. The session id
+  reports a current client version because servers can enforce a minimum. Background and
+  debugging notes: [docs/dual-core-plan.md](docs/dual-core-plan.md).
+- **Ad blocking**: `adblock.srs` is downloaded by the app itself (jsdelivr, then raw
+  GitHub, through the running tunnel when needed) into the sing-box working directory. When
+  the file is missing the rule is skipped, so a failed download can never keep the tunnel
+  down.
+- **Subscriptions**: requests carry HWID and client headers, profiles are compared in full
+  on refresh (so a rotated `short_id` is picked up), and "app not supported" placeholders
+  are detected explicitly.
 
 ### WireGuard and AmneziaWG support
 
@@ -234,10 +309,13 @@ never have come to life.
 
 Requirements: JDK 17+, Android SDK (platform 35), Android NDK.
 
-`libcore` is built from sing-box and libneko sources. Run
-`bash buildScript/lib/core/get_source.sh` first: it clones both repositories into
-`deps/` inside the project and checks out the pinned revisions. `deps/` is
-local-only, listed in `.gitignore`, and never committed.
+`libcore` is built from our sing-box fork
+([sstpnk/sing-box](https://github.com/sstpnk/sing-box)), which carries the REALITY
+interoperability patch and the AmneziaWG endpoint. Run
+`bash buildScript/lib/core/get_source.sh` first: it clones the repositories into
+`deps/` inside the project and checks out the revisions pinned in
+`buildScript/lib/core/get_source_env.sh`. `deps/` is local-only, listed in
+`.gitignore`, and never committed.
 
 ```bash
 git clone --recurse-submodules https://github.com/sstpnk/freedom-cat.git
