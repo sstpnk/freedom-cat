@@ -28,3 +28,7 @@ keystore-credentials.txt
 
 # local build dependencies fetched by buildScript/lib/core/get_source.sh
 /deps/
+
+# local gradle home and scratch files used on this machine
+/.gradle-user/
+/tmp/
