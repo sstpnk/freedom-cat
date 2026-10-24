@@ -1,8 +1,58 @@
-SagerNet was originally created in late 2021, by
-nekohasekai <contact-sagernet@sekai.icu>.
+FreedomCat is a fork. It exists only because of the people who wrote the
+projects it is built on.
 
-Here is an inevitably incomplete list of MUCH-APPRECIATED CONTRIBUTORS --
-people who have submitted patches, fixed bugs, added translations, and
-generally made SagerNet that much better:
+Upstream lineage
+----------------
 
-https://github.com/SagerNet/SagerNet/graphs/contributors
+SagerNet — the original Android proxy client (2021)
+  nekohasekai <contact-sagernet@sekai.icu>
+  https://github.com/SagerNet/SagerNet
+  Contributors: https://github.com/SagerNet/SagerNet/graphs/contributors
+
+NekoBox for Android — the direct base of this fork
+  MatsuriDayo
+  https://github.com/MatsuriDayo/NekoBoxForAndroid
+  Contributors: https://github.com/MatsuriDayo/NekoBoxForAndroid/graphs/contributors
+
+sing-box — the proxy core
+  nekohasekai and the sing-box contributors
+  https://github.com/SagerNet/sing-box
+  Contributors: https://github.com/SagerNet/sing-box/graphs/contributors
+
+libneko — Go helpers shared by NekoBox
+  MatsuriDayo
+  https://github.com/MatsuriDayo/libneko
+
+gomobile (Matsuri fork) — builds the Go core into libcore.aar
+  MatsuriDayo
+  https://github.com/MatsuriDayo/gomobile
+
+AmneziaWG — the obfuscated WireGuard protocol
+  AmneziaVPN project and the amneziawg-go authors
+  https://github.com/amnezia-vpn/amneziawg-go
+
+yacd-meta — the web dashboard
+  MetaCubeX
+  https://github.com/MetaCubeX/Yacd-meta
+
+shadowsocks-android — inspiration for the Android service layer
+  https://github.com/shadowsocks/shadowsocks-android
+
+Format references
+-----------------
+
+INCY — public documentation of the subscription, HWID and app-management
+headers that device-bound panels expect from clients
+  https://github.com/INCY-DEV/incy-docs
+
+FreedomCat
+----------
+
+Sergey (sstpnk) — fork maintainer: UI, AmneziaWG support, subscriptions,
+build and release plumbing
+  https://github.com/sstpnk
+
+Contributors: https://github.com/sstpnk/freedom-cat/graphs/contributors
+
+If you contributed and are missing from this file, open a pull request — the
+omission is not intentional.
