@@ -10,11 +10,13 @@
 .EXAMPLE
     powershell -File scripts/release.ps1 -SkipBuild
     powershell -File scripts/release.ps1 -SkipUpload
+    powershell -File scripts/release.ps1 -SkipBuild -NotesFile docs/release-notes-0.2.1.md
 #>
 param(
     [switch]$SkipBuild,
     [switch]$SkipUpload,
-    [string]$Notes
+    [string]$Notes,
+    [string]$NotesFile
 )
 
 $ErrorActionPreference = 'Stop'
@@ -157,6 +159,9 @@ $releaseExists = $LASTEXITCODE -eq 0
 $ErrorActionPreference = 'Stop'
 if ($releaseExists) {
     & gh release upload $tag $files --clobber
+} elseif ($NotesFile) {
+    # Let gh read the file itself: passing UTF-8 text through this process mangles it.
+    & gh release create $tag $files --title "FreedomCat $version" --notes-file $NotesFile
 } elseif ($Notes) {
     & gh release create $tag $files --title "FreedomCat $version" --notes $Notes
 } else {
