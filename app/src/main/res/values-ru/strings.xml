@@ -443,6 +443,9 @@
 <string name="subscription_type">Тип подписки</string>
 <string name="subscription_update">Обновление подписки</string>
 <string name="subscription_update_message">Обновление %s …</string>
+<string name="subscription_hwid_limit_reached">У подписки не осталось свободных слотов устройств. Освободите слот у провайдера и повторите.</string>
+<string name="subscription_hwid_unsupported">Подписка привязана к идентификатору устройства (HWID). Для этого провайдера нужен Happ или INCY.</string>
+<string name="subscription_placeholder">Провайдер вернул заглушку вместо подписки: %s</string>
 <string name="subscription_used">%s Использовано</string>
 <string name="subscription_user_agent">UserAgent</string>
 <string name="subscriptions">Подписки</string>

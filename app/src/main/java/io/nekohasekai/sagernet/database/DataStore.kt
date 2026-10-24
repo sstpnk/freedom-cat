@@ -247,6 +247,9 @@ object DataStore : OnPreferenceDataStoreChangeListener {
     var subscriptionAutoUpdate by profileCacheStore.boolean(Key.SUBSCRIPTION_AUTO_UPDATE)
     var subscriptionAutoUpdateDelay by profileCacheStore.stringToInt(Key.SUBSCRIPTION_AUTO_UPDATE_DELAY) { 360 }
 
+    // Shared by every subscription: a panel counts it as one device slot.
+    var subscriptionHwid by configurationStore.string(Key.SUBSCRIPTION_HWID)
+
     var rulesFirstCreate by profileCacheStore.boolean("rulesFirstCreate")
 
     override fun onPreferenceDataStoreChanged(store: PreferenceDataStore, key: String) {

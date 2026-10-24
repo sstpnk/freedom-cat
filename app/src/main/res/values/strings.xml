@@ -291,6 +291,9 @@
     <string name="no_proxies_found_in_subscription">No proxies found in the subscription</string>
     <string name="no_proxies_found_in_file">No proxies found in the file</string>
     <string name="no_proxies_found_in_clipboard">No proxies found in the clipboard</string>
+    <string name="subscription_hwid_unsupported">This subscription is bound to device IDs (HWID). Use Happ or INCY with this provider.</string>
+    <string name="subscription_hwid_limit_reached">No free device slots left for this subscription. Free one in your provider account and retry.</string>
+    <string name="subscription_placeholder">The provider returned a placeholder instead of a subscription: %s</string>
     <string name="deduplication">Deduplication</string>
     <string name="donate">Donate</string>
     <string name="donate_info">I love money</string>

@@ -1,6 +1,8 @@
 package io.nekohasekai.sagernet.group
 
 import android.annotation.SuppressLint
+import android.os.Build
+import io.nekohasekai.sagernet.BuildConfig
 import io.nekohasekai.sagernet.R
 import io.nekohasekai.sagernet.database.*
 import io.nekohasekai.sagernet.fmt.AbstractBean
@@ -21,6 +23,8 @@ import io.nekohasekai.sagernet.fmt.wireguard.WireGuardBean
 import io.nekohasekai.sagernet.fmt.wireguard.normalizeIpPrefixes
 import io.nekohasekai.sagernet.fmt.wireguard.parseWireGuardConfig
 import io.nekohasekai.sagernet.ktx.*
+import io.nekohasekai.sagernet.utils.Hwid
+import libcore.HTTPResponse
 import libcore.Libcore
 import moe.matsuri.nb4a.Protocols
 import moe.matsuri.nb4a.proxy.anytls.AnyTLSBean
@@ -68,9 +72,21 @@ object RawUpdater : GroupUpdater() {
                 }
                 setURL(subscription.link)
                 setUserAgent(subscription.customUserAgent.takeIf { it.isNotBlank() } ?: USER_AGENT)
+                // Panels that bind a subscription to devices answer without these headers
+                // with a placeholder "app not supported" list instead of real servers.
+                val hwid = Hwid.get(app)
+                setHeader("x-hwid", hwid)
+                setHeader("X-Device-ID", hwid)
+                setHeader("x-device-os", "Android")
+                setHeader("x-ver-os", Build.VERSION.RELEASE)
+                setHeader("x-device-model", Build.MODEL)
+                setHeader("x-app-version", BuildConfig.VERSION_NAME)
+                setHeader("x-client", "FreedomCat")
             }.execute()
+            checkSubscriptionDenied(response)
             proxies = parseRaw(Util.getStringBox(response.contentString))
                 ?: error(app.getString(R.string.no_proxies_found))
+            checkPlaceholder(proxies)
 
             subscription.subscriptionUserinfo =
                 Util.getStringBox(response.getHeader("Subscription-Userinfo"))
@@ -220,6 +236,26 @@ object RawUpdater : GroupUpdater() {
 
         userInterface?.onUpdateSuccess(
             proxyGroup, changed, added, updated, deleted, duplicate, byUser
+        )
+    }
+
+    private fun checkSubscriptionDenied(response: HTTPResponse) {
+        if (Util.getStringBox(response.getHeader("x-hwid-not-supported")).isNotBlank()) {
+            error(app.getString(R.string.subscription_hwid_unsupported))
+        }
+        if (Util.getStringBox(response.getHeader("x-hwid-max-devices-reached")).isNotBlank()) {
+            error(app.getString(R.string.subscription_hwid_limit_reached))
+        }
+    }
+
+    // Such panels answer a rejected client with 200 and one fake profile per reason.
+    private fun checkPlaceholder(proxies: List<AbstractBean>) {
+        if (proxies.isEmpty() || proxies.any { it.serverAddress != "0.0.0.0" }) return
+        error(
+            app.getString(
+                R.string.subscription_placeholder,
+                proxies.joinToString(" / ") { it.displayName() },
+            )
         )
     }
 
