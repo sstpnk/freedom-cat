@@ -6,13 +6,13 @@
         app:key="routeName"
         app:title="@string/route_name"
         app:useSimpleSummaryProvider="true" />
-    <moe.matsuri.nb4a.ui.EditConfigPreference
+    <tech.stpnk.freedomcat.core.ui.EditConfigPreference
         app:icon="@drawable/ic_baseline_layers_24"
         app:key="serverConfig"
         app:title="@string/custom_config"
         app:useSimpleSummaryProvider="true" />
     <PreferenceCategory app:title="@string/cag_route">
-        <io.nekohasekai.sagernet.widget.AppListPreference
+        <tech.stpnk.freedomcat.widget.AppListPreference
             app:icon="@drawable/ic_baseline_legend_toggle_24"
             app:key="routePackages"
             app:title="@string/apps" />
@@ -43,7 +43,7 @@
             app:key="routeSourcePort"
             app:title="src port"
             app:useSimpleSummaryProvider="true" />
-        <moe.matsuri.nb4a.ui.SimpleMenuPreference
+        <tech.stpnk.freedomcat.core.ui.SimpleMenuPreference
             app:entries="@array/route_protocol_entry"
             app:entryValues="@array/route_protocol_value"
             app:icon="@drawable/ic_baseline_compare_arrows_24"
@@ -55,7 +55,7 @@
             app:key="routeProtocol"
             app:title="protocol"
             app:useSimpleSummaryProvider="true" />
-        <io.nekohasekai.sagernet.widget.OutboundPreference
+        <tech.stpnk.freedomcat.widget.OutboundPreference
             app:icon="@drawable/ic_hardware_router"
             app:key="routeOutbound"
             app:title="outbound"

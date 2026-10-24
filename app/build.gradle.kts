@@ -27,7 +27,7 @@ android {
         viewBinding = true
         aidl = true
     }
-    namespace = "io.nekohasekai.sagernet"
+    namespace = "tech.stpnk.freedomcat"
     packaging {
         jniLibs {
             useLegacyPackaging = true

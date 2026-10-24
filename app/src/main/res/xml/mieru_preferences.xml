@@ -18,7 +18,7 @@
             app:key="serverPort"
             app:title="@string/server_port"
             app:useSimpleSummaryProvider="true" />
-        <moe.matsuri.nb4a.ui.SimpleMenuPreference
+        <tech.stpnk.freedomcat.core.ui.SimpleMenuPreference
             app:defaultValue="TCP"
             app:entries="@array/mieru_protocol"
             app:entryValues="@array/mieru_protocol"

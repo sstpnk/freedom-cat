@@ -1,8 +1,8 @@
 -repackageclasses ''
 -allowaccessmodification
 
--keep class io.nekohasekai.sagernet.** { *;}
--keep class moe.matsuri.nb4a.** { *;}
+-keep class tech.stpnk.freedomcat.** { *;}
+-keep class tech.stpnk.freedomcat.core.** { *;}
 
 # gomobile libcore: methods called from native code (JNI) must not be stripped/renamed
 # (normally supplied by libcore.aar consumer proguard rules; locally the classes are plain sources)

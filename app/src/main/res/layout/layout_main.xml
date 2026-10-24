@@ -28,11 +28,11 @@
             app:indicatorColor="?colorMaterial100"
             app:layout_anchor="@+id/fab"
             app:layout_anchorGravity="center"
-            app:layout_behavior="io.nekohasekai.sagernet.widget.FabProgressBehavior"
+            app:layout_behavior="tech.stpnk.freedomcat.widget.FabProgressBehavior"
             app:trackCornerRadius="@dimen/mtrl_progress_track_thickness"
             app:trackThickness="8dp" />
 
-        <io.nekohasekai.sagernet.widget.ServiceButton
+        <tech.stpnk.freedomcat.widget.ServiceButton
             android:id="@+id/fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -43,7 +43,7 @@
             app:pressedTranslationZ="6dp"
             app:srcCompat="@drawable/ic_service_idle" />
 
-        <io.nekohasekai.sagernet.widget.StatsBar
+        <tech.stpnk.freedomcat.widget.StatsBar
             android:id="@+id/stats"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -96,7 +96,7 @@
 
             </LinearLayout>
 
-        </io.nekohasekai.sagernet.widget.StatsBar>
+        </tech.stpnk.freedomcat.widget.StatsBar>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

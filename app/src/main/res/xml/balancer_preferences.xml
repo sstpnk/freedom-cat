@@ -6,7 +6,7 @@
         app:title="@string/profile_name"
         app:useSimpleSummaryProvider="true" />
 
-    <moe.matsuri.nb4a.ui.SimpleMenuPreference
+    <tech.stpnk.freedomcat.core.ui.SimpleMenuPreference
         app:defaultValue="0"
         app:entries="@array/balancer_type"
         app:entryValues="@array/int_array_2"
@@ -15,7 +15,7 @@
         app:title="@string/balancer_type"
         app:useSimpleSummaryProvider="true" />
 
-    <moe.matsuri.nb4a.ui.SimpleMenuPreference
+    <tech.stpnk.freedomcat.core.ui.SimpleMenuPreference
         app:entries="@array/balancer_strategy_entry"
         app:entryValues="@array/balancer_strategy_value"
         app:icon="@drawable/ic_baseline_compare_arrows_24"
@@ -23,7 +23,7 @@
         app:title="@string/balancer_strategy"
         app:useSimpleSummaryProvider="true" />
 
-    <io.nekohasekai.sagernet.widget.GroupPreference
+    <tech.stpnk.freedomcat.widget.GroupPreference
         app:icon="@drawable/ic_baseline_view_list_24"
         app:key="balancerGroup"
         app:title="@string/menu_group"

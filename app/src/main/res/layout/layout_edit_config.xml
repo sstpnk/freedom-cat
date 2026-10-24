@@ -54,7 +54,7 @@
             android:src="@drawable/baseline_keyboard_tab_24"
             app:tint="?colorOnSurface" />
 
-        <moe.matsuri.nb4a.ui.ExtendedKeyboard
+        <tech.stpnk.freedomcat.core.ui.ExtendedKeyboard
             android:id="@+id/extended_keyboard"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

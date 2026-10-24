@@ -1,0 +1,85 @@
+package tech.stpnk.freedomcat.ui.profile
+
+import android.os.Bundle
+import androidx.preference.EditTextPreference
+import androidx.preference.PreferenceFragmentCompat
+import tech.stpnk.freedomcat.R
+import tech.stpnk.freedomcat.database.preference.EditTextPreferenceModifiers
+import tech.stpnk.freedomcat.fmt.wireguard.WireGuardBean
+import tech.stpnk.freedomcat.core.proxy.PreferenceBinding
+import tech.stpnk.freedomcat.core.proxy.PreferenceBindingManager
+import tech.stpnk.freedomcat.core.proxy.Type
+
+class WireGuardSettingsActivity : ProfileSettingsActivity<WireGuardBean>() {
+
+    companion object {
+        const val EXTRA_AMNEZIA = "amnezia"
+    }
+
+    override fun createEntity() = WireGuardBean()
+
+    private val pbm = PreferenceBindingManager()
+    private val name = pbm.add(PreferenceBinding(Type.Text, "name"))
+    private val serverAddress = pbm.add(PreferenceBinding(Type.Text, "serverAddress"))
+    private val serverPort = pbm.add(PreferenceBinding(Type.TextToInt, "serverPort"))
+    private val localAddress = pbm.add(PreferenceBinding(Type.Text, "localAddress"))
+    private val allowedIPs = pbm.add(PreferenceBinding(Type.Text, "allowedIPs"))
+    private val privateKey = pbm.add(PreferenceBinding(Type.Text, "privateKey"))
+    private val peerPublicKey = pbm.add(PreferenceBinding(Type.Text, "peerPublicKey"))
+    private val peerPreSharedKey = pbm.add(PreferenceBinding(Type.Text, "peerPreSharedKey"))
+    private val persistentKeepalive = pbm.add(PreferenceBinding(Type.Text, "persistentKeepalive"))
+    private val mtu = pbm.add(PreferenceBinding(Type.TextToInt, "mtu"))
+    private val reserved = pbm.add(PreferenceBinding(Type.Text, "reserved"))
+    private val enableAmnezia = pbm.add(PreferenceBinding(Type.Bool, "enableAmnezia"))
+    private val jc = pbm.add(PreferenceBinding(Type.TextToInt, "jc"))
+    private val jmin = pbm.add(PreferenceBinding(Type.TextToInt, "jmin"))
+    private val jmax = pbm.add(PreferenceBinding(Type.TextToInt, "jmax"))
+    private val s1 = pbm.add(PreferenceBinding(Type.TextToInt, "s1"))
+    private val s2 = pbm.add(PreferenceBinding(Type.TextToInt, "s2"))
+    private val s3 = pbm.add(PreferenceBinding(Type.TextToInt, "s3"))
+    private val s4 = pbm.add(PreferenceBinding(Type.TextToInt, "s4"))
+    private val h1 = pbm.add(PreferenceBinding(Type.Text, "h1"))
+    private val h2 = pbm.add(PreferenceBinding(Type.Text, "h2"))
+    private val h3 = pbm.add(PreferenceBinding(Type.Text, "h3"))
+    private val h4 = pbm.add(PreferenceBinding(Type.Text, "h4"))
+    private val i1 = pbm.add(PreferenceBinding(Type.Text, "i1"))
+    private val i2 = pbm.add(PreferenceBinding(Type.Text, "i2"))
+    private val i3 = pbm.add(PreferenceBinding(Type.Text, "i3"))
+    private val i4 = pbm.add(PreferenceBinding(Type.Text, "i4"))
+    private val i5 = pbm.add(PreferenceBinding(Type.Text, "i5"))
+    private val headerProtectionKey = pbm.add(PreferenceBinding(Type.Text, "headerProtectionKey"))
+    private val contentPaddingAddition = pbm.add(PreferenceBinding(Type.Text, "contentPaddingAddition"))
+    private val rekeyAfterTime = pbm.add(PreferenceBinding(Type.Text, "rekeyAfterTime"))
+    private val rekeyTimeout = pbm.add(PreferenceBinding(Type.Text, "rekeyTimeout"))
+    private val rejectAfterTime = pbm.add(PreferenceBinding(Type.Text, "rejectAfterTime"))
+    private val keepaliveTimeout = pbm.add(PreferenceBinding(Type.Text, "keepaliveTimeout"))
+    private val maxHandshakeAttempts = pbm.add(PreferenceBinding(Type.Text, "maxHandshakeAttempts"))
+    private val randomTrailers = pbm.add(PreferenceBinding(Type.Bool, "randomTrailers"))
+    private val disableCookies = pbm.add(PreferenceBinding(Type.Bool, "disableCookies"))
+
+    override fun WireGuardBean.init() {
+        if (intent.getBooleanExtra(EXTRA_AMNEZIA, false)) {
+            enableAmnezia = true
+        }
+        pbm.writeToCacheAll(this)
+    }
+
+    override fun WireGuardBean.serialize() {
+        pbm.fromCacheAll(this)
+    }
+
+    override fun PreferenceFragmentCompat.createPreferences(
+        savedInstanceState: Bundle?,
+        rootKey: String?,
+    ) {
+        addPreferencesFromResource(R.xml.wireguard_preferences)
+        pbm.setPreferenceFragment(this)
+
+        (serverPort.preference as EditTextPreference)
+            .setOnBindEditTextListener(EditTextPreferenceModifiers.Port)
+        (privateKey.preference as EditTextPreference).summaryProvider = PasswordSummaryProvider
+        (mtu.preference as EditTextPreference).setOnBindEditTextListener(EditTextPreferenceModifiers.Number)
+        (headerProtectionKey.preference as EditTextPreference).summaryProvider = PasswordSummaryProvider
+    }
+
+}
