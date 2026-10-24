@@ -3,7 +3,7 @@
     Builds every release flavor locally and publishes a GitHub release.
 
 .DESCRIPTION
-    Reads the version from nb4a.properties, builds the phone (oss) and TV (ossTv)
+    Reads the version from freedomcat.properties, builds the phone (oss) and TV (ossTv)
     release flavors for all ABIs, copies the APKs into dist/vX.Y.Z, writes
     SHA256SUMS, creates the git tag and uploads the files with gh.
 
@@ -21,8 +21,8 @@ $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
 
-$props = Get-Content 'nb4a.properties' -Raw
-if ($props -notmatch 'VERSION_NAME=(?<v>[^\r\n]+)') { throw 'VERSION_NAME not found in nb4a.properties' }
+$props = Get-Content 'freedomcat.properties' -Raw
+if ($props -notmatch 'VERSION_NAME=(?<v>[^\r\n]+)') { throw 'VERSION_NAME not found in freedomcat.properties' }
 $version = $Matches.v.Trim()
 $tag = "v$version"
 $dist = Join-Path $root "dist\$tag"

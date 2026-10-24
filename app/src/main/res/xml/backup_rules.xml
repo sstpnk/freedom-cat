@@ -4,7 +4,7 @@
     <cloud-backup>
         <include
             domain="database"
-            path="sager_net.db" />
+            path="freedomcat.db" />
         <include
             domain="device_database"
             path="configuration.db" />
@@ -12,7 +12,7 @@
     <device-transfer>
         <include
             domain="database"
-            path="sager_net.db" />
+            path="freedomcat.db" />
         <include
             domain="device_database"
             path="configuration.db" />

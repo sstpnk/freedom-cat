@@ -5,7 +5,7 @@ const val CONNECTION_TEST_URL = "http://cp.cloudflare.com/"
 object Key {
 
     const val DB_PUBLIC = "configuration.db"
-    const val DB_PROFILE = "sager_net.db"
+    const val DB_PROFILE = "freedomcat.db"
 
     const val PERSIST_ACROSS_REBOOT = "isAutoConnect"
 
